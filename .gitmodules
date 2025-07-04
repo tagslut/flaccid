@@ -1,0 +1,3 @@
+[submodule "legacy_pipeline"]
+	path = legacy_pipeline
+	url = https://github.com/tagslut/flat.git
