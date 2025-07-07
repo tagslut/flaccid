@@ -4,9 +4,22 @@ app = typer.Typer(help="FLACCID music downloader CLI")
 
 
 @app.command()
-def get(source: str):
-    """Download tracks from SOURCE (e.g., Qobuz)."""
-    raise NotImplementedError("`get` not yet implemented")
+def get(
+    source: str = typer.Argument(
+        None, help="Source to download from (e.g., qobuz, tidal)"
+    )
+):
+    """Download tracks from SOURCE."""
+    if source is None:
+        typer.echo("Error: Missing argument 'source'", err=True)
+        raise typer.Exit(code=1)
+
+    if source not in valid_sources:
+        typer.echo(f"Unknown source: {source}", err=True)
+        raise typer.Exit(code=1)
+
+    # TODO: integrate actual downloader here
+    typer.echo(f"Would download from {source}…")
 
 
 @app.command()
