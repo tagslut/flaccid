@@ -2,6 +2,8 @@ import typer
 
 app = typer.Typer(help="FLACCID music downloader CLI")
 
+valid_sources = {"qobuz", "tidal"}  # Define valid sources globally
+
 
 @app.command()
 def get(
