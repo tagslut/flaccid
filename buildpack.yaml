@@ -1,0 +1,3 @@
+buildpacks:
+  - id: gcr.io/buildpacks/python
+    version: "latest"

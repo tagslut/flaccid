@@ -1,0 +1,31 @@
+steps:
+  # 1. Install dependencies (in home so we don’t need sudo)
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install --user -r requirements.txt
+
+  # 2. Run tests
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        export PATH="$HOME/.local/bin:$PATH"
+        pytest -q
+
+  # 3. Deploy on success
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run jobs deploy flaccid-job \
+          --source . \
+          --region us-central1 \
+          --service-account flaccid-runtime-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+          --quiet
+
+timeout: '1200s'
