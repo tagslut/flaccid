@@ -11,6 +11,7 @@ Google Cloud SDK / google-cloud-storage client to talk to it (via the
 
 No real GCP resources are used.
 """
+
 from __future__ import annotations
 
 import os

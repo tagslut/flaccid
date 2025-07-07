@@ -44,6 +44,9 @@ class Tagger:
                 mutagen_file.add_tags()
 
             tags = mutagen_file.tags
+            if tags is None:
+                return False  # Should not happen after add_tags()
+
             tags.clear()
 
             tags["title"] = metadata.title

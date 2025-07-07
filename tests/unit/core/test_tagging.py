@@ -2,7 +2,11 @@
 from pathlib import Path
 from flaccid.core import tagging
 
-SAMPLE = Path(__file__).parent.parent.parent / "fixtures" / "Pixies - (1988) Surfer Rosa (2007 Remaster) - 07. Where Is My Mind?.flac"
+SAMPLE = (
+    Path(__file__).parent.parent.parent
+    / "fixtures"
+    / "Pixies - (1988) Surfer Rosa (2007 Remaster) - 07. Where Is My Mind?.flac"
+)
 
 
 def test_read_tags_has_title():

@@ -10,7 +10,6 @@ from mutagen.flac import FLAC
 from mutagen.id3 import ID3
 from mutagen.id3._frames import TIT2
 from mutagen._file import File
-from mutagen._util import MutagenError  # Only if you use it
 
 TAG_MAP: Dict[str, str] = {
     "title": "TITLE",
@@ -49,10 +48,8 @@ def write_tags(path: str | Path, tags: Dict[str, str]) -> None:
         if not muta_key:
             continue
         if isinstance(audio, FLAC):
-            if isinstance(audio.tags, dict):
-                audio.tags[muta_key] = value
-            else:
-                raise TaggingError(f"Tags object does not support `__setitem__`: {type(audio.tags)}")
+            # FLAC tags are stored as VCFLACDict which supports assignment
+            audio.tags[muta_key] = value
         elif isinstance(audio, ID3):
             if muta_key == "TITLE":
                 audio.add(TIT2(encoding=3, text=value))
