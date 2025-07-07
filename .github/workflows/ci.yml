@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ------------------------- UNIT + INTEGRATION TESTS -------------------------
+  test:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:20.10-dind
+        options: --privileged -e DOCKER_TLS_CERTDIR=""
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Cache Poetry virtualenv
+        id: cache-poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-
+
+      - name: Install dependencies
+        run: |
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi --with dev
+
+      - name: Install fake-gcs-server
+        run: |
+          curl -L -o /usr/local/bin/fake-gcs-server \
+            https://storage.googleapis.com/gcs-fuse-binaries/fake-gcs-server/latest/linux_amd64/fake-gcs-server
+          chmod +x /usr/local/bin/fake-gcs-server
+          fake-gcs-server --version
+
+      - name: Run tests with coverage (unit + integration)
+        run: |
+          poetry run pytest --cov=core --cov=shared --cov-report=term --cov-report=xml -q
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+  # ------------------------------- LINT / TYPE -------------------------------
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry + dev deps
+        run: |
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-interaction --no-ansi --with dev
+
+      - name: Black (check-only)
+        run: poetry run black --check .
+
+      - name: flake8
+        run: poetry run flake8 .
+
+      - name: MyPy (strict-ish)
+        run: poetry run mypy core shared
