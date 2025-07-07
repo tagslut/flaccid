@@ -1,6 +1,6 @@
 steps:
   # 1. Install dependencies (in home so we don’t need sudo)
-  - name: 'python:3.11-slim'
+  - name: 'python:3.11.11-slim'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -8,7 +8,7 @@ steps:
         pip install --user -r requirements.txt
 
   # 2. Run tests
-  - name: 'python:3.11-slim'
+  - name: 'python:3.11.11-slim'
     entrypoint: 'bash'
     args:
       - '-c'

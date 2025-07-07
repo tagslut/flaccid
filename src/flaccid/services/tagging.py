@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from mutagen import MutagenError
+from mutagen._util import MutagenError  # Updated import
 from mutagen.flac import FLAC
 
 from flaccid.core.models import AudioFile, Metadata

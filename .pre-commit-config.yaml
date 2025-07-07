@@ -22,7 +22,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: python -m poetry run pytest -q
+        entry: python -m poetry run pytest src/tests -v
         language: python  # must be python for additional_dependencies to work
         pass_filenames: false
         additional_dependencies: ["poetry>=1.8"]
