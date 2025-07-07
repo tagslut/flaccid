@@ -14,7 +14,6 @@ def get(
         typer.echo("Error: Missing argument 'source'", err=True)
         raise typer.Exit(code=1)
 
-    valid_sources = {"qobuz", "tidal"}
     if source not in valid_sources:
         typer.echo(f"Unknown source: {source}", err=True)
         raise typer.Exit(code=1)
