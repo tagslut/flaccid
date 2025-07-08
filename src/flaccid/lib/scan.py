@@ -2,16 +2,8 @@ import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TimeRemainingColumn,
-)
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
 from mutagen.flac import FLAC
-from mutagen.id3 import ID3NoHeaderError
-import os
 
 console = Console()
 app = typer.Typer(help="Scan directories and extract metadata.")
