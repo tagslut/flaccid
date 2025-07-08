@@ -5,9 +5,7 @@ description = ""
 authors = ["georges <geoooorges@icloud.com>"]
 readme = "README.md"
 packages = [
-  { include = "core" },
-  { include = "shared" },
-  { include = "fla" },
+  { include = "flaccid", from = "src" }
 ]
 package-mode = false
 
@@ -28,7 +26,7 @@ flake8 = "^7.3.0"
 pre-commit = "^3.7.0"
 
 [tool.poetry.scripts]
-flaccid = "fla.__main__:app"
+flaccid = "flaccid.__main__:app"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
