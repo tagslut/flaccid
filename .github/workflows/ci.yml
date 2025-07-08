@@ -10,10 +10,6 @@ jobs:
   # ------------------------- UNIT + INTEGRATION TESTS -------------------------
   test:
     runs-on: ubuntu-latest
-    services:
-      docker:
-        image: docker:20.10-dind
-        options: --privileged -e DOCKER_TLS_CERTDIR=""
     steps:
       - uses: actions/checkout@v4
 
@@ -45,7 +41,7 @@ jobs:
           tar -xzf fake-gcs-server.tar.gz
           mv fake-gcs-server /usr/local/bin/fake-gcs-server
           chmod +x /usr/local/bin/fake-gcs-server
-          /usr/local/bin/fake-gcs-server --version
+          /usr/local/bin/fake-gcs-server
 
       - name: Run tests with coverage (unit + integration)
         run: |
