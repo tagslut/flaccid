@@ -1,0 +1,8 @@
+# build.env  ── TOML, not shell
+[[build.env]]
+name  = "BP_PYTHON_VERSION"
+value = "3.11.*"
+
+[[build.env]]
+name  = "BP_POETRY_INSTALL_FLAGS"
+value = "--no-dev"

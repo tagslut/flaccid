@@ -103,19 +103,26 @@ def directory(path: str):
 
     total_size = 0
     for file_info in files:
-        if 'error' in file_info:
-            table.add_row(file_info['file_name'], "[red]ERROR[/red]", file_info['error'], "", "", "")
+        if "error" in file_info:
+            table.add_row(
+                file_info["file_name"],
+                "[red]ERROR[/red]",
+                file_info["error"],
+                "",
+                "",
+                "",
+            )
         else:
             quality = f"{file_info['sample_rate']}Hz/{file_info['bits_per_sample']}bit"
             table.add_row(
-                file_info['file_name'],
-                file_info['artist'],
-                file_info['title'],
-                file_info['album'],
-                str(file_info['file_size_mb']),
-                quality
+                file_info["file_name"],
+                file_info["artist"],
+                file_info["title"],
+                file_info["album"],
+                str(file_info["file_size_mb"]),
+                quality,
             )
-            total_size += file_info['file_size_mb']
+            total_size += file_info["file_size_mb"]
 
     console.print(table)
     console.print(f"\n📊 Summary: {len(files)} FLAC files, {total_size:.1f} MB total")

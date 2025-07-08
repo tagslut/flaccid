@@ -11,10 +11,18 @@ from typing import Optional
 # Try to load python-dotenv if available
 try:
     from dotenv import load_dotenv
+<<<<<<< HEAD
+=======
+
+>>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
     _HAS_DOTENV = True
 except ImportError:
     _HAS_DOTENV = False
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
 class Config:
     """Configuration manager for FLACCID."""
 
@@ -97,5 +105,9 @@ class Config:
         config_dir = self.get("FLACCID_CONFIG_DIR", "~/.flaccid/config")
         return Path(config_dir).expanduser()
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
 # Global config instance
 config = Config()

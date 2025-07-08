@@ -2,7 +2,12 @@
 name = "flaccid"
 version = "0.1.0"
 description = "Modular FLAC CLI Toolkit"
-authors = ["Your Name <you@example.com>"]
+authors = ["georges <geoooorges@icloud.com>"]
+readme = "README.md"
+packages = [
+  { include = "flaccid", from = "src" }
+]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -16,19 +21,33 @@ rich = "^13.6"
 sqlalchemy = "^2.0"
 watchdog = "^4.0"
 python-dotenv = "^1.0"
+click = "^8.1.7"
+google-cloud-storage = "2.14.0"
+gcsfs = "2023.10.0"
+pandas = "2.1.4"
+pyarrow = "14.0.2"
+typing-extensions = "*"
+black = "^25.1.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4"
+pytest = "^8.4.1"
 pytest-asyncio = "^0.21"
+black = "^25.1.0"
+flake8 = "^7.3.0"
+pre-commit = "^3.7.0"
 
 [tool.poetry.scripts]
 fla = "flaccid.__main__:app"
 flaccid = "flaccid.__main__:app"
 
-[[tool.poetry.packages]]
-include = "flaccid"
-from = "src"
-
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["src/tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+asyncio_default_fixture_loop_scope = "function"
