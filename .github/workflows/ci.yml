@@ -41,9 +41,9 @@ jobs:
       - name: Install fake-gcs-server
         run: |
           curl -L -o /usr/local/bin/fake-gcs-server \
-            https://storage.googleapis.com/gcs-fuse-binaries/fake-gcs-server/latest/linux_amd64/fake-gcs-server
+            https://github.com/fsouza/fake-gcs-server/releases/latest/download/fake-gcs-server-linux-amd64
           chmod +x /usr/local/bin/fake-gcs-server
-          fake-gcs-server --version
+          /usr/local/bin/fake-gcs-server --version
 
       - name: Run tests with coverage (unit + integration)
         run: |
