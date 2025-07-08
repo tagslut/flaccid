@@ -41,7 +41,7 @@ jobs:
           tar -xzf fake-gcs-server.tar.gz
           mv fake-gcs-server /usr/local/bin/fake-gcs-server
           chmod +x /usr/local/bin/fake-gcs-server
-          /usr/local/bin/fake-gcs-server
+          /usr/local/bin/fake-gcs-server -h
 
       - name: Run tests with coverage (unit + integration)
         run: |
