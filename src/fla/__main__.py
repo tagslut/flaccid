@@ -1,3 +1,4 @@
+import os
 import typer
 
 app = typer.Typer(help="FLACCID music downloader CLI")
@@ -25,9 +26,12 @@ def get(
 
 
 @app.command()
-def tag(path: str):
-    """Tag a file or directory at PATH with metadata."""
-    raise NotImplementedError("`tag` not yet implemented")
+def tag(path: str = typer.Argument(..., help="File or directory to tag")):
+    """Tag a file or directory with metadata."""
+    if not os.path.exists(path):
+        typer.echo(f"Path not found: {path}", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"Would tag files under {path}…")
 
 
 @app.command()
