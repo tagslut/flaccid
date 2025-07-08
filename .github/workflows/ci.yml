@@ -40,8 +40,10 @@ jobs:
 
       - name: Install fake-gcs-server
         run: |
-          curl -L -o /usr/local/bin/fake-gcs-server \
-            https://github.com/fsouza/fake-gcs-server/releases/latest/download/fake-gcs-server-linux-amd64
+          curl -L -o fake-gcs-server.tar.gz \
+            https://github.com/fsouza/fake-gcs-server/releases/download/v1.52.2/fake-gcs-server_1.52.2_Linux_amd64.tar.gz
+          tar -xzf fake-gcs-server.tar.gz
+          mv fake-gcs-server /usr/local/bin/fake-gcs-server
           chmod +x /usr/local/bin/fake-gcs-server
           /usr/local/bin/fake-gcs-server --version
 

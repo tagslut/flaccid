@@ -117,47 +117,84 @@ def add_track_to_db(metadata: dict):
         )
         existing = cursor.fetchone()
 
-        if existing and existing[0] >= metadata["file_mtime"]:
-            # File hasn't changed, skip update
-            return False
-
-        # Insert or update track
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO tracks (
-                file_path, file_name, file_size, file_mtime,
-                title, artist, album, album_artist, date, genre,
-                track_number, disc_number, duration,
-                sample_rate, bits_per_sample, channels, bitrate,
-                isrc, metadata_json, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-            (
-                metadata["file_path"],
-                metadata["file_name"],
-                metadata["file_size"],
-                metadata["file_mtime"],
-                metadata["title"],
-                metadata["artist"],
-                metadata["album"],
-                metadata["album_artist"],
-                metadata["date"],
-                metadata["genre"],
-                metadata["track_number"],
-                metadata["disc_number"],
-                metadata["duration"],
-                metadata["sample_rate"],
-                metadata["bits_per_sample"],
-                metadata["channels"],
-                metadata["bitrate"],
-                metadata["isrc"],
-                metadata["metadata_json"],
-                datetime.now().isoformat(),
-            ),
-        )
-
-        conn.commit()
-        return True
+        if existing:
+            if existing[0] >= metadata["file_mtime"]:
+                # File hasn't changed, skip update
+                return "unchanged"
+            else:
+                # Update existing track
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO tracks (
+                        file_path, file_name, file_size, file_mtime,
+                        title, artist, album, album_artist, date, genre,
+                        track_number, disc_number, duration,
+                        sample_rate, bits_per_sample, channels, bitrate,
+                        isrc, metadata_json, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        metadata["file_path"],
+                        metadata["file_name"],
+                        metadata["file_size"],
+                        metadata["file_mtime"],
+                        metadata["title"],
+                        metadata["artist"],
+                        metadata["album"],
+                        metadata["album_artist"],
+                        metadata["date"],
+                        metadata["genre"],
+                        metadata["track_number"],
+                        metadata["disc_number"],
+                        metadata["duration"],
+                        metadata["sample_rate"],
+                        metadata["bits_per_sample"],
+                        metadata["channels"],
+                        metadata["bitrate"],
+                        metadata["isrc"],
+                        metadata["metadata_json"],
+                        datetime.now().isoformat(),
+                    ),
+                )
+                conn.commit()
+                return "updated"
+        else:
+            # Insert new track
+            cursor.execute(
+                """
+                INSERT INTO tracks (
+                    file_path, file_name, file_size, file_mtime,
+                    title, artist, album, album_artist, date, genre,
+                    track_number, disc_number, duration,
+                    sample_rate, bits_per_sample, channels, bitrate,
+                    isrc, metadata_json, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    metadata["file_path"],
+                    metadata["file_name"],
+                    metadata["file_size"],
+                    metadata["file_mtime"],
+                    metadata["title"],
+                    metadata["artist"],
+                    metadata["album"],
+                    metadata["album_artist"],
+                    metadata["date"],
+                    metadata["genre"],
+                    metadata["track_number"],
+                    metadata["disc_number"],
+                    metadata["duration"],
+                    metadata["sample_rate"],
+                    metadata["bits_per_sample"],
+                    metadata["channels"],
+                    metadata["bitrate"],
+                    metadata["isrc"],
+                    metadata["metadata_json"],
+                    datetime.now().isoformat(),
+                ),
+            )
+            conn.commit()
+            return "added"
 
 
 @app.command()
@@ -193,6 +230,7 @@ def build(
 
     added_count = 0
     updated_count = 0
+    unchanged_count = 0
     error_count = 0
 
     with Progress(
@@ -207,18 +245,22 @@ def build(
         for flac_file in flac_files:
             metadata = extract_track_metadata(flac_file)
             if metadata:
-                if add_track_to_db(metadata):
-                    updated_count += 1
-                else:
+                status = add_track_to_db(metadata)
+                if status == "added":
                     added_count += 1
+                elif status == "updated":
+                    updated_count += 1
+                elif status == "unchanged":
+                    unchanged_count += 1
             else:
                 error_count += 1
 
             progress.advance(task)
 
-    console.print(f"✅ Database build complete!")
-    console.print(f"   Added/Updated: {updated_count} tracks")
-    console.print(f"   Unchanged: {added_count} tracks")
+    console.print("✅ Database build complete!")
+    console.print(f"   Added: {added_count} tracks")
+    console.print(f"   Updated: {updated_count} tracks")
+    console.print(f"   Unchanged: {unchanged_count} tracks")
     if error_count > 0:
         console.print(f"   Errors: {error_count} files", style="red")
 
