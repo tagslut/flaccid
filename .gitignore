@@ -4,3 +4,5 @@ __pycache__/
 *.parquet
 *.tgz
 .venv/
+# Byte-compiled / cache files
+.mypy_cache/
