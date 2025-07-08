@@ -11,9 +11,11 @@ from typing import Optional
 # Try to load python-dotenv if available
 try:
     from dotenv import load_dotenv
+
     _HAS_DOTENV = True
 except ImportError:
     _HAS_DOTENV = False
+
 
 class Config:
     """Configuration manager for FLACCID."""
@@ -96,6 +98,7 @@ class Config:
     def config_dir(self) -> Path:
         config_dir = self.get("FLACCID_CONFIG_DIR", "~/.flaccid/config")
         return Path(config_dir).expanduser()
+
 
 # Global config instance
 config = Config()

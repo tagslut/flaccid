@@ -5,6 +5,7 @@ from rich.console import Console
 
 console = Console()
 
+
 class AppleAPI:
     BASE_URL = "https://api.music.apple.com/v1/catalog"
     ITUNES_BASE_URL = "https://itunes.apple.com"
@@ -34,12 +35,16 @@ class AppleAPI:
         """Get Apple Music API tokens from keyring or environment."""
         if not self.developer_token:
             # Try keyring first
-            self.developer_token = keyring.get_password("flaccid-apple", "developer_token")
+            self.developer_token = keyring.get_password(
+                "flaccid-apple", "developer_token"
+            )
             if not self.developer_token:
                 # Fall back to environment variable
                 self.developer_token = self.TOKEN
                 if self.developer_token == "your_developer_token":
-                    console.print("⚠️  Apple Music developer token not configured", style="yellow")
+                    console.print(
+                        "⚠️  Apple Music developer token not configured", style="yellow"
+                    )
                     return False
 
         if not self.user_token:
@@ -62,17 +67,15 @@ class AppleAPI:
         if self.user_token:
             headers["Music-User-Token"] = self.user_token
 
-        params = {
-            "term": query,
-            "limit": str(limit),
-            "types": "songs"
-        }
+        params = {"term": query, "limit": str(limit), "types": "songs"}
 
         async with session.get(url, headers=headers, params=params) as resp:
             if resp.status == 200:
                 return await resp.json()
             else:
-                console.print(f"❌ Apple Music search failed: {resp.status}", style="red")
+                console.print(
+                    f"❌ Apple Music search failed: {resp.status}", style="red"
+                )
                 # Fall back to iTunes Search API
                 return await self._itunes_search(query, limit)
 
@@ -85,7 +88,7 @@ class AppleAPI:
             "term": query,
             "media": "music",
             "entity": "song",
-            "limit": str(limit)
+            "limit": str(limit),
         }
 
         async with session.get(url, params=params) as resp:
@@ -101,7 +104,10 @@ class AppleAPI:
         await self._get_tokens()
 
         if not self.developer_token or self.developer_token == "your_developer_token":
-            console.print("⚠️  Apple Music developer token required for track lookup", style="yellow")
+            console.print(
+                "⚠️  Apple Music developer token required for track lookup",
+                style="yellow",
+            )
             return None
 
         session = await self._get_session()
@@ -115,7 +121,9 @@ class AppleAPI:
             if resp.status == 200:
                 return await resp.json()
             else:
-                console.print(f"❌ Apple Music track lookup failed: {resp.status}", style="red")
+                console.print(
+                    f"❌ Apple Music track lookup failed: {resp.status}", style="red"
+                )
                 return None
 
     async def lookup_by_isrc(self, isrc: str):
@@ -125,12 +133,7 @@ class AppleAPI:
         # Clean ISRC (remove any dashes or spaces)
         clean_isrc = isrc.replace("-", "").replace(" ", "").upper()
 
-        params = {
-            "term": clean_isrc,
-            "media": "music",
-            "entity": "song",
-            "limit": "50"
-        }
+        params = {"term": clean_isrc, "media": "music", "entity": "song", "limit": "50"}
 
         async with session.get(f"{self.ITUNES_BASE_URL}/search", params=params) as resp:
             if resp.status == 200:
@@ -147,7 +150,9 @@ class AppleAPI:
 
                 return None
             else:
-                console.print(f"❌ iTunes ISRC lookup failed: {resp.status}", style="red")
+                console.print(
+                    f"❌ iTunes ISRC lookup failed: {resp.status}", style="red"
+                )
                 return None
 
     async def close(self):

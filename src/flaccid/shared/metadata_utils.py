@@ -2,6 +2,7 @@ from pathlib import Path
 from mutagen.flac import FLAC
 from typing import Dict, Optional
 
+
 def extract_isrc_from_flac(flac_path: str) -> Optional[str]:
     """Extract ISRC from FLAC file if available."""
     try:
@@ -17,6 +18,7 @@ def extract_isrc_from_flac(flac_path: str) -> Optional[str]:
     except Exception:
         return None
 
+
 def get_existing_metadata(flac_path: str) -> Dict[str, str]:
     """Get existing metadata from FLAC file for search queries."""
     try:
@@ -26,10 +28,11 @@ def get_existing_metadata(flac_path: str) -> Dict[str, str]:
             "artist": audio.get("ARTIST", [""])[0],
             "album": audio.get("ALBUM", [""])[0],
             "albumartist": audio.get("ALBUMARTIST", [""])[0],
-            "isrc": extract_isrc_from_flac(flac_path)
+            "isrc": extract_isrc_from_flac(flac_path),
         }
     except Exception:
         return {}
+
 
 def build_search_query(metadata: Dict[str, str]) -> str:
     """Build search query from existing metadata."""
@@ -45,10 +48,12 @@ def build_search_query(metadata: Dict[str, str]) -> str:
     else:
         return ""
 
+
 def validate_flac_file(file_path: str) -> bool:
     """Validate that file exists and is a FLAC file."""
     path = Path(file_path)
-    return path.exists() and path.suffix.lower() == '.flac'
+    return path.exists() and path.suffix.lower() == ".flac"
+
 
 def apply_metadata_to_flac(flac_path: str, metadata: Dict[str, str]) -> bool:
     """Apply metadata dictionary to FLAC file."""

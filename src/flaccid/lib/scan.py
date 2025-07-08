@@ -2,13 +2,20 @@ import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    BarColumn,
+    TimeRemainingColumn,
+)
 from mutagen.flac import FLAC
 from mutagen.id3 import ID3NoHeaderError
 import os
 
 console = Console()
 app = typer.Typer(help="Scan directories and extract metadata.")
+
 
 def get_flac_info(file_path: Path) -> dict:
     """Extract basic information from a FLAC file."""
@@ -20,30 +27,31 @@ def get_flac_info(file_path: Path) -> dict:
 
         # Get basic metadata
         info = {
-            'file_path': str(file_path),
-            'file_name': file_path.name,
-            'file_size': file_size,
-            'file_size_mb': round(file_size / (1024 * 1024), 1),
-            'title': audio.get('TITLE', ['Unknown'])[0],
-            'artist': audio.get('ARTIST', ['Unknown'])[0],
-            'album': audio.get('ALBUM', ['Unknown'])[0],
-            'date': audio.get('DATE', ['Unknown'])[0],
-            'genre': audio.get('GENRE', ['Unknown'])[0],
-            'track_number': audio.get('TRACKNUMBER', ['Unknown'])[0],
-            'sample_rate': getattr(audio.info, 'sample_rate', 'Unknown'),
-            'bits_per_sample': getattr(audio.info, 'bits_per_sample', 'Unknown'),
-            'channels': getattr(audio.info, 'channels', 'Unknown'),
-            'length': getattr(audio.info, 'length', 0),
-            'bitrate': getattr(audio.info, 'bitrate', 'Unknown'),
+            "file_path": str(file_path),
+            "file_name": file_path.name,
+            "file_size": file_size,
+            "file_size_mb": round(file_size / (1024 * 1024), 1),
+            "title": audio.get("TITLE", ["Unknown"])[0],
+            "artist": audio.get("ARTIST", ["Unknown"])[0],
+            "album": audio.get("ALBUM", ["Unknown"])[0],
+            "date": audio.get("DATE", ["Unknown"])[0],
+            "genre": audio.get("GENRE", ["Unknown"])[0],
+            "track_number": audio.get("TRACKNUMBER", ["Unknown"])[0],
+            "sample_rate": getattr(audio.info, "sample_rate", "Unknown"),
+            "bits_per_sample": getattr(audio.info, "bits_per_sample", "Unknown"),
+            "channels": getattr(audio.info, "channels", "Unknown"),
+            "length": getattr(audio.info, "length", 0),
+            "bitrate": getattr(audio.info, "bitrate", "Unknown"),
         }
 
         return info
     except Exception as e:
         return {
-            'file_path': str(file_path),
-            'file_name': file_path.name,
-            'error': str(e)
+            "file_path": str(file_path),
+            "file_name": file_path.name,
+            "error": str(e),
         }
+
 
 def scan_directory_for_flac(path: Path, recursive: bool = False) -> list:
     """Scan directory for FLAC files and return list of file info."""
@@ -63,7 +71,7 @@ def scan_directory_for_flac(path: Path, recursive: bool = False) -> list:
         BarColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         TimeRemainingColumn(),
-        console=console
+        console=console,
     ) as progress:
         task = progress.add_task("Scanning FLAC files...", total=len(flac_files))
 
@@ -73,6 +81,7 @@ def scan_directory_for_flac(path: Path, recursive: bool = False) -> list:
             progress.advance(task)
 
     return files
+
 
 @app.command()
 def directory(path: str):
@@ -103,22 +112,30 @@ def directory(path: str):
 
     total_size = 0
     for file_info in files:
-        if 'error' in file_info:
-            table.add_row(file_info['file_name'], "[red]ERROR[/red]", file_info['error'], "", "", "")
+        if "error" in file_info:
+            table.add_row(
+                file_info["file_name"],
+                "[red]ERROR[/red]",
+                file_info["error"],
+                "",
+                "",
+                "",
+            )
         else:
             quality = f"{file_info['sample_rate']}Hz/{file_info['bits_per_sample']}bit"
             table.add_row(
-                file_info['file_name'],
-                file_info['artist'],
-                file_info['title'],
-                file_info['album'],
-                str(file_info['file_size_mb']),
-                quality
+                file_info["file_name"],
+                file_info["artist"],
+                file_info["title"],
+                file_info["album"],
+                str(file_info["file_size_mb"]),
+                quality,
             )
-            total_size += file_info['file_size_mb']
+            total_size += file_info["file_size_mb"]
 
     console.print(table)
     console.print(f"\n📊 Summary: {len(files)} FLAC files, {total_size:.1f} MB total")
+
 
 @app.command()
 def recursive(path: str):
@@ -141,7 +158,7 @@ def recursive(path: str):
     # Group files by directory
     dir_groups = {}
     for file_info in files:
-        dir_path = Path(file_info['file_path']).parent
+        dir_path = Path(file_info["file_path"]).parent
         if dir_path not in dir_groups:
             dir_groups[dir_path] = []
         dir_groups[dir_path].append(file_info)
@@ -159,27 +176,41 @@ def recursive(path: str):
 
         dir_size = 0
         for file_info in dir_files:
-            if 'error' in file_info:
-                table.add_row(file_info['file_name'], "[red]ERROR[/red]", file_info['error'], "", "")
-            else:
-                quality = f"{file_info['sample_rate']}Hz/{file_info['bits_per_sample']}bit"
+            if "error" in file_info:
                 table.add_row(
-                    file_info['file_name'],
-                    file_info['artist'],
-                    file_info['title'],
-                    str(file_info['file_size_mb']),
-                    quality
+                    file_info["file_name"],
+                    "[red]ERROR[/red]",
+                    file_info["error"],
+                    "",
+                    "",
                 )
-                dir_size += file_info['file_size_mb']
+            else:
+                quality = (
+                    f"{file_info['sample_rate']}Hz/{file_info['bits_per_sample']}bit"
+                )
+                table.add_row(
+                    file_info["file_name"],
+                    file_info["artist"],
+                    file_info["title"],
+                    str(file_info["file_size_mb"]),
+                    quality,
+                )
+                dir_size += file_info["file_size_mb"]
 
         console.print(table)
         console.print(f"   {len(dir_files)} files, {dir_size:.1f} MB")
 
-    total_size = sum(f['file_size_mb'] for f in files if 'error' not in f)
-    console.print(f"\n� Total: {len(files)} FLAC files in {len(dir_groups)} directories, {total_size:.1f} MB")
+    total_size = sum(f["file_size_mb"] for f in files if "error" not in f)
+    console.print(
+        f"\n� Total: {len(files)} FLAC files in {len(dir_groups)} directories, {total_size:.1f} MB"
+    )
+
 
 @app.command()
-def stats(path: str, recursive: bool = typer.Option(False, "--recursive", "-r", help="Scan recursively")):
+def stats(
+    path: str,
+    recursive: bool = typer.Option(False, "--recursive", "-r", help="Scan recursively"),
+):
     """
     Generate detailed statistics about FLAC files.
     """
@@ -197,16 +228,16 @@ def stats(path: str, recursive: bool = typer.Option(False, "--recursive", "-r", 
         return
 
     # Filter out files with errors
-    valid_files = [f for f in files if 'error' not in f]
-    error_files = [f for f in files if 'error' in f]
+    valid_files = [f for f in files if "error" not in f]
+    error_files = [f for f in files if "error" in f]
 
     if not valid_files:
         console.print("❌ No valid FLAC files found", style="red")
         return
 
     # Calculate statistics
-    total_size = sum(f['file_size_mb'] for f in valid_files)
-    total_duration = sum(f['length'] for f in valid_files)
+    total_size = sum(f["file_size_mb"] for f in valid_files)
+    total_duration = sum(f["length"] for f in valid_files)
 
     # Quality statistics
     quality_stats = {}
@@ -219,7 +250,7 @@ def stats(path: str, recursive: bool = typer.Option(False, "--recursive", "-r", 
     # Artist statistics
     artist_stats = {}
     for f in valid_files:
-        artist = f['artist']
+        artist = f["artist"]
         if artist not in artist_stats:
             artist_stats[artist] = 0
         artist_stats[artist] += 1
@@ -247,6 +278,7 @@ def stats(path: str, recursive: bool = typer.Option(False, "--recursive", "-r", 
         sorted_artists = sorted(artist_stats.items(), key=lambda x: x[1], reverse=True)
         for artist, count in sorted_artists[:10]:
             console.print(f"  {artist}: {count} files")
+
 
 if __name__ == "__main__":
     app()

@@ -12,11 +12,13 @@ from ..shared.config import config
 console = Console()
 app = typer.Typer(help="Build or query the music library database.")
 
+
 def get_db_path() -> Path:
     """Get the database file path."""
     db_dir = Path(config.get("FLACCID_DB_DIR", "~/.flaccid/db")).expanduser()
     db_dir.mkdir(parents=True, exist_ok=True)
     return db_dir / "flaccid.db"
+
 
 def init_database():
     """Initialize the database with required tables."""
@@ -26,7 +28,8 @@ def init_database():
         cursor = conn.cursor()
 
         # Create tracks table
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS tracks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 file_path TEXT UNIQUE NOT NULL,
@@ -51,7 +54,8 @@ def init_database():
                 added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        """
+        )
 
         # Create indexes for faster searching
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_title ON tracks(title)")
@@ -63,6 +67,7 @@ def init_database():
 
         conn.commit()
 
+
 def extract_track_metadata(file_path: Path) -> dict:
     """Extract metadata from a FLAC file."""
     try:
@@ -70,31 +75,33 @@ def extract_track_metadata(file_path: Path) -> dict:
         file_stats = file_path.stat()
 
         metadata = {
-            'file_path': str(file_path),
-            'file_name': file_path.name,
-            'file_size': file_stats.st_size,
-            'file_mtime': file_stats.st_mtime,
-            'title': audio.get('TITLE', [''])[0],
-            'artist': audio.get('ARTIST', [''])[0],
-            'album': audio.get('ALBUM', [''])[0],
-            'album_artist': audio.get('ALBUMARTIST', [''])[0] or audio.get('ARTIST', [''])[0],
-            'date': audio.get('DATE', [''])[0],
-            'genre': audio.get('GENRE', [''])[0],
-            'track_number': audio.get('TRACKNUMBER', [''])[0],
-            'disc_number': audio.get('DISCNUMBER', [''])[0],
-            'duration': getattr(audio.info, 'length', 0),
-            'sample_rate': getattr(audio.info, 'sample_rate', 0),
-            'bits_per_sample': getattr(audio.info, 'bits_per_sample', 0),
-            'channels': getattr(audio.info, 'channels', 0),
-            'bitrate': getattr(audio.info, 'bitrate', 0),
-            'isrc': audio.get('ISRC', [''])[0],
-            'metadata_json': json.dumps(dict(audio))
+            "file_path": str(file_path),
+            "file_name": file_path.name,
+            "file_size": file_stats.st_size,
+            "file_mtime": file_stats.st_mtime,
+            "title": audio.get("TITLE", [""])[0],
+            "artist": audio.get("ARTIST", [""])[0],
+            "album": audio.get("ALBUM", [""])[0],
+            "album_artist": audio.get("ALBUMARTIST", [""])[0]
+            or audio.get("ARTIST", [""])[0],
+            "date": audio.get("DATE", [""])[0],
+            "genre": audio.get("GENRE", [""])[0],
+            "track_number": audio.get("TRACKNUMBER", [""])[0],
+            "disc_number": audio.get("DISCNUMBER", [""])[0],
+            "duration": getattr(audio.info, "length", 0),
+            "sample_rate": getattr(audio.info, "sample_rate", 0),
+            "bits_per_sample": getattr(audio.info, "bits_per_sample", 0),
+            "channels": getattr(audio.info, "channels", 0),
+            "bitrate": getattr(audio.info, "bitrate", 0),
+            "isrc": audio.get("ISRC", [""])[0],
+            "metadata_json": json.dumps(dict(audio)),
         }
 
         return metadata
     except Exception as e:
         console.print(f"❌ Error reading {file_path}: {e}", style="red")
         return None
+
 
 def add_track_to_db(metadata: dict):
     """Add or update a track in the database."""
@@ -106,16 +113,17 @@ def add_track_to_db(metadata: dict):
         # Check if track exists and if file has been modified
         cursor.execute(
             "SELECT file_mtime FROM tracks WHERE file_path = ?",
-            (metadata['file_path'],)
+            (metadata["file_path"],),
         )
         existing = cursor.fetchone()
 
-        if existing and existing[0] >= metadata['file_mtime']:
+        if existing and existing[0] >= metadata["file_mtime"]:
             # File hasn't changed, skip update
             return False
 
         # Insert or update track
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR REPLACE INTO tracks (
                 file_path, file_name, file_size, file_mtime,
                 title, artist, album, album_artist, date, genre,
@@ -123,21 +131,40 @@ def add_track_to_db(metadata: dict):
                 sample_rate, bits_per_sample, channels, bitrate,
                 isrc, metadata_json, updated_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            metadata['file_path'], metadata['file_name'], metadata['file_size'], metadata['file_mtime'],
-            metadata['title'], metadata['artist'], metadata['album'], metadata['album_artist'],
-            metadata['date'], metadata['genre'], metadata['track_number'], metadata['disc_number'],
-            metadata['duration'], metadata['sample_rate'], metadata['bits_per_sample'],
-            metadata['channels'], metadata['bitrate'], metadata['isrc'], metadata['metadata_json'],
-            datetime.now().isoformat()
-        ))
+        """,
+            (
+                metadata["file_path"],
+                metadata["file_name"],
+                metadata["file_size"],
+                metadata["file_mtime"],
+                metadata["title"],
+                metadata["artist"],
+                metadata["album"],
+                metadata["album_artist"],
+                metadata["date"],
+                metadata["genre"],
+                metadata["track_number"],
+                metadata["disc_number"],
+                metadata["duration"],
+                metadata["sample_rate"],
+                metadata["bits_per_sample"],
+                metadata["channels"],
+                metadata["bitrate"],
+                metadata["isrc"],
+                metadata["metadata_json"],
+                datetime.now().isoformat(),
+            ),
+        )
 
         conn.commit()
         return True
 
+
 @app.command()
-def build(path: str = typer.Option(".", help="Path to scan for FLAC files"),
-          recursive: bool = typer.Option(True, "--recursive", "-r", help="Scan recursively")):
+def build(
+    path: str = typer.Option(".", help="Path to scan for FLAC files"),
+    recursive: bool = typer.Option(True, "--recursive", "-r", help="Scan recursively"),
+):
     """
     Build the music library database from scanned files.
     """
@@ -173,7 +200,7 @@ def build(path: str = typer.Option(".", help="Path to scan for FLAC files"),
         TextColumn("[progress.description]{task.description}"),
         BarColumn(),
         TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-        console=console
+        console=console,
     ) as progress:
         task = progress.add_task("Indexing files...", total=len(flac_files))
 
@@ -195,6 +222,7 @@ def build(path: str = typer.Option(".", help="Path to scan for FLAC files"),
     if error_count > 0:
         console.print(f"   Errors: {error_count} files", style="red")
 
+
 @app.command()
 def query(search_term: str):
     """
@@ -203,7 +231,9 @@ def query(search_term: str):
     db_path = get_db_path()
 
     if not db_path.exists():
-        console.print("❌ Database not found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ Database not found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     console.print(f"🔍 Searching for: {search_term}")
@@ -221,7 +251,9 @@ def query(search_term: str):
         """
 
         search_pattern = f"%{search_term}%"
-        cursor.execute(query, (search_pattern, search_pattern, search_pattern, search_pattern))
+        cursor.execute(
+            query, (search_pattern, search_pattern, search_pattern, search_pattern)
+        )
 
         results = cursor.fetchall()
 
@@ -240,18 +272,21 @@ def query(search_term: str):
 
         for row in results:
             title, artist, album, date, duration, file_name, file_path = row
-            duration_str = f"{int(duration//60)}:{int(duration%60):02d}" if duration else "Unknown"
+            duration_str = (
+                f"{int(duration//60)}:{int(duration%60):02d}" if duration else "Unknown"
+            )
             table.add_row(
                 title or "Unknown",
                 artist or "Unknown",
                 album or "Unknown",
                 date or "Unknown",
                 duration_str,
-                file_name
+                file_name,
             )
 
         console.print(table)
         console.print(f"Found {len(results)} matches")
+
 
 @app.command()
 def stats():
@@ -261,7 +296,9 @@ def stats():
     db_path = get_db_path()
 
     if not db_path.exists():
-        console.print("❌ Database not found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ Database not found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     console.print("📊 Music Library Statistics")
@@ -290,24 +327,28 @@ def stats():
         total_size = cursor.fetchone()[0] or 0
 
         # Quality distribution
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT sample_rate, bits_per_sample, COUNT(*)
             FROM tracks
             WHERE sample_rate > 0 AND bits_per_sample > 0
             GROUP BY sample_rate, bits_per_sample
             ORDER BY COUNT(*) DESC
-        """)
+        """
+        )
         quality_stats = cursor.fetchall()
 
         # Top artists
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT artist, COUNT(*) as track_count
             FROM tracks
             WHERE artist != ''
             GROUP BY artist
             ORDER BY track_count DESC
             LIMIT 10
-        """)
+        """
+        )
         top_artists = cursor.fetchall()
 
         # Display statistics
@@ -327,6 +368,7 @@ def stats():
             for artist, count in top_artists:
                 console.print(f"  {artist}: {count} tracks")
 
+
 @app.command()
 def remove_missing():
     """
@@ -335,7 +377,9 @@ def remove_missing():
     db_path = get_db_path()
 
     if not db_path.exists():
-        console.print("❌ Database not found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ Database not found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     console.print("🧹 Removing missing files from database...")
@@ -363,9 +407,12 @@ def remove_missing():
                 cursor.execute("DELETE FROM tracks WHERE file_path = ?", (file_path,))
 
             conn.commit()
-            console.print(f"✅ Removed {len(missing_files)} missing files from database")
+            console.print(
+                f"✅ Removed {len(missing_files)} missing files from database"
+            )
         else:
             console.print("❌ Cleanup cancelled")
+
 
 if __name__ == "__main__":
     app()
