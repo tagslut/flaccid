@@ -26,3 +26,19 @@ for _sub in ("__main__", "shared"):
 # Explicit re‑export for `from fla import app` patterns
 if hasattr(_pkg, "app"):
     app = _pkg.app  # type: ignore[attr-defined]
+
+import typer
+
+# Define the root Typer app
+app = typer.Typer()
+
+# Import and add subcommands
+from flaccid.tag import app as tag_app
+from flaccid.get import app as get_app
+from flaccid.lib import app as lib_app
+
+app.add_typer(tag_app, name="tag")
+app.add_typer(get_app, name="get")
+app.add_typer(lib_app, name="lib")
+
+__all__ = ["app"]
