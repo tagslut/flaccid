@@ -1,4 +1,0 @@
-mutagen
-pytest
-pydantic
-typer

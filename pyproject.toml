@@ -5,6 +5,7 @@ description = "Modular FLAC CLI Toolkit"
 authors = ["georges <geoooorges@icloud.com>"]
 readme = "README.md"
 packages = [
+  { include = "fla",     from = "src" },
   { include = "flaccid", from = "src" }
 ]
 
@@ -37,8 +38,8 @@ pre-commit = "^3.7.0"
 pytest-cov = "^6.2.1"
 
 [tool.poetry.scripts]
-fla = "flaccid.__main__:app"
 flaccid = "flaccid.__main__:app"
+fla = "flaccid.__main__:app"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
