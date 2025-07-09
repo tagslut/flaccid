@@ -36,6 +36,7 @@ flake8 = "^7.3.0"
 pre-commit = "^3.7.0"
 pytest-cov = "^6.2.1"
 types-pyyaml = "^6.0.12.20250516"
+mypy = "^1.16.1"
 
 [tool.poetry.scripts]
 flaccid = "flaccid.__main__:app"
