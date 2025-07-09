@@ -5,7 +5,6 @@ description = "Modular FLAC CLI Toolkit"
 authors = ["georges <geoooorges@icloud.com>"]
 readme = "README.md"
 packages = [
-  { include = "fla",     from = "src" },
   { include = "flaccid", from = "src" }
 ]
 
@@ -32,14 +31,13 @@ black = "^25.1.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 pytest-asyncio = "^0.21"
-black = "^25.1.0"
 flake8 = "^7.3.0"
 pre-commit = "^3.7.0"
 pytest-cov = "^6.2.1"
 
 [tool.poetry.scripts]
 flaccid = "flaccid.__main__:app"
-fla = "flaccid.__main__:app"
+fla     = "flaccid.__main__:app"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -47,7 +45,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["src/tests"]
+testpaths = ["src/tests", "tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"

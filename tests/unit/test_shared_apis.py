@@ -21,10 +21,10 @@ with patch.dict(os.environ, {
     'APPLE_STORE': 'us'
 }):
     with patch('keyring.get_password', return_value=None):
-        from flaccid.shared.qobuz_api import QobuzAPI
-        from flaccid.shared.apple_api import AppleAPI
-        from flaccid.shared.config import Config
-        from flaccid.shared.metadata_utils import (
+        from fla.shared.qobuz_api import QobuzAPI
+        from fla.shared.apple_api import AppleAPI
+        from fla.shared.config import Config
+        from fla.shared.metadata_utils import (
             validate_flac_file,
             get_existing_metadata,
             build_search_query,

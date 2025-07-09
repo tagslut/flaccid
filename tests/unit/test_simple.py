@@ -46,7 +46,7 @@ async def test_qobuz_api_basic():
     """Test basic Qobuz API functionality."""
     with patch.dict(os.environ, {'QOBUZ_APP_ID': 'test_id', 'QOBUZ_TOKEN': 'test_token'}):
         with patch('keyring.get_password', return_value=None):
-            from flaccid.shared.qobuz_api import QobuzAPI
+            from fla.shared.qobuz_api import QobuzAPI
 
             api = QobuzAPI()
             assert api.app_id == 'test_id'

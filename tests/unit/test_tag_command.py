@@ -1,5 +1,6 @@
 from typer.testing import CliRunner
 from fla.__main__ import app
+from fla.shared.qobuz_api import QobuzAPI
 
 runner = CliRunner()
 
