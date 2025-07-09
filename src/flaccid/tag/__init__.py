@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typer
 from pathlib import Path
-import sys
+
+import typer
 
 app = typer.Typer()
 

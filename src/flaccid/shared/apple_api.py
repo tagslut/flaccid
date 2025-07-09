@@ -2,8 +2,9 @@
 Apple Music API client with iTunes fallback.
 """
 
-from typing import Optional
 import os
+from typing import Optional
+
 import aiohttp
 
 
@@ -29,7 +30,7 @@ class AppleAPI:
 
     async def _itunes_search(self, query: str):
         """Search for a track on iTunes."""
-        session = await self._get_session()
+        await self._get_session()
         # Placeholder implementation
         return {
             "results": [
@@ -49,8 +50,6 @@ class AppleAPI:
 
     def search(self, query: str):
         """Search for a track on Apple Music."""
-        pass
 
     def get_metadata(self, track_id: str):
         """Retrieve metadata for a given track ID."""
-        pass

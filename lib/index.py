@@ -1,20 +1,24 @@
-import typer
+from __future__ import annotations
+
+import hashlib
+import json
 import sqlite3
+from datetime import datetime
 from pathlib import Path
+from typing import Dict, Optional
+
+import typer
 from mutagen.flac import FLAC
 from rich.console import Console
+from rich.progress import track
 from rich.table import Table
-from rich.progress import Progress, track
-from datetime import datetime
-import json
-import hashlib
-from typing import List, Dict, Optional, Tuple
 
 console = Console()
 app = typer.Typer(help="Index FLAC files into a local SQLite database.")
 
 # Default database location
 DEFAULT_DB_PATH = Path.home() / ".flaccid" / "library.db"
+
 
 class LibraryIndexer:
     """Manages the FLAC library database."""
@@ -30,7 +34,8 @@ class LibraryIndexer:
         conn.execute("PRAGMA foreign_keys = ON")
 
         # Create tables
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS files (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 path TEXT UNIQUE NOT NULL,
@@ -108,7 +113,8 @@ class LibraryIndexer:
             CREATE INDEX IF NOT EXISTS idx_tags_title ON tags(title);
             CREATE INDEX IF NOT EXISTS idx_custom_tags_file_id ON custom_tags(file_id);
             CREATE INDEX IF NOT EXISTS idx_custom_tags_name ON custom_tags(tag_name);
-        """)
+        """
+        )
 
         conn.close()
 
@@ -142,10 +148,10 @@ class LibraryIndexer:
             if audio.info:
                 metadata["audio_info"] = {
                     "length": audio.info.length,
-                    "bitrate": getattr(audio.info, 'bitrate', 0),
-                    "sample_rate": getattr(audio.info, 'sample_rate', 0),
-                    "channels": getattr(audio.info, 'channels', 0),
-                    "bits_per_sample": getattr(audio.info, 'bits_per_sample', 0),
+                    "bitrate": getattr(audio.info, "bitrate", 0),
+                    "sample_rate": getattr(audio.info, "sample_rate", 0),
+                    "channels": getattr(audio.info, "channels", 0),
+                    "bits_per_sample": getattr(audio.info, "bits_per_sample", 0),
                 }
 
             # Standard tags
@@ -182,7 +188,9 @@ class LibraryIndexer:
             # Custom tags
             custom_tags = {}
             for key, value in audio.items():
-                if key.startswith("FLACCID_") or key not in [tag for tags in tag_mapping.values() for tag in tags]:
+                if key.startswith("FLACCID_") or key not in [
+                    tag for tags in tag_mapping.values() for tag in tags
+                ]:
                     custom_tags[key] = value[0] if value else ""
 
             metadata["custom_tags"] = custom_tags
@@ -197,7 +205,9 @@ class LibraryIndexer:
         metadata = self.extract_metadata(file_path)
 
         if "error" in metadata:
-            console.print(f"❌ Error processing {file_path}: {metadata['error']}", style="red")
+            console.print(
+                f"❌ Error processing {file_path}: {metadata['error']}", style="red"
+            )
             return False
 
         conn = sqlite3.connect(self.db_path)
@@ -207,17 +217,28 @@ class LibraryIndexer:
             file_info = metadata["file_info"]
             audio_info = metadata.get("audio_info", {})
 
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 INSERT OR REPLACE INTO files
                 (path, filename, directory, size, hash, modified, indexed,
                  length, bitrate, sample_rate, channels, bits_per_sample)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                file_info["path"], file_info["filename"], file_info["directory"],
-                file_info["size"], file_info["hash"], file_info["modified"], file_info["indexed"],
-                audio_info.get("length"), audio_info.get("bitrate"), audio_info.get("sample_rate"),
-                audio_info.get("channels"), audio_info.get("bits_per_sample")
-            ))
+            """,
+                (
+                    file_info["path"],
+                    file_info["filename"],
+                    file_info["directory"],
+                    file_info["size"],
+                    file_info["hash"],
+                    file_info["modified"],
+                    file_info["indexed"],
+                    audio_info.get("length"),
+                    audio_info.get("bitrate"),
+                    audio_info.get("sample_rate"),
+                    audio_info.get("channels"),
+                    audio_info.get("bits_per_sample"),
+                ),
+            )
 
             file_id = cursor.lastrowid
 
@@ -227,28 +248,45 @@ class LibraryIndexer:
 
             # Insert tags
             tags = metadata.get("tags", {})
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO tags
                 (file_id, title, artist, album, albumartist, date, genre, track, disc,
                  composer, performer, label, isrc, barcode, catalog, comment, copyright)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                file_id, tags.get("title"), tags.get("artist"), tags.get("album"),
-                tags.get("albumartist"), tags.get("date"), tags.get("genre"),
-                tags.get("track"), tags.get("disc"), tags.get("composer"),
-                tags.get("performer"), tags.get("label"), tags.get("isrc"),
-                tags.get("barcode"), tags.get("catalog"), tags.get("comment"),
-                tags.get("copyright")
-            ))
+            """,
+                (
+                    file_id,
+                    tags.get("title"),
+                    tags.get("artist"),
+                    tags.get("album"),
+                    tags.get("albumartist"),
+                    tags.get("date"),
+                    tags.get("genre"),
+                    tags.get("track"),
+                    tags.get("disc"),
+                    tags.get("composer"),
+                    tags.get("performer"),
+                    tags.get("label"),
+                    tags.get("isrc"),
+                    tags.get("barcode"),
+                    tags.get("catalog"),
+                    tags.get("comment"),
+                    tags.get("copyright"),
+                ),
+            )
 
             # Insert custom tags
             custom_tags = metadata.get("custom_tags", {})
             for tag_name, tag_value in custom_tags.items():
                 if tag_value:  # Only insert non-empty values
-                    conn.execute("""
+                    conn.execute(
+                        """
                         INSERT INTO custom_tags (file_id, tag_name, tag_value)
                         VALUES (?, ?, ?)
-                    """, (file_id, tag_name, tag_value))
+                    """,
+                        (file_id, tag_name, tag_value),
+                    )
 
             conn.commit()
             return True
@@ -283,26 +321,25 @@ class LibraryIndexer:
             conn.execute("DELETE FROM artists")
 
             # Rebuild albums
-            conn.execute("""
-                INSERT INTO albums (title, artist, date, genre, label, barcode, catalog, total_tracks, total_discs, created)
+            conn.execute(
+                """
+                INSERT INTO albums (
+                    title, artist, date, genre, label, barcode, catalog, total_tracks, total_discs, created
+                )
                 SELECT
-                    t.album,
-                    t.albumartist,
-                    t.date,
-                    t.genre,
-                    t.label,
-                    t.barcode,
-                    t.catalog,
+                    t.album, t.albumartist, t.date, t.genre, t.label, t.barcode, t.catalog,
                     COUNT(*) as total_tracks,
                     COUNT(DISTINCT t.disc) as total_discs,
                     datetime('now') as created
                 FROM tags t
                 WHERE t.album IS NOT NULL AND t.album != ''
                 GROUP BY t.album, t.albumartist, t.date, t.genre, t.label, t.barcode, t.catalog
-            """)
+            """
+            )
 
             # Rebuild artists
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO artists (name, album_count, track_count, created)
                 SELECT
                     t.artist,
@@ -312,21 +349,30 @@ class LibraryIndexer:
                 FROM tags t
                 WHERE t.artist IS NOT NULL AND t.artist != ''
                 GROUP BY t.artist
-            """)
+            """
+            )
 
             conn.commit()
 
         finally:
             conn.close()
 
-def get_indexer(db_path: str = None) -> LibraryIndexer:
+
+def get_indexer(db_path: Optional[str] = None) -> LibraryIndexer:
     """Get a LibraryIndexer instance."""
     if db_path:
         return LibraryIndexer(Path(db_path))
     return LibraryIndexer()
 
+
 @app.command("build")
-def build_index(music_dir: str, db_path: str = None, force: bool = typer.Option(False, "--force", "-f", help="Force rebuild, ignoring existing entries")):
+def build_index(
+    music_dir: str,
+    db_path: Optional[str] = None,
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Force rebuild, ignoring existing entries"
+    ),
+):
     """
     Create or refresh the index of your music files.
 
@@ -393,13 +439,18 @@ def build_index(music_dir: str, db_path: str = None, force: bool = typer.Option(
     console.print("🔄 Updating aggregates...")
     indexer.update_aggregates()
 
-    console.print(f"✅ Indexing complete!")
+    console.print("✅ Indexing complete!")
     console.print(f"   Successfully indexed: {success_count}")
     if error_count > 0:
         console.print(f"   Errors: {error_count}", style="red")
 
+
 @app.command("search")
-def search_library(query: str, db_path: str = None, limit: int = typer.Option(20, help="Maximum results to show")):
+def search_library(
+    query: str,
+    db_path: Optional[str] = None,
+    limit: int = typer.Option(20, help="Maximum results to show"),
+):
     """
     Search the indexed library.
 
@@ -411,7 +462,9 @@ def search_library(query: str, db_path: str = None, limit: int = typer.Option(20
     indexer = get_indexer(db_path)
 
     if not indexer.db_path.exists():
-        console.print("❌ No index found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ No index found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     conn = sqlite3.connect(indexer.db_path)
@@ -419,22 +472,25 @@ def search_library(query: str, db_path: str = None, limit: int = typer.Option(20
     # Search in tags
     search_query = f"%{query}%"
 
-    results = conn.execute("""
+    results = conn.execute(
+        """
         SELECT f.path, f.filename, t.title, t.artist, t.album, t.date, t.genre, f.length
         FROM files f
         JOIN tags t ON f.id = t.file_id
         WHERE t.title LIKE ? OR t.artist LIKE ? OR t.album LIKE ? OR t.genre LIKE ?
         ORDER BY t.artist, t.album, t.track
         LIMIT ?
-    """, (search_query, search_query, search_query, search_query, limit)).fetchall()
+    """,
+        (search_query, search_query, search_query, search_query, limit),
+    ).fetchall()
 
     conn.close()
 
     if not results:
-        console.print(f"❌ No results found for: {query}", style="red")
+        console.print(f"❌ No results found for: '{query}'", style="red")
         return
 
-    console.print(f"🔍 Found {len(results)} results for: {query}")
+    console.print(f"🔍 Found {len(results)} results for: '{query}'")
 
     # Display results
     table = Table(title="Search Results")
@@ -461,13 +517,14 @@ def search_library(query: str, db_path: str = None, limit: int = typer.Option(20
             album or "Unknown",
             date[:4] if date and len(date) >= 4 else "Unknown",
             genre or "Unknown",
-            duration
+            duration,
         )
 
     console.print(table)
 
+
 @app.command("stats")
-def index_stats(db_path: str = None):
+def index_stats(db_path: Optional[str] = None):
     """
     Show statistics about the indexed library.
 
@@ -477,7 +534,9 @@ def index_stats(db_path: str = None):
     indexer = get_indexer(db_path)
 
     if not indexer.db_path.exists():
-        console.print("❌ No index found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ No index found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     conn = sqlite3.connect(indexer.db_path)
@@ -496,39 +555,47 @@ def index_stats(db_path: str = None):
     stats["total_duration"] = size_duration[1] or 0
 
     # Audio quality stats
-    stats["sample_rates"] = conn.execute("""
+    stats["sample_rates"] = conn.execute(
+        """
         SELECT sample_rate, COUNT(*)
         FROM files
         WHERE sample_rate IS NOT NULL
         GROUP BY sample_rate
         ORDER BY COUNT(*) DESC
-    """).fetchall()
+    """
+    ).fetchall()
 
-    stats["bit_depths"] = conn.execute("""
+    stats["bit_depths"] = conn.execute(
+        """
         SELECT bits_per_sample, COUNT(*)
         FROM files
         WHERE bits_per_sample IS NOT NULL
         GROUP BY bits_per_sample
         ORDER BY COUNT(*) DESC
-    """).fetchall()
+    """
+    ).fetchall()
 
     # Top artists
-    stats["top_artists"] = conn.execute("""
+    stats["top_artists"] = conn.execute(
+        """
         SELECT name, track_count, album_count
         FROM artists
         ORDER BY track_count DESC
         LIMIT 10
-    """).fetchall()
+    """
+    ).fetchall()
 
     # Top genres
-    stats["top_genres"] = conn.execute("""
+    stats["top_genres"] = conn.execute(
+        """
         SELECT genre, COUNT(*) as count
         FROM tags
         WHERE genre IS NOT NULL AND genre != ''
         GROUP BY genre
         ORDER BY count DESC
         LIMIT 10
-    """).fetchall()
+    """
+    ).fetchall()
 
     conn.close()
 
@@ -543,7 +610,7 @@ def index_stats(db_path: str = None):
 
     # Format size
     size = stats["total_size"]
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
         if size < 1024.0:
             table.add_row("Total Size", f"{size:.1f}{unit}")
             break
@@ -559,11 +626,17 @@ def index_stats(db_path: str = None):
     # Audio quality
     if stats["sample_rates"]:
         most_common_sr = stats["sample_rates"][0]
-        table.add_row("Most Common Sample Rate", f"{most_common_sr[0]} Hz ({most_common_sr[1]} files)")
+        table.add_row(
+            "Most Common Sample Rate",
+            f"{most_common_sr[0]} Hz ({most_common_sr[1]} files)",
+        )
 
     if stats["bit_depths"]:
         most_common_bd = stats["bit_depths"][0]
-        table.add_row("Most Common Bit Depth", f"{most_common_bd[0]} bits ({most_common_bd[1]} files)")
+        table.add_row(
+            "Most Common Bit Depth",
+            f"{most_common_bd[0]} bits ({most_common_bd[1]} files)",
+        )
 
     console.print(table)
 
@@ -592,8 +665,16 @@ def index_stats(db_path: str = None):
 
         console.print(genre_table)
 
+
 @app.command("clean")
-def clean_index(db_path: str = None, dry_run: bool = typer.Option(False, "--dry-run", help="Show what would be removed without actually removing it")):
+def clean_index(
+    db_path: Optional[str] = None,
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Show what would be removed without actually removing it",
+    ),
+):
     """
     Remove entries for files that no longer exist.
 
@@ -604,7 +685,9 @@ def clean_index(db_path: str = None, dry_run: bool = typer.Option(False, "--dry-
     indexer = get_indexer(db_path)
 
     if not indexer.db_path.exists():
-        console.print("❌ No index found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ No index found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     conn = sqlite3.connect(indexer.db_path)
@@ -628,9 +711,12 @@ def clean_index(db_path: str = None, dry_run: bool = typer.Option(False, "--dry-
         console.print("\n[bold]Would remove:[/bold]")
         for file_id, file_path in missing_files:
             console.print(f"  📄 {file_path}")
-        console.print(f"\n[yellow]Run without --dry-run to actually remove these entries.[/yellow]")
+        console.print(
+            "\n[yellow]Run without --dry-run to actually remove these entries.[/yellow]"
+        )
     else:
         if not typer.confirm(f"Remove {len(missing_files)} missing files from index?"):
+            console.print("Aborted.", style="yellow")
             conn.close()
             return
 
@@ -639,18 +725,15 @@ def clean_index(db_path: str = None, dry_run: bool = typer.Option(False, "--dry-
             conn.execute("DELETE FROM files WHERE id = ?", (file_id,))
 
         conn.commit()
-        console.print(f"✅ Removed {len(missing_files)} missing files from index.")
+        console.print(f"✅ Cleaned {len(missing_files)} entries from index.")
 
-        # Update aggregates
-        console.print("🔄 Updating aggregates...")
-        indexer.update_aggregates()
-
-        console.print("✅ Index cleanup complete!")
-
-    conn.close()
 
 @app.command("export")
-def export_index(output: str, db_path: str = None, format: str = typer.Option("json", help="Output format (json, csv)")):
+def export_index(
+    output: str,
+    db_path: Optional[str] = None,
+    format: str = typer.Option("json", help="Output format (json, csv)"),
+):
     """
     Export the library index to a file.
 
@@ -662,14 +745,17 @@ def export_index(output: str, db_path: str = None, format: str = typer.Option("j
     indexer = get_indexer(db_path)
 
     if not indexer.db_path.exists():
-        console.print("❌ No index found. Run 'fla lib index build' first.", style="red")
+        console.print(
+            "❌ No index found. Run 'fla lib index build' first.", style="red"
+        )
         raise typer.Exit(1)
 
     output_file = Path(output)
     conn = sqlite3.connect(indexer.db_path)
 
     # Get all file data with tags
-    data = conn.execute("""
+    data = conn.execute(
+        """
         SELECT f.path, f.filename, f.directory, f.size, f.hash, f.modified, f.indexed,
                f.length, f.bitrate, f.sample_rate, f.channels, f.bits_per_sample,
                t.title, t.artist, t.album, t.albumartist, t.date, t.genre, t.track, t.disc,
@@ -677,7 +763,8 @@ def export_index(output: str, db_path: str = None, format: str = typer.Option("j
         FROM files f
         LEFT JOIN tags t ON f.id = t.file_id
         ORDER BY t.artist, t.album, t.track
-    """).fetchall()
+    """
+    ).fetchall()
 
     conn.close()
 
@@ -685,38 +772,40 @@ def export_index(output: str, db_path: str = None, format: str = typer.Option("j
         # Convert to JSON format
         json_data = []
         for row in data:
-            json_data.append({
-                "path": row[0],
-                "filename": row[1],
-                "directory": row[2],
-                "size": row[3],
-                "hash": row[4],
-                "modified": row[5],
-                "indexed": row[6],
-                "length": row[7],
-                "bitrate": row[8],
-                "sample_rate": row[9],
-                "channels": row[10],
-                "bits_per_sample": row[11],
-                "title": row[12],
-                "artist": row[13],
-                "album": row[14],
-                "albumartist": row[15],
-                "date": row[16],
-                "genre": row[17],
-                "track": row[18],
-                "disc": row[19],
-                "composer": row[20],
-                "performer": row[21],
-                "label": row[22],
-                "isrc": row[23],
-                "barcode": row[24],
-                "catalog": row[25],
-                "comment": row[26],
-                "copyright": row[27]
-            })
+            json_data.append(
+                {
+                    "path": row[0],
+                    "filename": row[1],
+                    "directory": row[2],
+                    "size": row[3],
+                    "hash": row[4],
+                    "modified": row[5],
+                    "indexed": row[6],
+                    "length": row[7],
+                    "bitrate": row[8],
+                    "sample_rate": row[9],
+                    "channels": row[10],
+                    "bits_per_sample": row[11],
+                    "title": row[12],
+                    "artist": row[13],
+                    "album": row[14],
+                    "albumartist": row[15],
+                    "date": row[16],
+                    "genre": row[17],
+                    "track": row[18],
+                    "disc": row[19],
+                    "composer": row[20],
+                    "performer": row[21],
+                    "label": row[22],
+                    "isrc": row[23],
+                    "barcode": row[24],
+                    "catalog": row[25],
+                    "comment": row[26],
+                    "copyright": row[27],
+                }
+            )
 
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=2, ensure_ascii=False)
 
         console.print(f"✅ Exported {len(data)} records to JSON: {output_file}")
@@ -725,13 +814,37 @@ def export_index(output: str, db_path: str = None, format: str = typer.Option("j
         import csv
 
         headers = [
-            "path", "filename", "directory", "size", "hash", "modified", "indexed",
-            "length", "bitrate", "sample_rate", "channels", "bits_per_sample",
-            "title", "artist", "album", "albumartist", "date", "genre", "track", "disc",
-            "composer", "performer", "label", "isrc", "barcode", "catalog", "comment", "copyright"
+            "path",
+            "filename",
+            "directory",
+            "size",
+            "hash",
+            "modified",
+            "indexed",
+            "length",
+            "bitrate",
+            "sample_rate",
+            "channels",
+            "bits_per_sample",
+            "title",
+            "artist",
+            "album",
+            "albumartist",
+            "date",
+            "genre",
+            "track",
+            "disc",
+            "composer",
+            "performer",
+            "label",
+            "isrc",
+            "barcode",
+            "catalog",
+            "comment",
+            "copyright",
         ]
 
-        with open(output_file, 'w', newline='', encoding='utf-8') as f:
+        with open(output_file, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(headers)
             writer.writerows(data)
@@ -742,34 +855,16 @@ def export_index(output: str, db_path: str = None, format: str = typer.Option("j
         console.print(f"❌ Unsupported format: {format}", style="red")
         raise typer.Exit(1)
 
+
 @app.command("info")
-def index_info(db_path: str = None):
-    """
-    Show information about the index database.
-
-    Args:
-        db_path: Custom database path (optional)
-    """
+def index_info(db_path: Optional[str] = None):
+    """Show information about the index database."""
     indexer = get_indexer(db_path)
-
-    if not indexer.db_path.exists():
-        console.print("❌ No index found. Run 'fla lib index build' first.", style="red")
-        raise typer.Exit(1)
-
-    # Get database info
-    db_size = indexer.db_path.stat().st_size
-    db_modified = datetime.fromtimestamp(indexer.db_path.stat().st_mtime)
-
-    # Display info
-    table = Table(title="Index Database Information")
-    table.add_column("Property", style="cyan")
-    table.add_column("Value", style="white")
-
-    table.add_row("Database Path", str(indexer.db_path))
-    table.add_row("Database Size", f"{db_size:,} bytes")
-    table.add_row("Last Modified", db_modified.strftime("%Y-%m-%d %H:%M:%S"))
-
-    console.print(table)
+    console.print(f"Database path: {indexer.db_path.resolve()}")
+    console.print(f"Database size: {indexer.db_path.stat().st_size} bytes")
+    console.print(
+        f"Last modified: {datetime.fromtimestamp(indexer.db_path.stat().st_mtime)}"
+    )
 
     # Show table statistics
     conn = sqlite3.connect(indexer.db_path)
@@ -778,8 +873,6 @@ def index_info(db_path: str = None):
 
     for table_name in tables:
         count = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]
-        table.add_row(f"{table_name.title()} Records", str(count))
+        console.print(f"{table_name.title()} records: {count}")
 
     conn.close()
-
-    console.print(table)

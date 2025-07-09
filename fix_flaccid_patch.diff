@@ -1,0 +1,30 @@
+*** Begin Patch
+*** Delete File: src/flaccid/__main__.py        # (if it exists and is empty/wrong)
+
+*** Add File: src/flaccid/__main__.py
+"""Legacy entry-point kept for the test-suite.
+
+`pytest` still does `from fla.__main__ import app`, so we re-export the
+Typer application that now lives in ``flaccid.cli``.
+"""
+from flaccid.cli import app
+
+if __name__ == "__main__":
+    # `python -m flaccid` still works
+    app()
+*** End Patch
+*** Update File: src/flaccid/__init__.py
+@@
+-from __future__ import annotations
+-
+-import importlib
+-import sys as _sys
+-from types import ModuleType as _ModuleType
+-python -m pytest -q
++from __future__ import annotations
++
++import importlib
++import sys as _sys
++from types import ModuleType as _ModuleType
++import typer   # ← needed by the Typer app defined below
+*** End Patch

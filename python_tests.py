@@ -22,7 +22,9 @@ import sys
 def main() -> None:
     project_root = pathlib.Path(__file__).resolve().parent
     # Forward *any* extra CLI args the user supplies to pytest
-    pytest_args = ["-m", "pytest", *sys.argv[1:]] if sys.argv[1:] else ["-m", "pytest", "-q"]
+    pytest_args = (
+        ["-m", "pytest", *sys.argv[1:]] if sys.argv[1:] else ["-m", "pytest", "-q"]
+    )
 
     exit_code = subprocess.call(
         [sys.executable, *pytest_args],

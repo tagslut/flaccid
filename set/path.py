@@ -1,10 +1,13 @@
-import typer
+from __future__ import annotations
+
+import os
 from pathlib import Path
+from typing import Optional
+
+import typer
+import yaml
 from rich.console import Console
 from rich.table import Table
-from rich.prompt import Prompt
-import json
-import os
 
 console = Console()
 app = typer.Typer(help="Configure FLACCID paths and directories.")
@@ -12,6 +15,7 @@ app = typer.Typer(help="Configure FLACCID paths and directories.")
 # Default config location
 DEFAULT_CONFIG_DIR = Path.home() / ".flaccid"
 DEFAULT_CONFIG_FILE = DEFAULT_CONFIG_DIR / "paths.json"
+
 
 class PathConfig:
     """Manages path configuration."""
@@ -25,8 +29,8 @@ class PathConfig:
         """Load configuration from file."""
         if self.config_file.exists():
             try:
-                with open(self.config_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                with open(self.config_file, "r", encoding="utf-8") as f:
+                    return yaml.safe_load(f)
             except Exception as e:
                 console.print(f"❌ Error loading config: {e}", style="red")
                 return {}
@@ -35,8 +39,8 @@ class PathConfig:
     def save_config(self):
         """Save configuration to file."""
         try:
-            with open(self.config_file, 'w', encoding='utf-8') as f:
-                json.dump(self.config, f, indent=2, ensure_ascii=False)
+            with open(self.config_file, "w", encoding="utf-8") as f:
+                yaml.dump(self.config, f, default_flow_style=False, allow_unicode=True)
             return True
         except Exception as e:
             console.print(f"❌ Error saving config: {e}", style="red")
@@ -56,7 +60,7 @@ class PathConfig:
         self.config[path_type] = str(expanded_path)
         return self.save_config()
 
-    def get_path(self, path_type: str) -> str:
+    def get_path(self, path_type: str) -> Optional[str]:
         """Get a path from the configuration."""
         return self.config.get(path_type)
 
@@ -71,48 +75,53 @@ class PathConfig:
             return self.save_config()
         return False
 
+
 # Path type definitions
 PATH_TYPES = {
     "library": {
         "name": "Music Library",
         "description": "Main music library directory",
-        "default": "~/Music/Library"
+        "default": "~/Music/Library",
     },
     "downloads": {
         "name": "Downloads",
         "description": "Directory for downloaded music files",
-        "default": "~/Downloads/Music"
+        "default": "~/Downloads/Music",
     },
     "temp": {
         "name": "Temporary Files",
         "description": "Directory for temporary files during processing",
-        "default": "~/.flaccid/temp"
+        "default": "~/.flaccid/temp",
     },
     "cache": {
         "name": "Cache",
         "description": "Directory for cached metadata and thumbnails",
-        "default": "~/.flaccid/cache"
+        "default": "~/.flaccid/cache",
     },
     "exports": {
         "name": "Exports",
         "description": "Directory for exported playlists and metadata",
-        "default": "~/Documents/FLACCID/Exports"
+        "default": "~/Documents/FLACCID/Exports",
     },
     "backups": {
         "name": "Backups",
         "description": "Directory for configuration and database backups",
-        "default": "~/.flaccid/backups"
-    }
+        "default": "~/.flaccid/backups",
+    },
 }
 
-def get_config(config_file: str = None) -> PathConfig:
+
+def get_config(config_file: Optional[str] = None) -> PathConfig:
     """Get PathConfig instance."""
     if config_file:
         return PathConfig(Path(config_file))
     return PathConfig()
 
+
 @app.command("library")
-def set_library(path: str = typer.Argument(..., help="Path to music library directory")):
+def set_library(
+    path: str = typer.Argument(..., help="Path to music library directory")
+):
     """
     Set the music library path.
 
@@ -126,6 +135,7 @@ def set_library(path: str = typer.Argument(..., help="Path to music library dire
     else:
         console.print("❌ Failed to set library path.", style="red")
         raise typer.Exit(1)
+
 
 @app.command("downloads")
 def set_downloads(path: str = typer.Argument(..., help="Path to downloads directory")):
@@ -143,6 +153,7 @@ def set_downloads(path: str = typer.Argument(..., help="Path to downloads direct
         console.print("❌ Failed to set downloads path.", style="red")
         raise typer.Exit(1)
 
+
 @app.command("temp")
 def set_temp(path: str = typer.Argument(..., help="Path to temporary files directory")):
     """
@@ -158,6 +169,7 @@ def set_temp(path: str = typer.Argument(..., help="Path to temporary files direc
     else:
         console.print("❌ Failed to set temporary files path.", style="red")
         raise typer.Exit(1)
+
 
 @app.command("cache")
 def set_cache(path: str = typer.Argument(..., help="Path to cache directory")):
@@ -175,6 +187,7 @@ def set_cache(path: str = typer.Argument(..., help="Path to cache directory")):
         console.print("❌ Failed to set cache path.", style="red")
         raise typer.Exit(1)
 
+
 @app.command("exports")
 def set_exports(path: str = typer.Argument(..., help="Path to exports directory")):
     """
@@ -191,6 +204,7 @@ def set_exports(path: str = typer.Argument(..., help="Path to exports directory"
         console.print("❌ Failed to set exports path.", style="red")
         raise typer.Exit(1)
 
+
 @app.command("backups")
 def set_backups(path: str = typer.Argument(..., help="Path to backups directory")):
     """
@@ -206,6 +220,7 @@ def set_backups(path: str = typer.Argument(..., help="Path to backups directory"
     else:
         console.print("❌ Failed to set backups path.", style="red")
         raise typer.Exit(1)
+
 
 @app.command("list")
 def list_paths():
@@ -227,11 +242,19 @@ def list_paths():
         if current_path:
             path_obj = Path(current_path)
             status = "✅ Exists" if path_obj.exists() else "❌ Missing"
-            table.add_row(path_info["name"], path_info["description"], current_path, status)
+            table.add_row(
+                path_info["name"], path_info["description"], current_path, status
+            )
         else:
-            table.add_row(path_info["name"], path_info["description"], "Not set", "❌ Not configured")
+            table.add_row(
+                path_info["name"],
+                path_info["description"],
+                "Not set",
+                "❌ Not configured",
+            )
 
     console.print(table)
+
 
 @app.command("check")
 def check_paths():
@@ -258,7 +281,7 @@ def check_paths():
         elif not os.access(path_value, os.W_OK):
             issues.append(f"⚠️  {path_info['name']} is not writable: {path_value}")
         else:
-            console.print(f"     ✅ OK")
+            console.print("     ✅ OK")
 
     if issues:
         console.print("\n[bold red]Issues Found:[/bold red]")
@@ -268,10 +291,13 @@ def check_paths():
     else:
         console.print("\n✅ All paths are accessible.", style="green")
 
+
 @app.command("reset")
 def reset_paths(
-    path_type: str = typer.Argument(None, help="Specific path type to reset (optional)"),
-    all: bool = typer.Option(False, "--all", help="Reset all paths to defaults")
+    path_type: str = typer.Argument(
+        None, help="Specific path type to reset (optional)"
+    ),
+    all: bool = typer.Option(False, "--all", help="Reset all paths to defaults"),
 ):
     """
     Reset path configuration to defaults.
@@ -312,14 +338,19 @@ def reset_paths(
             return
 
         if config.set_path(path_type, default_path):
-            console.print(f"✅ {path_info['name']} reset to: {default_path}", style="green")
+            console.print(
+                f"✅ {path_info['name']} reset to: {default_path}", style="green"
+            )
         else:
             console.print(f"❌ Failed to reset {path_info['name']}", style="red")
             raise typer.Exit(1)
 
     else:
-        console.print("❌ Specify a path type or use --all to reset all paths.", style="red")
+        console.print(
+            "❌ Specify a path type or use --all to reset all paths.", style="red"
+        )
         raise typer.Exit(1)
+
 
 @app.command("remove")
 def remove_path(path_type: str = typer.Argument(..., help="Path type to remove")):
@@ -349,8 +380,11 @@ def remove_path(path_type: str = typer.Argument(..., help="Path type to remove")
     if config.remove_path(path_type):
         console.print(f"✅ {path_info['name']} configuration removed.", style="green")
     else:
-        console.print(f"❌ Failed to remove {path_info['name']} configuration.", style="red")
+        console.print(
+            f"❌ Failed to remove {path_info['name']} configuration.", style="red"
+        )
         raise typer.Exit(1)
+
 
 @app.command("init")
 def init_paths():
@@ -363,7 +397,9 @@ def init_paths():
         current_path = config.get_path(path_type)
 
         if current_path:
-            console.print(f"  ⏭️  {path_info['name']} already configured: {current_path}")
+            console.print(
+                f"  ⏭️  {path_info['name']} already configured: {current_path}"
+            )
             continue
 
         default_path = path_info["default"]
@@ -375,8 +411,11 @@ def init_paths():
 
     console.print("✅ Path initialization complete.", style="green")
 
+
 @app.command("export")
-def export_paths(output: str = typer.Option("flaccid-paths.json", help="Output file path")):
+def export_paths(
+    output: str = typer.Option("flaccid-paths.json", help="Output file path")
+):
     """
     Export path configuration to a file.
 
@@ -393,19 +432,20 @@ def export_paths(output: str = typer.Option("flaccid-paths.json", help="Output f
     export_data = {
         "exported_at": str(Path.cwd()),
         "paths": paths,
-        "path_types": PATH_TYPES
+        "path_types": PATH_TYPES,
     }
 
     output_path = Path(output)
 
     try:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(export_data, f, indent=2, ensure_ascii=False)
+        with open(output_path, "w", encoding="utf-8") as f:
+            yaml.dump(export_data, f, default_flow_style=False, allow_unicode=True)
 
         console.print(f"✅ Paths exported to: {output_path}", style="green")
     except Exception as e:
         console.print(f"❌ Error exporting paths: {e}", style="red")
         raise typer.Exit(1)
+
 
 @app.command("import")
 def import_paths(input_file: str = typer.Argument(..., help="Input file path")):
@@ -422,8 +462,8 @@ def import_paths(input_file: str = typer.Argument(..., help="Input file path")):
         raise typer.Exit(1)
 
     try:
-        with open(input_path, 'r', encoding='utf-8') as f:
-            import_data = json.load(f)
+        with open(input_path, "r", encoding="utf-8") as f:
+            import_data = yaml.safe_load(f)
 
         paths = import_data.get("paths", {})
 
@@ -440,7 +480,9 @@ def import_paths(input_file: str = typer.Argument(..., help="Input file path")):
                 if config.set_path(path_type, path_value):
                     console.print(f"  ✅ {PATH_TYPES[path_type]['name']}: {path_value}")
                 else:
-                    console.print(f"  ❌ Failed to import {PATH_TYPES[path_type]['name']}")
+                    console.print(
+                        f"  ❌ Failed to import {PATH_TYPES[path_type]['name']}"
+                    )
             else:
                 console.print(f"  ⚠️  Unknown path type: {path_type}", style="yellow")
 
@@ -449,6 +491,7 @@ def import_paths(input_file: str = typer.Argument(..., help="Input file path")):
     except Exception as e:
         console.print(f"❌ Error importing paths: {e}", style="red")
         raise typer.Exit(1)
+
 
 @app.command("usage")
 def path_usage():
@@ -483,7 +526,7 @@ def path_usage():
                         file_count += 1
 
                 # Format size
-                for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+                for unit in ["B", "KB", "MB", "GB", "TB"]:
                     if total_size < 1024.0:
                         size_str = f"{total_size:.1f}{unit}"
                         break

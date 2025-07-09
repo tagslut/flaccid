@@ -2,20 +2,24 @@ import typer
 
 app = typer.Typer(name="core", help="Core utilities and tools.")
 
+
 @app.command("version")
 def version():
     """Show FLACCID version information."""
     print("FLACCID v0.1.0")
     print("Modular FLAC CLI Toolkit")
 
+
 @app.command("config")
 def config():
     """Show configuration directory."""
     from pathlib import Path
+
     config_dir = Path.home() / ".flaccid"
     print(f"Configuration directory: {config_dir}")
     print(f"Database: {config_dir / 'library.db'}")
     print(f"Paths config: {config_dir / 'paths.json'}")
+
 
 @app.command("help")
 def help_command():

@@ -2,8 +2,9 @@
 Qobuz API client with authentication and metadata retrieval.
 """
 
-from typing import Optional
 import os
+from typing import Optional
+
 import aiohttp
 
 
@@ -36,15 +37,13 @@ class QobuzAPI:
 
     def authenticate(self):
         """Authenticate with the Qobuz API."""
-        pass
 
     def get_metadata(self, track_id: str):
         """Retrieve metadata for a given track ID."""
-        pass
 
     async def search(self, query: str):
         """Search for a track on Qobuz."""
-        session = await self._get_session()
+        await self._get_session()
         # Placeholder implementation
         return {
             "tracks": {

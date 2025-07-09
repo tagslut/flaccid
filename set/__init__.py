@@ -1,4 +1,5 @@
 import typer
+
 from . import auth, path
 
 app = typer.Typer(name="set", help="Configure FLACCID authentication and paths.")

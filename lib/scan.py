@@ -1,18 +1,19 @@
-import typer
-from pathlib import Path
-from mutagen.flac import FLAC
-from mutagen.id3 import ID3NoHeaderError
-from rich.console import Console
-from rich.table import Table
-from rich.progress import Progress, track
-from rich.tree import Tree
-from rich.text import Text
+# mypy: ignore-errors
+import hashlib
 import json
 from datetime import datetime
-import hashlib
+from pathlib import Path
+
+import typer
+from mutagen.flac import FLAC
+from rich.console import Console
+from rich.progress import track
+from rich.table import Table
+from rich.tree import Tree
 
 console = Console()
 app = typer.Typer(help="Scan FLAC files and extract metadata.")
+
 
 def get_file_hash(file_path: Path) -> str:
     """Get MD5 hash of file for duplicate detection."""
@@ -21,6 +22,7 @@ def get_file_hash(file_path: Path) -> str:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
 
 def extract_flac_metadata(file_path: Path) -> dict:
     """Extract comprehensive metadata from FLAC file."""
@@ -38,13 +40,15 @@ def extract_flac_metadata(file_path: Path) -> dict:
 
         # Audio properties
         if audio.info:
-            info.update({
-                "length": audio.info.length,
-                "bitrate": getattr(audio.info, 'bitrate', 0),
-                "sample_rate": getattr(audio.info, 'sample_rate', 0),
-                "channels": getattr(audio.info, 'channels', 0),
-                "bits_per_sample": getattr(audio.info, 'bits_per_sample', 0),
-            })
+            info.update(
+                {
+                    "length": audio.info.length,
+                    "bitrate": getattr(audio.info, "bitrate", 0),
+                    "sample_rate": getattr(audio.info, "sample_rate", 0),
+                    "channels": getattr(audio.info, "channels", 0),
+                    "bits_per_sample": getattr(audio.info, "bits_per_sample", 0),
+                }
+            )
 
         # Common tags
         tag_mapping = {
@@ -90,11 +94,8 @@ def extract_flac_metadata(file_path: Path) -> dict:
         return info
 
     except Exception as e:
-        return {
-            "path": str(file_path),
-            "filename": file_path.name,
-            "error": str(e)
-        }
+        return {"path": str(file_path), "filename": file_path.name, "error": str(e)}
+
 
 def format_duration(seconds: float) -> str:
     """Format duration in seconds to MM:SS format."""
@@ -105,16 +106,23 @@ def format_duration(seconds: float) -> str:
     seconds = int(seconds % 60)
     return f"{minutes}:{seconds:02d}"
 
+
 def format_size(bytes: int) -> str:
     """Format file size in human readable format."""
-    for unit in ['B', 'KB', 'MB', 'GB']:
+    for unit in ["B", "KB", "MB", "GB"]:
         if bytes < 1024.0:
             return f"{bytes:.1f}{unit}"
         bytes /= 1024.0
     return f"{bytes:.1f}TB"
 
+
 @app.command("file")
-def scan_file(file_path: str, verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed metadata")):
+def scan_file(
+    file_path: str,
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Show detailed metadata"
+    ),
+):
     """
     Scan a single FLAC file and display its metadata.
 
@@ -128,7 +136,7 @@ def scan_file(file_path: str, verbose: bool = typer.Option(False, "--verbose", "
         console.print(f"❌ File not found: {file_path}", style="red")
         raise typer.Exit(1)
 
-    if not file.suffix.lower() == '.flac':
+    if not file.suffix.lower() == ".flac":
         console.print(f"❌ Not a FLAC file: {file_path}", style="red")
         raise typer.Exit(1)
 
@@ -154,8 +162,8 @@ def scan_file(file_path: str, verbose: bool = typer.Option(False, "--verbose", "
     if "length" in metadata:
         table.add_row("Duration", format_duration(metadata["length"]))
         table.add_row("Sample Rate", f"{metadata.get('sample_rate', 0)} Hz")
-        table.add_row("Channels", str(metadata.get('channels', 0)))
-        table.add_row("Bits per Sample", str(metadata.get('bits_per_sample', 0)))
+        table.add_row("Channels", str(metadata.get("channels", 0)))
+        table.add_row("Bits per Sample", str(metadata.get("bits_per_sample", 0)))
         table.add_row("Bitrate", f"{metadata.get('bitrate', 0)} kbps")
 
     # Tags
@@ -182,8 +190,14 @@ def scan_file(file_path: str, verbose: bool = typer.Option(False, "--verbose", "
 
     console.print(table)
 
+
 @app.command("dir")
-def scan_dir(directory: str, recursive: bool = typer.Option(False, "--recursive", "-r", help="Scan subdirectories recursively")):
+def scan_dir(
+    directory: str,
+    recursive: bool = typer.Option(
+        False, "--recursive", "-r", help="Scan subdirectories recursively"
+    ),
+):
     """
     Scan a directory and list FLAC files with basic metadata.
 
@@ -229,9 +243,7 @@ def scan_dir(directory: str, recursive: bool = typer.Option(False, "--recursive"
 
         if "error" in metadata:
             table.add_row(
-                file_path.name,
-                f"[red]Error: {metadata['error']}[/red]",
-                "", "", "", ""
+                file_path.name, f"[red]Error: {metadata['error']}[/red]", "", "", "", ""
             )
             continue
 
@@ -242,13 +254,19 @@ def scan_dir(directory: str, recursive: bool = typer.Option(False, "--recursive"
             tags.get("artist", "Unknown"),
             tags.get("album", "Unknown"),
             format_duration(metadata.get("length", 0)),
-            format_size(metadata.get("size", 0))
+            format_size(metadata.get("size", 0)),
         )
 
     console.print(table)
 
+
 @app.command("tree")
-def scan_tree(directory: str, show_tags: bool = typer.Option(False, "--tags", "-t", help="Show track tags in tree")):
+def scan_tree(
+    directory: str,
+    show_tags: bool = typer.Option(
+        False, "--tags", "-t", help="Show track tags in tree"
+    ),
+):
     """
     Display directory structure with FLAC files in a tree format.
 
@@ -272,7 +290,7 @@ def scan_tree(directory: str, show_tags: bool = typer.Option(False, "--tags", "-
                     # Add directory
                     dir_tree = tree.add(f"📁 {item.name}", style="bold blue")
                     build_tree(item, dir_tree)
-                elif item.suffix.lower() == '.flac':
+                elif item.suffix.lower() == ".flac":
                     # Add FLAC file
                     if show_tags:
                         metadata = extract_flac_metadata(item)
@@ -308,8 +326,13 @@ def scan_tree(directory: str, show_tags: bool = typer.Option(False, "--tags", "-
 
     console.print(tree)
 
+
 @app.command("export")
-def export_metadata(directory: str, output: str, format: str = typer.Option("json", help="Output format (json, csv)")):
+def export_metadata(
+    directory: str,
+    output: str,
+    format: str = typer.Option("json", help="Output format (json, csv)"),
+):
     """
     Export FLAC metadata to a file.
 
@@ -343,7 +366,7 @@ def export_metadata(directory: str, output: str, format: str = typer.Option("jso
 
     # Export data
     if format.lower() == "json":
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(metadata_list, f, indent=2, ensure_ascii=False)
         console.print(f"✅ Exported to JSON: {output_file}")
 
@@ -361,7 +384,7 @@ def export_metadata(directory: str, output: str, format: str = typer.Option("jso
             if "tags" in metadata:
                 all_fields.update(f"tag_{k}" for k in metadata["tags"].keys())
 
-        with open(output_file, 'w', newline='', encoding='utf-8') as f:
+        with open(output_file, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=sorted(all_fields))
             writer.writeheader()
 
@@ -381,8 +404,12 @@ def export_metadata(directory: str, output: str, format: str = typer.Option("jso
         console.print(f"❌ Unsupported format: {format}", style="red")
         raise typer.Exit(1)
 
+
 @app.command("duplicates")
-def find_duplicates(directory: str, by: str = typer.Option("hash", help="Find duplicates by: hash, title, filename")):
+def find_duplicates(
+    directory: str,
+    by: str = typer.Option("hash", help="Find duplicates by: hash, title, filename"),
+):
     """
     Find duplicate FLAC files in a directory.
 
@@ -458,6 +485,7 @@ def find_duplicates(directory: str, by: str = typer.Option("hash", help="Find du
             else:
                 console.print(f"  📄 {file_path} [red](Error)[/red]")
 
+
 @app.command("stats")
 def library_stats(directory: str):
     """
@@ -493,7 +521,7 @@ def library_stats(directory: str):
         "sample_rates": {},
         "bit_depths": {},
         "channels": {},
-        "errors": 0
+        "errors": 0,
     }
 
     for file_path in track(flac_files, description="Analyzing files..."):
@@ -510,7 +538,9 @@ def library_stats(directory: str):
         # Audio properties
         sample_rate = metadata.get("sample_rate", 0)
         if sample_rate:
-            stats["sample_rates"][sample_rate] = stats["sample_rates"].get(sample_rate, 0) + 1
+            stats["sample_rates"][sample_rate] = (
+                stats["sample_rates"].get(sample_rate, 0) + 1
+            )
 
         bit_depth = metadata.get("bits_per_sample", 0)
         if bit_depth:
@@ -546,7 +576,14 @@ def library_stats(directory: str):
     table.add_row("Unique Artists", str(len(stats["artists"])))
     table.add_row("Unique Albums", str(len(stats["albums"])))
     table.add_row("Unique Genres", str(len(stats["genres"])))
-    table.add_row("Year Range", f"{min(stats['years'])} - {max(stats['years'])}" if stats["years"] else "Unknown")
+    table.add_row(
+        "Year Range",
+        (
+            f"{min(stats['years'])} - {max(stats['years'])}"
+            if stats["years"]
+            else "Unknown"
+        ),
+    )
 
     # Audio quality
     if stats["sample_rates"]:

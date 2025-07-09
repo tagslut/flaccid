@@ -2,13 +2,13 @@
 Unit tests for shared API modules.
 """
 
-import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
-from pathlib import Path
 import os
-import tempfile
 import sys
+import tempfile
+from pathlib import Path
+from unittest.mock import AsyncMock, patch
+
+import pytest
 
 # Add the src directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -24,15 +24,14 @@ with patch.dict(
     },
 ):
     with patch("keyring.get_password", return_value=None):
-        from fla.shared.qobuz_api import QobuzAPI
-        from fla.shared.apple_api import AppleAPI
-        from fla.shared.config import Config
-        from fla.shared.metadata_utils import (
-            validate_flac_file,
-            get_existing_metadata,
+        from flaccid.shared.apple_api import AppleAPI
+        from flaccid.shared.config import Config
+        from flaccid.shared.metadata_utils import (
             build_search_query,
-            extract_isrc_from_flac,
+            get_existing_metadata,
+            validate_flac_file,
         )
+        from flaccid.shared.qobuz_api import QobuzAPI
 
 
 class TestConfig:

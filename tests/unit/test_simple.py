@@ -2,11 +2,12 @@
 Simple tests for shared API modules.
 """
 
-import pytest
-import sys
 import os
+import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
+import pytest
 
 # Add the src directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -24,7 +25,7 @@ def test_config_basic():
 
 def test_metadata_utils_basic():
     """Test basic metadata utilities."""
-    from flaccid.shared.metadata_utils import validate_flac_file, build_search_query
+    from flaccid.shared.metadata_utils import build_search_query, validate_flac_file
 
     # Test file validation
     assert validate_flac_file("/nonexistent/file.flac") is False
@@ -51,7 +52,7 @@ async def test_qobuz_api_basic():
         os.environ, {"QOBUZ_APP_ID": "test_id", "QOBUZ_TOKEN": "test_token"}
     ):
         with patch("keyring.get_password", return_value=None):
-            from fla.shared.qobuz_api import QobuzAPI
+            from flaccid.shared.qobuz_api import QobuzAPI
 
             api = QobuzAPI()
             assert api.app_id == "test_id"

@@ -1,9 +1,10 @@
 """
-Entrypoint so `python -m fla` works.
+Shim for legacy `fla` command.
 """
 
-import typer
-from flaccid import cli
+from __future__ import annotations
+
+from flaccid.cli import app
 
 if __name__ == "__main__":
-    typer.run(cli.app)
+    app()
