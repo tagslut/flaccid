@@ -11,18 +11,11 @@ from typing import Optional
 # Try to load python-dotenv if available
 try:
     from dotenv import load_dotenv
-<<<<<<< HEAD
-=======
 
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
     _HAS_DOTENV = True
 except ImportError:
     _HAS_DOTENV = False
 
-<<<<<<< HEAD
-=======
-
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
 class Config:
     """Configuration manager for FLACCID."""
 
@@ -45,9 +38,10 @@ class Config:
 
         self._loaded = True
 
-    def get(self, key: str, default: Optional[str] = None) -> Optional[str]:
-        """Get configuration value from environment."""
-        return os.getenv(key, default)
+    def get(self, key: str, default: Optional[str] = None) -> str:
+        """Get configuration value from environment, always returns a string."""
+        value = os.getenv(key, default)
+        return value if value is not None else (default if default is not None else "")
 
     def get_bool(self, key: str, default: bool = False) -> bool:
         """Get boolean configuration value."""
@@ -56,8 +50,9 @@ class Config:
 
     def get_int(self, key: str, default: int = 0) -> int:
         """Get integer configuration value."""
+        value = self.get(key, str(default))
         try:
-            return int(self.get(key, str(default)))
+            return int(value)
         except (ValueError, TypeError):
             return default
 
@@ -105,9 +100,5 @@ class Config:
         config_dir = self.get("FLACCID_CONFIG_DIR", "~/.flaccid/config")
         return Path(config_dir).expanduser()
 
-<<<<<<< HEAD
-=======
-
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
 # Global config instance
 config = Config()
