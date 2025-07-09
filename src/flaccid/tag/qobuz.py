@@ -4,14 +4,13 @@ from mutagen.flac import FLAC
 import asyncio
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-
-# Use absolute imports to avoid circular import issues
 from flaccid.shared.qobuz_api import QobuzAPI
-from flaccid.shared.metadata_utils import validate_flac_file, get_existing_metadata, build_search_query
+from flaccid.shared.metadata_utils import validate_flac_file, get_existing_metadata, build_search_query, normalize_artist
+import traceback
+from typing import Optional
 
 console = Console()
 app = typer.Typer(help="Tag FLAC files using Qobuz metadata.")
-
 async def apply_qobuz_tags(flac_path: str, metadata: dict):
     """Apply Qobuz metadata to FLAC file."""
     try:
@@ -22,23 +21,26 @@ async def apply_qobuz_tags(flac_path: str, metadata: dict):
             audio["TITLE"] = metadata["title"]
 
         if "performer" in metadata:
-            audio["ARTIST"] = metadata["performer"]["name"]
+            audio["ARTIST"] = normalize_artist(metadata["performer"]["name"])
 
         if "album" in metadata:
             album = metadata["album"]
             audio["ALBUM"] = album["title"]
 
             if "artist" in album:
-                audio["ALBUMARTIST"] = album["artist"]["name"]
+                audio["ALBUMARTIST"] = normalize_artist(album["artist"]["name"])
 
             if "release_date_original" in album:
-                audio["DATE"] = album["release_date_original"]
+                audio["DATE"] = album["release_date_original"][:10]
 
             if "genre" in album:
                 audio["GENRE"] = album["genre"]["name"]
 
             if "label" in album:
                 audio["LABEL"] = album["label"]["name"]
+
+            if "upc" in album:
+                audio["UPC"] = album["upc"]
 
         # Track specific
         if "track_number" in metadata:
@@ -48,7 +50,10 @@ async def apply_qobuz_tags(flac_path: str, metadata: dict):
             audio["DISCNUMBER"] = str(metadata["media_number"])
 
         if "composer" in metadata:
-            audio["COMPOSER"] = metadata["composer"]["name"]
+            audio["COMPOSER"] = normalize_artist(metadata["composer"]["name"])
+
+        if "isrc" in metadata:
+            audio["ISRC"] = metadata["isrc"]
 
         # Quality info
         if "maximum_bit_depth" in metadata:
@@ -63,6 +68,7 @@ async def apply_qobuz_tags(flac_path: str, metadata: dict):
 
     except Exception as e:
         console.print(f"❌ Error tagging file: {e}", style="red")
+        traceback.print_exc()
         return False
 
 @app.command("track")
@@ -108,7 +114,7 @@ def tag_track(flac_path: str, qobuz_id: str):
     asyncio.run(tag_process())
 
 @app.command("search")
-def search_and_tag(flac_path: str, query: str = None):
+def search_and_tag(flac_path: str, query: Optional[str] = None):
     """
     Search Qobuz and interactively tag a FLAC file.
 
@@ -135,6 +141,9 @@ def search_and_tag(flac_path: str, query: str = None):
                 console=console,
             ) as progress:
                 task = progress.add_task("Searching Qobuz...", total=None)
+
+                # Ensure `query` is a string before calling `qobuz.search`
+                query = query or ""  # Ensure query is initialized
 
                 results = await qobuz.search(query)
 
@@ -217,8 +226,9 @@ def batch_tag(directory: str, recursive: bool = typer.Option(False, "--recursive
         try:
             # Try to get existing metadata for search
             audio = FLAC(str(flac_file))
-            title = audio.get("TITLE", [""])[0]
-            artist = audio.get("ARTIST", [""])[0]
+            # Adjust `audio.get` calls to ensure default values are lists
+            title = audio.get("TITLE", [""])[0]  # Default to list
+            artist = audio.get("ARTIST", [""])[0]  # Default to list
 
             if title and artist:
                 query = f"{artist} {title}"

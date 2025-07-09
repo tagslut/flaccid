@@ -36,7 +36,7 @@ def test_apple():
 # Export main classes for easy importing
 __all__ = [
     "QobuzAPI",
-    "AppleMusicAPI",
+    "AppleAPI",
     "extract_isrc_from_flac",
     "get_existing_metadata",
     "build_search_query",

@@ -2,35 +2,17 @@ import aiohttp
 import asyncio
 import os
 import keyring
-import time
-from typing import Optional, Dict, Any
 from rich.console import Console
+from .config import config
 
 console = Console()
 
-<<<<<<< HEAD
 class QobuzAPI:
     BASE_URL = "https://www.qobuz.com/api.json/0.2"
 
-    def __init__(self, max_retries: int = 3, retry_delay: float = 1.0, rate_limit_delay: float = 0.1):
-=======
-
-class QobuzAPI:
-    BASE_URL = "https://www.qobuz.com/api.json/0.2"
-
-    def __init__(
-        self,
-        max_retries: int = 3,
-        retry_delay: float = 1.0,
-        rate_limit_delay: float = 0.1,
-    ):
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
+    def __init__(self):
         self.session = None
         self.user_auth_token = None
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.rate_limit_delay = rate_limit_delay
-        self.last_request_time = 0
 
     @property
     def app_id(self):
@@ -48,268 +30,120 @@ class QobuzAPI:
             self.session = aiohttp.ClientSession()
         return self.session
 
-    async def _rate_limit(self):
-        """Apply rate limiting between requests."""
-        current_time = time.time()
-        time_since_last = current_time - self.last_request_time
-
-        if time_since_last < self.rate_limit_delay:
-            await asyncio.sleep(self.rate_limit_delay - time_since_last)
-
-        self.last_request_time = time.time()
-
-<<<<<<< HEAD
-    async def _make_request(self, method: str, url: str, **kwargs) -> Optional[Dict[Any, Any]]:
-=======
-    async def _make_request(
-        self, method: str, url: str, **kwargs
-    ) -> Optional[Dict[Any, Any]]:
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-        """Make a request with retry logic and rate limiting."""
-        await self._rate_limit()
-
-        for attempt in range(self.max_retries):
-            try:
-                session = await self._get_session()
-
-                if method.upper() == "GET":
-                    async with session.get(url, **kwargs) as resp:
-                        return await self._handle_response(resp)
-                elif method.upper() == "POST":
-                    async with session.post(url, **kwargs) as resp:
-                        return await self._handle_response(resp)
-
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                if attempt == self.max_retries - 1:
-<<<<<<< HEAD
-                    console.print(f"❌ Request failed after {self.max_retries} attempts: {e}", style="red")
-                    return None
-
-                delay = self.retry_delay * (2 ** attempt)  # Exponential backoff
-                console.print(f"🔄 Request failed, retrying in {delay:.1f}s... (attempt {attempt + 1}/{self.max_retries})", style="yellow")
-=======
-                    console.print(
-                        f"❌ Request failed after {self.max_retries} attempts: {e}",
-                        style="red",
-                    )
-                    return None
-
-                delay = self.retry_delay * (2**attempt)  # Exponential backoff
-                console.print(
-                    f"🔄 Request failed, retrying in {delay:.1f}s... (attempt {attempt + 1}/{self.max_retries})",
-                    style="yellow",
-                )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-                await asyncio.sleep(delay)
-
-        return None
-
-<<<<<<< HEAD
-    async def _handle_response(self, resp: aiohttp.ClientResponse) -> Optional[Dict[Any, Any]]:
-=======
-    async def _handle_response(
-        self, resp: aiohttp.ClientResponse
-    ) -> Optional[Dict[Any, Any]]:
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-        """Handle HTTP response with proper error handling."""
-        if resp.status == 200:
-            return await resp.json()
-        elif resp.status == 401:
-            # Token expired, will be handled by calling method
-            return {"_auth_error": True}
-        elif resp.status == 429:  # Rate limited
-            console.print("⚠️  Rate limited by Qobuz API", style="yellow")
-            retry_after = int(resp.headers.get("Retry-After", 60))
-<<<<<<< HEAD
-            console.print(f"🔄 Waiting {retry_after} seconds before retry...", style="yellow")
-=======
-            console.print(
-                f"🔄 Waiting {retry_after} seconds before retry...", style="yellow"
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-            await asyncio.sleep(retry_after)
-            return {"_rate_limited": True}
-        else:
-            error_text = await resp.text()
-<<<<<<< HEAD
-            console.print(f"❌ API request failed: {resp.status} - {error_text}", style="red")
-=======
-            console.print(
-                f"❌ API request failed: {resp.status} - {error_text}", style="red"
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-            return None
-
     async def authenticate(self):
         """Authenticate with Qobuz using stored credentials."""
         username = keyring.get_password("flaccid-qobuz", "username")
         password = keyring.get_password("flaccid-qobuz", "password")
 
         if not username or not password:
-<<<<<<< HEAD
             console.print("❌ Qobuz credentials not found. Run 'fla set auth qobuz' first.", style="red")
-=======
-            console.print(
-                "❌ Qobuz credentials not found. Run 'fla set auth qobuz' first.",
-                style="red",
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
             raise RuntimeError("Missing Qobuz credentials")
+
+        session = await self._get_session()
 
         auth_data = {
             "app_id": self.app_id,
             "username": username,
             "password": password,
-<<<<<<< HEAD
             "device_id": "flaccid-cli"
         }
 
-        result = await self._make_request("POST", f"{self.BASE_URL}/user/login", data=auth_data)
-=======
-            "device_id": "flaccid-cli",
-        }
-
-        result = await self._make_request(
-            "POST", f"{self.BASE_URL}/user/login", data=auth_data
-        )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-
-        if result:
-            self.user_auth_token = result.get("user_auth_token")
-            if not self.user_auth_token:
-                raise RuntimeError("Failed to get user auth token from Qobuz")
-        else:
-            raise RuntimeError("Qobuz authentication failed")
+        async with session.post(f"{self.BASE_URL}/user/login", data=auth_data) as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                self.user_auth_token = result.get("user_auth_token")
+                if not self.user_auth_token:
+                    raise RuntimeError("Failed to get user auth token from Qobuz")
+            else:
+                error_text = await resp.text()
+                raise RuntimeError(f"Qobuz auth failed: {resp.status} - {error_text}")
 
     async def search(self, query: str, limit: int = 5):
         """Search for tracks on Qobuz."""
         if not self.user_auth_token:
             await self.authenticate()
 
+        session = await self._get_session()
+        url = f"{self.BASE_URL}/catalog/search"
         params = {
             "app_id": self.app_id,
             "user_auth_token": self.user_auth_token,
             "limit": limit,
             "query": query,
-<<<<<<< HEAD
             "type": "track"
         }
 
-        result = await self._make_request("GET", f"{self.BASE_URL}/catalog/search", params=params)
-
-        if result and result.get("_auth_error"):
-            # Token expired, re-authenticate and retry
-            console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request("GET", f"{self.BASE_URL}/catalog/search", params=params)
-=======
-            "type": "track",
-        }
-
-        result = await self._make_request(
-            "GET", f"{self.BASE_URL}/catalog/search", params=params
-        )
-
-        if result and result.get("_auth_error"):
-            # Token expired, re-authenticate and retry
-            console.print(
-                "🔄 Qobuz token expired, re-authenticating...", style="yellow"
-            )
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request(
-                "GET", f"{self.BASE_URL}/catalog/search", params=params
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-
-        return result
+        async with session.get(url, params=params) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            elif resp.status == 401:
+                # Token might be expired, try to re-authenticate
+                console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
+                self.user_auth_token = None
+                await self.authenticate()
+                return await self.search(query, limit)
+            else:
+                console.print(f"❌ Qobuz search failed: {resp.status}", style="red")
+                return None
 
     async def get_track_metadata(self, track_id: str):
         """Get detailed track metadata from Qobuz."""
         if not self.user_auth_token:
             await self.authenticate()
 
+        session = await self._get_session()
+        url = f"{self.BASE_URL}/track/get"
         params = {
             "app_id": self.app_id,
             "user_auth_token": self.user_auth_token,
             "track_id": track_id,
         }
 
-<<<<<<< HEAD
-        result = await self._make_request("GET", f"{self.BASE_URL}/track/get", params=params)
-
-        if result and result.get("_auth_error"):
-            console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request("GET", f"{self.BASE_URL}/track/get", params=params)
-=======
-        result = await self._make_request(
-            "GET", f"{self.BASE_URL}/track/get", params=params
-        )
-
-        if result and result.get("_auth_error"):
-            console.print(
-                "🔄 Qobuz token expired, re-authenticating...", style="yellow"
-            )
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request(
-                "GET", f"{self.BASE_URL}/track/get", params=params
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-
-        return result
+        async with session.get(url, params=params) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            elif resp.status == 401:
+                # Token might be expired, try to re-authenticate
+                console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
+                self.user_auth_token = None
+                await self.authenticate()
+                return await self.get_track_metadata(track_id)
+            else:
+                console.print(f"❌ Qobuz track fetch failed: {resp.status}", style="red")
+                return None
 
     async def get_album_metadata(self, album_id: str):
         """Get detailed album metadata from Qobuz."""
         if not self.user_auth_token:
             await self.authenticate()
 
+        session = await self._get_session()
+        url = f"{self.BASE_URL}/album/get"
         params = {
             "app_id": self.app_id,
             "user_auth_token": self.user_auth_token,
             "album_id": album_id,
         }
 
-<<<<<<< HEAD
-        result = await self._make_request("GET", f"{self.BASE_URL}/album/get", params=params)
-
-        if result and result.get("_auth_error"):
-            console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request("GET", f"{self.BASE_URL}/album/get", params=params)
-=======
-        result = await self._make_request(
-            "GET", f"{self.BASE_URL}/album/get", params=params
-        )
-
-        if result and result.get("_auth_error"):
-            console.print(
-                "🔄 Qobuz token expired, re-authenticating...", style="yellow"
-            )
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request(
-                "GET", f"{self.BASE_URL}/album/get", params=params
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-
-        return result
+        async with session.get(url, params=params) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            elif resp.status == 401:
+                console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
+                self.user_auth_token = None
+                await self.authenticate()
+                return await self.get_album_metadata(album_id)
+            else:
+                console.print(f"❌ Qobuz album fetch failed: {resp.status}", style="red")
+                return None
 
     async def get_streaming_url(self, track_id: str, quality: str = "MP3_320"):
         """Get streaming URL for a track (requires subscription)."""
         if not self.user_auth_token:
             await self.authenticate()
 
+        session = await self._get_session()
+        url = f"{self.BASE_URL}/track/getFileUrl"
         params = {
             "app_id": self.app_id,
             "user_auth_token": self.user_auth_token,
@@ -317,33 +151,17 @@ class QobuzAPI:
             "format_id": quality,
         }
 
-<<<<<<< HEAD
-        result = await self._make_request("GET", f"{self.BASE_URL}/track/getFileUrl", params=params)
-
-        if result and result.get("_auth_error"):
-            console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request("GET", f"{self.BASE_URL}/track/getFileUrl", params=params)
-=======
-        result = await self._make_request(
-            "GET", f"{self.BASE_URL}/track/getFileUrl", params=params
-        )
-
-        if result and result.get("_auth_error"):
-            console.print(
-                "🔄 Qobuz token expired, re-authenticating...", style="yellow"
-            )
-            self.user_auth_token = None
-            await self.authenticate()
-            params["user_auth_token"] = self.user_auth_token
-            result = await self._make_request(
-                "GET", f"{self.BASE_URL}/track/getFileUrl", params=params
-            )
->>>>>>> df23120cd62222d9a0cfa66459ce26f4cb473994
-
-        return result
+        async with session.get(url, params=params) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            elif resp.status == 401:
+                console.print("🔄 Qobuz token expired, re-authenticating...", style="yellow")
+                self.user_auth_token = None
+                await self.authenticate()
+                return await self.get_streaming_url(track_id, quality)
+            else:
+                console.print(f"❌ Qobuz streaming URL failed: {resp.status}", style="red")
+                return None
 
     async def close(self):
         """Close the aiohttp session."""
