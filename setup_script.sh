@@ -13,6 +13,9 @@ fi
 echo "Installing Python dependencies with Poetry..."
 poetry install --with dev
 
+# 2a. Ensure pre-commit is installed as a dev dependency
+poetry add --dev pre-commit || true
+
 # 3. Install pre-commit hooks
 echo "Installing pre-commit hooks..."
 poetry run pre-commit install
