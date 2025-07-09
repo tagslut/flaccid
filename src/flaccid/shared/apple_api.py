@@ -6,6 +6,7 @@ from typing import Optional
 import os
 import aiohttp
 
+
 class AppleAPI:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("APPLE_API_KEY", "default_api_key")
@@ -30,7 +31,16 @@ class AppleAPI:
         """Search for a track on iTunes."""
         session = await self._get_session()
         # Placeholder implementation
-        return {"results": [{"trackId": 12345, "trackName": "Test Track", "artistName": "Test Artist", "collectionName": "Test Album"}]}
+        return {
+            "results": [
+                {
+                    "trackId": 12345,
+                    "trackName": "Test Track",
+                    "artistName": "Test Artist",
+                    "collectionName": "Test Album",
+                }
+            ]
+        }
 
     async def _get_session(self):
         if not self.session:

@@ -6,9 +6,12 @@ import sys
 
 app = typer.Typer()
 
+
 @app.callback(invoke_without_command=True)
 def tag(
-    path: Path = typer.Argument(None, file_okay=True, dir_okay=True, readable=True, resolve_path=True)
+    path: Path = typer.Argument(
+        None, file_okay=True, dir_okay=True, readable=True, resolve_path=True
+    )
 ) -> None:
     if path is None:
         typer.echo("Missing argument: PATH", err=True)

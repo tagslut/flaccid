@@ -1,4 +1,5 @@
 """FLACCID command‑line interface (Typer)."""
+
 from __future__ import annotations
 import importlib
 import sys as _sys
@@ -13,7 +14,7 @@ for _sub in ("shared", "tag", "get", "lib", "core", "set"):
 
 # ------------------------------------------------------------------
 # compatibility aliases
-_sys.modules.setdefault("fla", _sys.modules[__name__])          # import fla → flaccid
+_sys.modules.setdefault("fla", _sys.modules[__name__])  # import fla → flaccid
 _sys.modules.setdefault("fla.__main__", importlib.import_module("flaccid.cli"))
 # ------------------------------------------------------------------
 
@@ -23,6 +24,7 @@ _sys.modules.setdefault("fla.__main__", importlib.import_module("flaccid.cli"))
 
 # a)  expose the CLI module (with .app) as fla.__main__
 import importlib as _il, sys as _s
+
 _s.modules.setdefault("fla.__main__", _il.import_module("flaccid.cli"))
 
 # b)  forward every sub‑module of top‑level `shared` so

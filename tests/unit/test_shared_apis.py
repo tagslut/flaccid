@@ -14,13 +14,16 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Mock the environment variables and keyring before importing
-with patch.dict(os.environ, {
-    'QOBUZ_APP_ID': 'test_app_id',
-    'QOBUZ_TOKEN': 'test_token',
-    'APPLE_TOKEN': 'test_apple_token',
-    'APPLE_STORE': 'us'
-}):
-    with patch('keyring.get_password', return_value=None):
+with patch.dict(
+    os.environ,
+    {
+        "QOBUZ_APP_ID": "test_app_id",
+        "QOBUZ_TOKEN": "test_token",
+        "APPLE_TOKEN": "test_apple_token",
+        "APPLE_STORE": "us",
+    },
+):
+    with patch("keyring.get_password", return_value=None):
         from fla.shared.qobuz_api import QobuzAPI
         from fla.shared.apple_api import AppleAPI
         from fla.shared.config import Config
@@ -28,8 +31,9 @@ with patch.dict(os.environ, {
             validate_flac_file,
             get_existing_metadata,
             build_search_query,
-            extract_isrc_from_flac
+            extract_isrc_from_flac,
         )
+
 
 class TestConfig:
     """Test configuration management."""
@@ -47,17 +51,18 @@ class TestConfig:
         assert test_config.get_bool("NONEXISTENT_BOOL", False) is False
         assert test_config.get_int("NONEXISTENT_INT", 42) == 42
 
-    @patch.dict(os.environ, {'TEST_BOOL': 'true'})
+    @patch.dict(os.environ, {"TEST_BOOL": "true"})
     def test_get_bool_values(self):
         """Test boolean configuration parsing."""
         test_config = Config()
         assert test_config.get_bool("TEST_BOOL") is True
 
-    @patch.dict(os.environ, {'TEST_INT': '123'})
+    @patch.dict(os.environ, {"TEST_INT": "123"})
     def test_get_int_values(self):
         """Test integer configuration parsing."""
         test_config = Config()
         assert test_config.get_int("TEST_INT") == 123
+
 
 class TestQobuzAPI:
     """Test Qobuz API client."""
@@ -84,7 +89,7 @@ class TestQobuzAPI:
         await api.close()
 
     @pytest.mark.asyncio
-    @patch('aiohttp.ClientSession.get')
+    @patch("aiohttp.ClientSession.get")
     async def test_search_mock(self, mock_get):
         """Test search with mocked response."""
         mock_response = AsyncMock()
@@ -95,7 +100,7 @@ class TestQobuzAPI:
                     {
                         "id": "12345",
                         "title": "Test Track",
-                        "performer": {"name": "Test Artist"}
+                        "performer": {"name": "Test Artist"},
                     }
                 ]
             }
@@ -110,6 +115,7 @@ class TestQobuzAPI:
         assert "tracks" in result
 
         await api.close()
+
 
 class TestAppleAPI:
     """Test Apple API client."""
@@ -128,7 +134,7 @@ class TestAppleAPI:
             assert api is not None
 
     @pytest.mark.asyncio
-    @patch('aiohttp.ClientSession.get')
+    @patch("aiohttp.ClientSession.get")
     async def test_itunes_search_mock(self, mock_get):
         """Test iTunes search with mocked response."""
         mock_response = AsyncMock()
@@ -139,7 +145,7 @@ class TestAppleAPI:
                     "trackId": 12345,
                     "trackName": "Test Track",
                     "artistName": "Test Artist",
-                    "collectionName": "Test Album"
+                    "collectionName": "Test Album",
                 }
             ]
         }
@@ -152,6 +158,7 @@ class TestAppleAPI:
 
         await api.close()
 
+
 class TestMetadataUtils:
     """Test metadata utility functions."""
 
@@ -161,7 +168,7 @@ class TestMetadataUtils:
 
     def test_validate_flac_file_wrong_extension(self):
         """Test validation of file with wrong extension."""
-        with tempfile.NamedTemporaryFile(suffix='.mp3') as temp:
+        with tempfile.NamedTemporaryFile(suffix=".mp3") as temp:
             assert validate_flac_file(temp.name) is False
 
     def test_build_search_query_with_both(self):
@@ -192,6 +199,7 @@ class TestMetadataUtils:
         """Test getting metadata from non-existent file."""
         metadata = get_existing_metadata("/path/to/nonexistent.flac")
         assert metadata == {}
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

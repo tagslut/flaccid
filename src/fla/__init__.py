@@ -11,7 +11,8 @@ _mod = importlib.import_module("flaccid")
 _sys.modules[__name__] = _mod
 
 # Make `from fla import app` (or fla.app) resolve
-from flaccid.cli import app           # noqa: E402  (circular but harmless)
+from flaccid.cli import app  # noqa: E402  (circular but harmless)
+
 setattr(_mod, "app", app)
 
 # ------------------------------------------------------------------

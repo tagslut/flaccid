@@ -6,10 +6,13 @@ from typing import Optional
 import os
 import aiohttp
 
+
 class QobuzAPI:
     def __init__(self, app_id: Optional[str] = None, app_secret: Optional[str] = None):
         self.app_id = app_id or os.getenv("QOBUZ_APP_ID", "default_app_id")
-        self.app_secret = app_secret or os.getenv("QOBUZ_APP_SECRET", "default_app_secret")
+        self.app_secret = app_secret or os.getenv(
+            "QOBUZ_APP_SECRET", "default_app_secret"
+        )
         self.user_auth_token = None
         self.token = os.getenv("QOBUZ_TOKEN", "default_token")
         self.session = None
@@ -43,4 +46,14 @@ class QobuzAPI:
         """Search for a track on Qobuz."""
         session = await self._get_session()
         # Placeholder implementation
-        return {"tracks": {"items": [{"id": "12345", "title": "Test Track", "performer": {"name": "Test Artist"}}]}}
+        return {
+            "tracks": {
+                "items": [
+                    {
+                        "id": "12345",
+                        "title": "Test Track",
+                        "performer": {"name": "Test Artist"},
+                    }
+                ]
+            }
+        }

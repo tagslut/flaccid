@@ -4,6 +4,6 @@ import typer
 
 app = typer.Typer()
 
+
 @app.callback()
-def lib() -> None:
-    ...
+def lib() -> None: ...

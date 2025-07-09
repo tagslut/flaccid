@@ -5,7 +5,8 @@ description = "Modular FLAC CLI Toolkit"
 authors = ["georges <geoooorges@icloud.com>"]
 readme = "README.md"
 packages = [
-  { include = "flaccid", from = "src" }
+  { include = "flaccid", from = "src" },
+  { include = "fla",      from = "src" }
 ]
 
 [tool.poetry.dependencies]
