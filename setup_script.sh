@@ -26,8 +26,9 @@ fi
 echo "Installing pre-commit hooks..."
 poetry run pre-commit install
 
-# 4. Run all pre-commit hooks once
-echo "Running all pre-commit hooks..."
+# 4. Clean pre-commit cache and re-run hooks with correct Python version
+echo "Cleaning pre-commit cache and running hooks with Python 3.12..."
+poetry run pre-commit clean
 poetry run pre-commit run --all-files
 
 echo "\nSetup complete! You can now use the FLACCID CLI and run tests."
