@@ -1,18 +1,26 @@
-"""
-Entrypoint so `python -m flaccid` works.
-"""
+"""Package entry‑point so that both
+
+    $ python -m flaccid
+    $ poetry run flaccid …
+
+work consistently."""
 
 from __future__ import annotations
 
-import typer
-
 from flaccid import cli
 
+# ---------------------------------------------------------------------------
+# Expose the Typer application expected by the console‑script declaration
+# (`flaccid = "flaccid.__main__:app"` in pyproject.toml).
+# ---------------------------------------------------------------------------
 
-def main() -> None:
-    """Wrapper for ``typer.run()``."""
-    typer.run(cli.app)
+app = cli.app  # Console script looks for this symbol
 
 
-if __name__ == "__main__":
+def main() -> None:  # pragma: no cover
+    """Run the CLI when executed as a module."""
+    app()
+
+
+if __name__ == "__main__":  # pragma: no cover
     main()
