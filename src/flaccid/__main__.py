@@ -1,7 +1,7 @@
 """
-Allows `python -m fla` and keeps `from fla.__main__ import app` working.
+`python -m flaccid` / `fla` entry-point.
 """
-from flaccid.cli import app    # Typer root command
+from flaccid.cli import app   # ← import the real Typer app
 
 if __name__ == "__main__":
-    app()
+    app()                     # Hand off to Typer

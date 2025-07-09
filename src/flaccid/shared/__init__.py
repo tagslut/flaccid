@@ -1,3 +1,9 @@
-# This file makes 'shared' a package.
+"""
+Thin façade that re-exports service-specific helper classes
+used by the legacy test-suite.
+"""
+from importlib import import_module as _imp
 
-# Add shared utilities and modules here.
+# Lazy-proxy to keep test imports working; extend as real code is added
+def __getattr__(name: str):
+    return _imp(f"flaccid.shared.{name}")
