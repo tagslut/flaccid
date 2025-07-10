@@ -1,7 +1,7 @@
 # FLACCID CLI Toolkit
 
 [![CI](https://github.com/<your-org>/flaccid/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-org>/flaccid/actions/workflows/ci.yml)
-[![Release](https://github.com/<your-org>/flaccid/actions/workflows/release.yml/badge.svg)](https://github.com/<your-org>/flaccid/actions/workflows/release.yml)
+[![Release](https://github.com/<your-org>/flaccid/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-org>/flaccid/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/<your-org>/flaccid/badge.svg?branch=main)](https://coveralls.io/github/<your-org>/flaccid?branch=main)
 
 ## Overview
