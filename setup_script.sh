@@ -12,21 +12,26 @@ if ! command -v poetry &>/dev/null; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# 2. Install Python dependencies (including dev)
-echo "Installing Python dependencies with Poetry..."
+# Tell Poetry to keep the venv local and to use the current python3
+poetry config virtualenvs.in-project true
+poetry env use "$(command -v python3)"
+
+# 2. Install dependencies
+echo "Installing dependencies..."
 poetry install --with dev
 
-# Generate requirements.txt for non-Poetry compatibility
-echo "Generating requirements.txt from poetry.lock..."
-poetry export --without-hashes -f requirements.txt -o requirements.txt || true
+# 3. Optional deterministic requirements export
+poetry export --without-hashes --sort -f requirements.txt -o requirements.txt || true
 
-# 3. Install pre-commit hooks
-echo "Installing pre-commit hooks..."
+# 4. Pre-commit hooks
 poetry run pre-commit install
-
-# 4. Clean pre-commit cache and re-run hooks with correct Python version
-echo "Cleaning pre-commit cache and running hooks with Python 3.12..."
 poetry run pre-commit clean
-poetry run pre-commit run --all-files
+if ! poetry run pre-commit run --all-files; then
+  echo "❌ pre-commit hooks failed. Fix issues and re-run setup."
+  exit 1
+fi
 
-echo "\nSetup complete! You can now use the FLACCID CLI and run tests."
+# 5. mypy stub auto-install
+poetry run mypy --install-types --non-interactive || true
+
+echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
