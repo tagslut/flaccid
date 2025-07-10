@@ -25,6 +25,7 @@ flaccid tag fetch <file> --provider qobuz
 flaccid tag apply <file> --metadata-file tags.json --yes
 flaccid set auth qobuz
 flaccid set path --library /mnt/music --cache ~/.cache/flaccid
+flaccid get qobuz <track_id> output.flac
 ```
 
 ## Installation
@@ -76,6 +77,7 @@ flaccid tag apply /path/to/track.flac --metadata-file metadata.json --yes
 
 ```bash
 flaccid lib index build /path/to/music --recursive
+flaccid lib scan /path/to/music --db library.db
 ```
 
 ## Documentation
