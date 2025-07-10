@@ -28,10 +28,13 @@ jobs:
           poetry config virtualenvs.in-project true
 
       - name: Cache Poetry virtualenv
+        id: cache-poetry
         uses: actions/cache@v3
         with:
           path: .venv
           key: ${{ runner.os }}-python-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-python-${{ matrix.python-version }}-
 
       - name: Install dependencies
         run: |
@@ -74,10 +77,13 @@ jobs:
           poetry config virtualenvs.in-project true
 
       - name: Cache Poetry virtualenv
+        id: cache-poetry
         uses: actions/cache@v3
         with:
           path: .venv
           key: ${{ runner.os }}-python-3.11-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-python-3.11-
 
       - name: Install dependencies
         run: |
