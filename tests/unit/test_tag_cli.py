@@ -1,6 +1,7 @@
 from typer.testing import CliRunner
 
-from flaccid.tag import cli as tag_cli
+import flaccid.tag.cli as tag_cli
+from flaccid.tag.cli import app as tag_app
 
 runner = CliRunner()
 
@@ -17,7 +18,7 @@ def test_fetch_invokes_placeholder(tmp_path, monkeypatch):
     flac = tmp_path / "song.flac"
     flac.write_text("data")
 
-    result = runner.invoke(tag_cli.app, ["fetch", str(flac)])
+    result = runner.invoke(tag_app, ["fetch", str(flac)])
 
     assert result.exit_code == 0
     assert called["args"] == (flac, "qobuz")
@@ -38,7 +39,7 @@ def test_apply_invokes_placeholder(tmp_path, monkeypatch):
     metadata.write_text("{}")
 
     result = runner.invoke(
-        tag_cli.app, ["apply", str(flac), "--metadata-file", str(metadata), "--yes"]
+        tag_app, ["apply", str(flac), "--metadata-file", str(metadata), "--yes"]
     )
 
     assert result.exit_code == 0
