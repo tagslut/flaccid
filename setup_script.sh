@@ -2,8 +2,8 @@
 # setup_script.sh - Bootstrap FLACCID dev environment
 
 set -euo pipefail
-# Temporary fallback to avoid early pip install failures
-touch requirements.txt
+# Remove stale requirements.txt if present (for clean Poetry export)
+rm -f requirements.txt
 
 # 1. Ensure Poetry is installed
 if ! command -v poetry &>/dev/null; then
@@ -16,11 +16,9 @@ fi
 echo "Installing Python dependencies with Poetry..."
 poetry install --with dev
 
-# Generate requirements.txt if missing (for non-Poetry compatibility)
-if [ ! -f requirements.txt ]; then
-  echo "Generating requirements.txt from poetry.lock..."
-  poetry export --without-hashes -f requirements.txt -o requirements.txt || true
-fi
+# Generate requirements.txt for non-Poetry compatibility
+echo "Generating requirements.txt from poetry.lock..."
+poetry export --without-hashes -f requirements.txt -o requirements.txt || true
 
 # 3. Install pre-commit hooks
 echo "Installing pre-commit hooks..."
