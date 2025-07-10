@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 from pathlib import Path
-from typing import Any
 
 
 def fetch_metadata(file: Path, provider: str) -> dict:
@@ -19,10 +16,6 @@ def store_credentials(provider: str, api_key: str) -> None:
     ...
 
 
-def save_paths(library: Path | None, cache: Path | None) -> dict[str, Any]:
+def save_paths(library: Path | None, cache: Path | None) -> None:
     """Placeholder: save configured library and cache paths."""
-    return {
-        "library": str(library) if library else None,
-        "cache": str(cache) if cache else None,
-        "status": "stub - not yet implemented",
-    }
+    ...

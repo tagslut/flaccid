@@ -31,5 +31,5 @@ def path(
 ) -> None:
     """Configure default library and cache paths."""
 
-    settings: Any = save_paths(library, cache)
+    settings: Any = save_paths(library, cache)  # type: ignore[func-returns-value]
     typer.echo(settings)

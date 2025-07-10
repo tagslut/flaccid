@@ -9,6 +9,21 @@ from flaccid.lib import app as lib_app
 from flaccid.set import app as set_app
 from flaccid.tag import app as tag_app
 
+from .placeholders import (
+    apply_metadata,
+    fetch_metadata,
+    save_paths,
+    store_credentials,
+)
+
+__all__ = [
+    "app",
+    "apply_metadata",
+    "fetch_metadata",
+    "save_paths",
+    "store_credentials",
+]
+
 # Add other subcommands as needed
 
 app = typer.Typer(help="FLACCID CLI root app.")
