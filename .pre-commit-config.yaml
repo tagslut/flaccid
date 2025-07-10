@@ -20,7 +20,8 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: ["mypy>=1.10.0", "types-PyYAML"]
-        args: [--exclude, '(^|/)archive/']
+        args: [--exclude, '(^|/)archive/', --exclude, '^archive/.*$']
+        files: ^(src/|tests/)
 
   - repo: https://github.com/pycqa/isort
     rev: 6.0.1
