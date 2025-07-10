@@ -34,4 +34,10 @@ fi
 # 5. mypy stub auto-install
 poetry run mypy --install-types --non-interactive || true
 
-echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
+# 6. Run all tests to catch errors early
+if poetry run pytest; then
+  echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
+else
+  echo -e "\n❌ Tests failed. Please review the errors above."
+  exit 1
+fi
