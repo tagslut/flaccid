@@ -15,17 +15,20 @@ FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive C
 - **Library Management**: Scan, index, and search large music collections.
 - **Quality Analysis**: Analyze audio quality distribution.
 - **Interactive CLI**: User-friendly commands with rich progress indicators.
+- **Plugin System**: Easily extend support for new services via modular plugins.
+- **Streamlined Tagging Workflow**: `fla tag <provider>` fetches and writes metadata in one step.
+- **Library Indexing**: `fla lib scan` and `fla lib index` maintain a searchable SQLite database.
 
 ## CLI Overview
 
-Common operations use the `flaccid` command:
+Common operations use the `fla` command:
 
 ```bash
-flaccid tag fetch <file> --provider qobuz
-flaccid tag apply <file> --metadata-file tags.json --yes
-flaccid set auth qobuz
-flaccid set path --library /mnt/music --cache ~/.cache/flaccid
-flaccid get qobuz <track_id> output.flac
+fla tag fetch <file> --provider qobuz
+fla tag apply <file> --metadata-file tags.json --yes
+fla set auth qobuz
+fla set path --library /mnt/music --cache ~/.cache/flaccid
+fla get qobuz <track_id> output.flac
 ```
 
 ## Installation
@@ -46,10 +49,10 @@ flaccid get qobuz <track_id> output.flac
 3. Set up credentials for APIs:
 
    ```bash
-   flaccid set auth qobuz
-   flaccid set auth apple
+   fla set auth qobuz
+   fla set auth apple
    # Optional: configure directories
-   flaccid set path --library ~/Music --cache ~/.cache/flaccid
+   fla set path --library ~/Music --cache ~/.cache/flaccid
    ```
 
 ## Usage
@@ -57,32 +60,32 @@ flaccid get qobuz <track_id> output.flac
 ### Library Scanning
 
 ```bash
-flaccid lib scan stats /path/to/music --recursive
+fla lib scan /path/to/music --db library.db
 ```
 
 ### Metadata Tagging
 
 ```bash
-flaccid tag qobuz search /path/to/track.flac
+fla tag fetch /path/to/track.flac --provider qobuz
 ```
 
 Use the new `fetch` and `apply` commands to manage metadata:
 
 ```bash
-flaccid tag fetch /path/to/track.flac --provider qobuz
-flaccid tag apply /path/to/track.flac --metadata-file metadata.json --yes
+fla tag fetch /path/to/track.flac --provider qobuz
+fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
 ```
 
 ### Database Indexing
 
 ```bash
-flaccid lib index build /path/to/music --recursive
-flaccid lib scan /path/to/music --db library.db
+fla lib index --rebuild
+fla lib scan /path/to/music --db library.db
 ```
 
 ## Documentation
 
-For detailed documentation, see the [docs folder](./docs).
+For architectural details such as the plugin system, tagging workflow, and library indexing, see [FLACCID CLI Toolkit Developer Handbook](docs/FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md). Additional guides are available in the [docs folder](./docs).
 
 ## Contributing
 
