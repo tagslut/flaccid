@@ -1,4 +1,4 @@
-.PHONY: install setup test clean cli lint fmt
+.PHONY: install setup test clean cli lint fmt ci
 
 install:
 	poetry install
@@ -17,9 +17,14 @@ fmt:
 	poetry run black src tests
 
 clean:
-	rm -rf dist build *.egg-info
+        rm -rf dist build *.egg-info
 
 cli:
-	poetry run python fla.py --help
+        poetry run python fla.py --help
 # Run formatter followed by linter
 style: fmt lint
+
+ci:
+	poetry install --sync
+	pre-commit run --all-files
+	pytest --cov=flaccid
