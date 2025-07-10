@@ -12,6 +12,17 @@ FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive C
 - **Quality Analysis**: Analyze audio quality distribution.
 - **Interactive CLI**: User-friendly commands with rich progress indicators.
 
+## CLI Overview
+
+Common operations use the `flaccid` command:
+
+```bash
+flaccid tag fetch <file> --provider qobuz
+flaccid tag apply <file> --metadata-file tags.json --yes
+flaccid set auth qobuz
+flaccid set path --library /mnt/music --cache ~/.cache/flaccid
+```
+
 ## Installation
 
 1. Clone the repository:
@@ -30,10 +41,10 @@ FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive C
 3. Set up credentials for APIs:
 
    ```bash
-   fla set auth qobuz
-   fla set auth apple
+   flaccid set auth qobuz
+   flaccid set auth apple
    # Optional: configure directories
-   fla set path --library ~/Music --cache ~/.cache/flaccid
+   flaccid set path --library ~/Music --cache ~/.cache/flaccid
    ```
 
 ## Usage
@@ -41,26 +52,26 @@ FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive C
 ### Library Scanning
 
 ```bash
-fla lib scan stats /path/to/music --recursive
+flaccid lib scan stats /path/to/music --recursive
 ```
 
 ### Metadata Tagging
 
 ```bash
-fla tag qobuz search /path/to/track.flac
+flaccid tag qobuz search /path/to/track.flac
 ```
 
 Use the new `fetch` and `apply` commands to manage metadata:
 
 ```bash
-fla tag fetch /path/to/track.flac --provider qobuz
-fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
+flaccid tag fetch /path/to/track.flac --provider qobuz
+flaccid tag apply /path/to/track.flac --metadata-file metadata.json --yes
 ```
 
 ### Database Indexing
 
 ```bash
-fla lib index build /path/to/music --recursive
+flaccid lib index build /path/to/music --recursive
 ```
 
 ## Documentation
