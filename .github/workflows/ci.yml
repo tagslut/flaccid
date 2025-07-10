@@ -45,3 +45,30 @@ jobs:
         with:
           name: coverage-report
           path: htmlcov/
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python & Poetry
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry config virtualenvs.in-project true
+          poetry install --sync --no-interaction --no-ansi
+
+      - name: Build distributions
+        run: poetry build
+
+      - name: Publish to PyPI
+        env:
+          POETRY_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          poetry publish --no-interaction --username __token__ --password "$POETRY_PYPI_TOKEN"
