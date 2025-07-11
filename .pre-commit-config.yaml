@@ -1,12 +1,12 @@
 default_language_version:
-  python: python3.12
+  python: python3.11
 
 repos:
   - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:
       - id: black
-        language_version: python3.12
+        language_version: python3.11
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.3.0
@@ -14,17 +14,8 @@ repos:
       - id: flake8
         args: ["--config=.flake8"]
 
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.1
-    hooks:
-      - id: mypy
-        additional_dependencies: ["mypy>=1.10.0", "types-PyYAML"]
-        args: [--exclude, '(^|/)archive/', --exclude, '^archive/.*$']
-        files: ^(src/|tests/)
-
   - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
+    rev: 5.13.2
     hooks:
       - id: isort
         args: ["--profile", "black"]
@@ -47,6 +38,13 @@ repos:
 
   - repo: local
     hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        args: [--exclude, '(^|/)archive/', --exclude, '^archive/.*$']
+        files: ^(src/|tests/)
       - id: pytest
         name: pytest
         entry: pytest tests/ -v
