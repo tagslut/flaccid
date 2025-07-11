@@ -5,7 +5,10 @@ steps:
     args:
       - '-c'
       - |
-        pip install --user -r requirements.txt
+        curl -sSL https://install.python-poetry.org | python3 -
+        export PATH="$HOME/.local/bin:$PATH"
+        poetry config virtualenvs.in-project true
+        poetry install --sync --no-interaction --no-ansi --with dev
 
   # 2. Run tests
   - name: 'python:3.11.11-slim'
@@ -14,7 +17,8 @@ steps:
       - '-c'
       - |
         export PATH="$HOME/.local/bin:$PATH"
-        pytest -q
+        poetry run pre-commit run --all-files
+        poetry run pytest -q
 
   # 3. Deploy on success
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

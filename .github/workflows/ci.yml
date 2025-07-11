@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --sync --no-interaction --no-ansi
+          poetry install --sync --no-interaction --no-ansi --with dev
 
       - name: Cache pre-commit
         uses: actions/cache@v3
@@ -85,7 +85,7 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
-          poetry install --sync --no-interaction --no-ansi
+          poetry install --sync --no-interaction --no-ansi --with dev
 
       - name: Build distributions
         run: poetry build

@@ -51,7 +51,11 @@ poetry export --without-hashes --sort -f requirements.txt -o requirements.txt ||
 # 4. Pre-commit hooks
 poetry run pre-commit install
 poetry run pre-commit clean
-if ! poetry run pre-commit run --all-files; then
+echo "▶ Auto-formatting code..."
+poetry run black .
+poetry run isort .
+poetry run autoflake --recursive --in-place --remove-unused-variables --remove-all-unused-imports src tests
+if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
   echo "❌ pre-commit hooks failed. Fix issues and re-run setup."
   exit 1
 fi
