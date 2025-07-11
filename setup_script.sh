@@ -65,6 +65,10 @@ if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
 fi
 
 # 5. mypy stub auto-install
+# 5a. Install missing type stubs required by mypy
+echo "▶ Installing common type stubs for mypy..."
+poetry run pip install --disable-pip-version-check \
+    types-pytest types-aiohttp types-click types-sqlalchemy || true
 poetry run mypy --install-types --non-interactive --ignore-missing-imports || true
 
 # 6. Note about integration tests
