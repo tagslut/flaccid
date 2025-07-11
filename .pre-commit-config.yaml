@@ -49,7 +49,6 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: python -m poetry run pytest tests/ -v
-        language: python  # must be python for additional_dependencies to work
+        entry: poetry run pytest tests/ -v
+        language: system
         pass_filenames: false
-        additional_dependencies: ["poetry>=1.8"]
