@@ -77,13 +77,10 @@ jobs:
           poetry config virtualenvs.in-project true
 
       - name: Cache Poetry virtualenv
-        id: cache-poetry
         uses: actions/cache@v3
         with:
           path: .venv
           key: ${{ runner.os }}-python-3.11-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-python-3.11-
 
       - name: Install dependencies
         run: |
@@ -96,5 +93,4 @@ jobs:
       - name: Publish to PyPI
         env:
           POETRY_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          poetry publish --no-interaction --username __token__ --password "$POETRY_PYPI_TOKEN"
+        run: poetry publish --no-interaction --username __token__ --password "$POETRY_PYPI_TOKEN"

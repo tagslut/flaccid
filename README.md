@@ -6,7 +6,7 @@
 
 ## Overview
 
-FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive CLI toolkit designed for managing and enriching FLAC music libraries. It provides robust metadata enrichment, tagging, and library management features, leveraging APIs like Qobuz, Apple Music, and more.
+FLACCID is a comprehensive CLI toolkit designed for managing and enriching FLAC music libraries. It provides robust metadata enrichment, tagging, and library management features, leveraging APIs like Qobuz, Apple Music, and more.
 
 ## Key Features
 
