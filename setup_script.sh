@@ -40,7 +40,7 @@ poetry lock
 
 # 2. Install dependencies
 echo "Installing dependencies..."
-if ! poetry install --with dev; then
+if ! poetry install --sync --no-interaction --no-ansi --with dev; then
   echo "❌ Poetry install failed."
   exit 1
 fi

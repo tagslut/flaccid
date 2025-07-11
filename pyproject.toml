@@ -1,4 +1,4 @@
-[project]
+[tool.poetry]
 name = "flaccid"
 version = "0.1.0"
 description = "Modular FLAC CLI Toolkit"
@@ -54,3 +54,12 @@ asyncio_default_fixture_loop_scope = "function"
 python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
+
+#!/bin/bash
+
+set -e
+
+echo "Installing dependencies..."
+poetry install --sync --no-interaction --no-ansi --with dev
+
+echo "Setup complete."
