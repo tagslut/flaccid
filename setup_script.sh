@@ -61,7 +61,7 @@ if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
 fi
 
 # 5. mypy stub auto-install
-poetry run mypy --install-types --non-interactive || true
+poetry run mypy --install-types --non-interactive --ignore-missing-imports || true
 
 # 6. Note about integration tests
 echo -e "\nℹ️  NOTE: The test suite may include integration tests that require"
