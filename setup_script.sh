@@ -59,6 +59,12 @@ fi
 # 5. mypy stub auto-install
 poetry run mypy --install-types --non-interactive || true
 
+# 6. Note about integration tests
+echo -e "\nℹ️  NOTE: The test suite may include integration tests that require"
+echo "   credentials for services like Qobuz or Apple Music."
+echo "   If tests fail with connection errors, please configure credentials using:"
+echo "   'poetry run fla set auth <service_name>'"
+
 # 6. Run all tests to catch errors early
 if poetry run pytest; then
   echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
