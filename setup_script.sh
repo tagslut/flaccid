@@ -54,7 +54,12 @@ poetry run pre-commit clean
 echo "▶ Auto-formatting code..."
 poetry run black .
 poetry run isort .
-poetry run autoflake --recursive --in-place --remove-unused-variables --remove-all-unused-imports src tests
+ # 4b. Auto-remove unused imports (if autoflake is installed)
+ if command -v autoflake &>/dev/null; then
+   poetry run autoflake --recursive --in-place --remove-unused-variables --remove-all-unused-imports src tests
+ else
+   echo "⚠️  autoflake not found; skipping unused-import cleanup"
+ fi
 if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
   echo "❌ pre-commit hooks failed. Fix issues and re-run setup."
   exit 1
