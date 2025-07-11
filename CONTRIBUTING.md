@@ -36,4 +36,4 @@ Thank you for your interest in contributing to FLACCID! We welcome contributions
 - Please provide as much detail as possible, including steps to reproduce and relevant logs.
 
 ## License
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the GNU General Public License v3.0.
