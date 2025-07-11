@@ -2,6 +2,14 @@
 # setup_script.sh - Bootstrap FLACCID dev environment
 
 set -euo pipefail
+# Uncomment for debug: set -x
+
+# 0. Check for Python 3
+if ! command -v python3 &>/dev/null; then
+  echo "❌ Python 3 is required but not found. Please install Python 3."
+  exit 1
+fi
+
 # Remove stale requirements.txt if present (for clean Poetry export)
 rm -f requirements.txt
 
@@ -12,13 +20,26 @@ if ! command -v poetry &>/dev/null; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
+# Print versions for reproducibility
+python3 --version
+poetry --version
+
 # Tell Poetry to keep the venv local and to use the current python3
 poetry config virtualenvs.in-project true
 poetry env use "$(command -v python3)"
 
+# 1b. Validate Poetry project
+if ! poetry check; then
+  echo "❌ Poetry project validation failed. Please fix pyproject.toml."
+  exit 1
+fi
+
 # 2. Install dependencies
 echo "Installing dependencies..."
-poetry install --with dev
+if ! poetry install --with dev; then
+  echo "❌ Poetry install failed."
+  exit 1
+fi
 
 # 3. Optional deterministic requirements export
 poetry export --without-hashes --sort -f requirements.txt -o requirements.txt || true
@@ -37,6 +58,11 @@ poetry run mypy --install-types --non-interactive || true
 # 6. Run all tests to catch errors early
 if poetry run pytest; then
   echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
+  echo -e "\nUseful commands:"
+  echo "  poetry shell            # Activate the virtual environment"
+  echo "  poetry run <cmd>       # Run a command inside the venv"
+  echo "  poetry run pytest      # Run tests"
+  echo "  poetry run pre-commit run --all-files  # Run all pre-commit hooks"
 else
   echo -e "\n❌ Tests failed. Please review the errors above."
   exit 1
