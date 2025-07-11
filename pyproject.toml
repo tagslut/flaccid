@@ -8,6 +8,10 @@ packages = [
   { include = "flaccid", from = "src" },
   { include = "fla",      from = "src" }
 ]
+include = [
+  "src/flaccid/py.typed",
+  "src/fla/py.typed",
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
