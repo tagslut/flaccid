@@ -36,7 +36,7 @@ fi
 
 # 1c. Update lock file if needed, without upgrading dependencies
 echo "Ensuring lock file is up to date..."
-poetry lock --no-update
+poetry lock
 
 # 2. Install dependencies
 echo "Installing dependencies..."
