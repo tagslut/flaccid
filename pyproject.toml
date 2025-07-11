@@ -53,3 +53,9 @@ python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.mypy]
+packages = ["flaccid", "fla"]
+mypy_path = "src"
+exclude = "archive/"
+explicit_package_bases = true
