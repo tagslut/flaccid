@@ -1,3 +1,7 @@
+
+
+
+
 [tool.poetry]
 name = "flaccid"
 version = "0.1.0"
@@ -7,6 +11,10 @@ readme = "README.md"
 packages = [
   { include = "flaccid", from = "src" },
 ]
+
+
+
+
 
 [tool.poetry.dependencies]
 python = ">=3.11"
@@ -27,6 +35,9 @@ pandas = "==2.1.4"
 pyarrow = "==14.0.2"
 typing-extensions = "*"
 black = ">=25.1.0,<26.0"
+
+
+
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
@@ -54,19 +65,3 @@ asyncio_default_fixture_loop_scope = "function"
 python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
-
-[build]
-script = "pyproject.toml"
-
-[tool.poetry.scripts]
-flaccid = "flaccid.__main__:app"
-
-[gh-actions]
-- name: Debug pyproject.toml
-  run: |
-    echo "First 20 lines:"
-    head -20 pyproject.toml
-    echo "Last 20 lines:"
-    tail -20 pyproject.toml
-    echo "Line count:"
-    wc -l pyproject.toml
