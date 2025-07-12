@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Modular FLAC CLI Toolkit"
 authors = ["georges <geoooorges@icloud.com>"]
 readme = "README.md"
+license = "GPL-3.0-only"
 packages = [
   { include = "flaccid", from = "src" },
 ]
