@@ -1,5 +1,5 @@
 steps:
-  # 1. Install dependencies (in home so we don’t need sudo)
+  # 1. Install dependencies with Poetry (no requirements.txt needed)
   - name: 'python:3.11.11-slim'
     entrypoint: 'bash'
     args:
