@@ -13,11 +13,11 @@ FLACCID is a comprehensive CLI toolkit designed for managing and enriching FLAC 
 - **Metadata Enrichment**: Fetch high-quality metadata from multiple sources (Qobuz, Tidal, Apple Music, Discogs, Beatport, etc.).
 - **FLAC Tagging**: Apply enriched metadata to FLAC files.
 - **Library Management**: Scan, index, and search large music collections.
-- **Quality Analysis**: Analyze audio quality distribution.
+- **Quality Analysis**: Analyze audio quality distribution *(planned)*.
 - **Interactive CLI**: User-friendly commands with rich progress indicators.
-- **Plugin System**: Easily extend support for new services via modular plugins.
+- **Plugin System**: Easily extend support for new services via modular plugins *(in progress)*.
 - **Streamlined Tagging Workflow**: `fla tag <provider>` fetches and writes metadata in one step.
-- **Library Indexing**: `fla lib scan` and `fla lib index` maintain a searchable SQLite database.
+- **Library Indexing**: `fla lib scan` and `fla lib index` maintain a searchable SQLite database *(WIP)*.
 
 ## CLI Overview
 
@@ -28,7 +28,7 @@ fla tag fetch <file> --provider qobuz
 fla tag apply <file> --metadata-file tags.json --yes
 fla set auth qobuz
 fla set path --library /mnt/music --cache ~/.cache/flaccid
-fla get qobuz <track_id> output.flac
+fla get qobuz <track_id> output.flac  # placeholder
 ```
 
 ## Installation
@@ -60,7 +60,7 @@ fla get qobuz <track_id> output.flac
 ### Library Scanning
 
 ```bash
-fla library scan /path/to/music --db library.db [--watch]
+fla library scan /path/to/music --db library.db [--watch]  # WIP
 ```
 
 ### Metadata Tagging
@@ -79,7 +79,7 @@ fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
 ### Database Indexing
 
 ```bash
-fla lib index --rebuild
+fla lib index --rebuild  # experimental
 fla lib scan /path/to/music --db library.db
 ```
 
