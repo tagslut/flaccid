@@ -49,20 +49,42 @@ def test_apply_metadata(monkeypatch, tmp_path):
     flac = tmp_path / "t.flac"
     flac.write_text("data")
     meta_file = tmp_path / "meta.json"
-    meta_file.write_text(json.dumps({"title": "Song"}))
+    meta_file.write_text(
+        json.dumps(
+            {
+                "title": "Song",
+                "artist": "Artist",
+                "album": "A",
+                "track_number": 1,
+                "disc_number": 1,
+            }
+        )
+    )
 
-    saved = {}
+    called: dict[str, object] = {}
 
-    class FakeFLAC(dict):
-        def save(self):
-            saved["ok"] = True
+    def fake_write(path, meta_obj, art=None):
+        called["write"] = (path, meta_obj)
 
-    monkeypatch.setattr(placeholders, "FLAC", lambda path: FakeFLAC())
+    class FakeLyrics:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def get_lyrics(self, artist: str, title: str):
+            called["lyrics"] = (artist, title)
+            return "la"
+
+    monkeypatch.setattr(placeholders.metadata, "write_tags", fake_write)
+    monkeypatch.setattr(placeholders, "LyricsPlugin", lambda: FakeLyrics())
     monkeypatch.setattr(placeholders, "confirm", lambda msg: True)
 
     placeholders.apply_metadata(flac, meta_file, yes=False)
 
-    assert saved.get("ok") is True
+    assert called["write"][0] == flac
+    assert called["lyrics"] == ("Artist", "Song")
 
 
 def test_store_credentials(monkeypatch):

@@ -76,6 +76,8 @@ Use the new `fetch` and `apply` commands to manage metadata:
 fla tag fetch /path/to/track.flac --provider qobuz
 fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
 ```
+The apply command writes tags using built-in helpers and will attempt to
+retrieve lyrics automatically when they are missing.
 
 ### Database Indexing
 
