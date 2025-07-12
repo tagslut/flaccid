@@ -7,7 +7,7 @@ from typing import Optional
 
 from mutagen.flac import FLAC, Picture
 
-from flaccid.plugins.base import TrackMetadata
+from flaccid.plugins.base import LyricsProviderPlugin, TrackMetadata
 
 
 def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> None:
@@ -45,14 +45,14 @@ def write_tags(path: Path, metadata: TrackMetadata, art: bytes | None = None) ->
 async def fetch_and_tag(
     path: Path,
     metadata: TrackMetadata,
-    lyrics_plugin: Optional[object] = None,
+    lyrics_plugin: Optional[LyricsProviderPlugin] = None,
     art_data: bytes | None = None,
 ) -> None:
-    """Fetch lyrics using *lyrics_plugin* and write tags."""
+    """Fetch lyrics using *lyrics_plugin* (if provided) and write tags."""
 
     if lyrics_plugin and not metadata.lyrics:
-        get_lyrics = getattr(lyrics_plugin, "get_lyrics", None)
-        if callable(get_lyrics):
-            metadata.lyrics = await get_lyrics(metadata)
+        metadata.lyrics = await lyrics_plugin.get_lyrics(
+            metadata.artist, metadata.title
+        )
 
     write_tags(path, metadata, art=art_data)

@@ -61,3 +61,29 @@ async def test_lyrics_plugin(tmp_path, monkeypatch):
         monkeypatch.setattr(plugin.session, "get", fake_get)
         lyrics = await plugin.get_lyrics("artist", "song")
         assert lyrics == "la la"
+
+
+@pytest.mark.asyncio
+async def test_lyrics_plugin_handles_errors(monkeypatch):
+    """Plugin should return ``None`` on request failure."""
+
+    def fake_get(url, **kwargs):
+        class Resp:
+            status = 404
+
+            async def json(self):  # pragma: no cover - not used
+                return {}
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                pass
+
+        return Resp()
+
+    plugin = LyricsPlugin()
+    async with plugin:
+        monkeypatch.setattr(plugin.session, "get", fake_get)
+        lyrics = await plugin.get_lyrics("artist", "song")
+        assert lyrics is None

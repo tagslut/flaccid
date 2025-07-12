@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from flaccid.core import metadata
-from flaccid.plugins.base import TrackMetadata
+from flaccid.plugins.base import LyricsProviderPlugin, TrackMetadata
 
 
 class FakeFLAC(dict):
@@ -66,8 +66,8 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
     """Lyrics should be fetched when missing and tags written."""
     captured: dict[str, object] = {}
 
-    async def fake_get_lyrics(meta: TrackMetadata) -> str:
-        captured["lyrics"] = meta.title
+    async def fake_get_lyrics(artist: str, title: str) -> str:
+        captured["lyrics"] = (artist, title)
         return "words"
 
     def fake_write(path: Path, meta: TrackMetadata, art: bytes | None = None) -> None:
@@ -85,11 +85,18 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
     path = tmp_path / "t.flac"
     path.write_text("d")
 
-    class Plugin:
-        async def get_lyrics(self, meta: TrackMetadata) -> str:
-            return await fake_get_lyrics(meta)
+    class Plugin(LyricsProviderPlugin):
+        async def get_lyrics(self, artist: str, title: str) -> str:
+            return await fake_get_lyrics(artist, title)
+
+        async def open(self) -> None:  # pragma: no cover - unused
+            pass
+
+        async def close(self) -> None:  # pragma: no cover - unused
+            pass
 
     await metadata.fetch_and_tag(path, meta, lyrics_plugin=Plugin(), art_data=b"a")
 
     assert meta.lyrics == "words"
     assert captured["write"] == (path, meta, b"a")
+    assert captured["lyrics"] == ("A", "T")
