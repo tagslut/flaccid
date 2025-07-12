@@ -54,3 +54,19 @@ asyncio_default_fixture_loop_scope = "function"
 python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
+
+[build]
+script = "pyproject.toml"
+
+[tool.poetry.scripts]
+flaccid = "flaccid.__main__:app"
+
+[gh-actions]
+- name: Debug pyproject.toml
+  run: |
+    echo "First 20 lines:"
+    head -20 pyproject.toml
+    echo "Last 20 lines:"
+    tail -20 pyproject.toml
+    echo "Line count:"
+    wc -l pyproject.toml
