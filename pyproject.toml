@@ -54,20 +54,3 @@ asyncio_default_fixture_loop_scope = "function"
 python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
-
-#!/bin/bash
-
-set -e
-
-echo "Python $(python3 --version)"
-echo "Poetry $(poetry --version)"
-
-echo "Installing dependencies..."
-poetry install --sync --no-interaction --no-ansi --with dev
-
-echo "Installing pre-commit hooks..."
-poetry run pre-commit install
-echo "Running pre-commit hooks..."
-poetry run pre-commit run --all-files
-
-echo "Setup complete."
