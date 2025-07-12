@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Asynchronous Tidal API client (placeholder)."""
+"""Asynchronous Tidal API client."""
 
 import os
 from pathlib import Path
@@ -19,8 +19,15 @@ class TidalPlugin(MetadataProviderPlugin):
 
     BASE_URL = "https://api.tidalhifi.com/v1/"
 
-    def __init__(self, token: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        token: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
         self.token = token or os.getenv("TIDAL_TOKEN")
+        self.username = username or os.getenv("TIDAL_USERNAME")
+        self.password = password or os.getenv("TIDAL_PASSWORD")
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:
@@ -31,16 +38,42 @@ class TidalPlugin(MetadataProviderPlugin):
             await self.session.close()
             self.session = None
 
-    async def authenticate(self) -> None:
-        if not self.token:
-            self.token = keyring.get_password("flaccid_tidal", "token")
+    async def login(self) -> None:
+        """Log in using ``username`` and ``password`` to obtain a token."""
+        if not self.session:
+            await self.open()
+        data = await self._request(
+            "login/username",
+            method="post",
+            username=self.username,
+            password=self.password,
+        )
+        self.token = data.get("token")
+        if self.token:
+            keyring.set_password("flaccid_tidal", "token", self.token)
 
-    async def _request(self, endpoint: str, **params: Any) -> Any:
+    async def authenticate(self) -> None:
+        """Authenticate using stored token or login credentials."""
+        if self.token:
+            return
+        self.token = keyring.get_password("flaccid_tidal", "token")
+        if self.token:
+            return
+        # Attempt login if credentials are available
+        if self.username and self.password:
+            await self.login()
+
+    async def _request(
+        self, endpoint: str, method: str = "get", **params: Any
+    ) -> Any:
+        """Perform an HTTP request against the Tidal API."""
         assert self.session is not None, "Session not initialized"
-        headers = {"Authorization": f"Bearer {self.token}"}
-        async with self.session.get(
-            self.BASE_URL + endpoint, params=params, headers=headers
-        ) as resp:
+        headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+        url = self.BASE_URL + endpoint
+        if method.lower() == "post":
+            async with self.session.post(url, json=params, headers=headers) as resp:
+                return await resp.json()
+        async with self.session.get(url, params=params, headers=headers) as resp:
             return await resp.json()
 
     async def search_track(self, query: str) -> Any:
@@ -86,7 +119,7 @@ class TidalPlugin(MetadataProviderPlugin):
         return await self._request("search/albums", query=query)
 
     async def download_track(self, track_id: str, dest: Path) -> bool:
-        """Download a track to *dest* (placeholder)."""
+        """Download a track to *dest*."""
         await self.authenticate()
         if not self.session:
             await self.open()

@@ -26,6 +26,11 @@ QOBUZ_TOKEN=your_qobuz_auth_token_here
 APPLE_TOKEN=your_apple_music_developer_token_here
 APPLE_STORE=us
 
+# Tidal Configuration
+TIDAL_TOKEN=your_tidal_auth_token_here
+TIDAL_USERNAME=your_tidal_username
+TIDAL_PASSWORD=your_tidal_password
+
 # General Configuration
 FLACCID_LOG_LEVEL=INFO
 FLACCID_CACHE_DIR=~/.flaccid/cache
@@ -117,6 +122,13 @@ if validate_flac_file("/path/to/file.flac"):
 - ✅ ISRC-based lookups
 - ✅ Track and album metadata retrieval
 - ✅ User token support for personalized features
+- ✅ Async context manager support
+
+### Tidal API Features
+- ✅ Token or credential based authentication
+- ✅ Track search and metadata retrieval
+- ✅ Album metadata retrieval
+- ✅ Streaming URL generation
 - ✅ Async context manager support
 
 ### Metadata Utils Features

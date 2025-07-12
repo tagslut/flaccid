@@ -7,6 +7,7 @@ from flaccid.plugins import PLUGINS
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
 from flaccid.plugins.qobuz import QobuzPlugin
+from flaccid.plugins.tidal import TidalPlugin
 
 
 @pytest.mark.asyncio
@@ -61,3 +62,26 @@ async def test_lyrics_plugin(tmp_path, monkeypatch):
         monkeypatch.setattr(plugin.session, "get", fake_get)
         lyrics = await plugin.get_lyrics("artist", "song")
         assert lyrics == "la la"
+
+
+@pytest.mark.asyncio
+async def test_tidal_plugin_auth_from_keyring(monkeypatch):
+    monkeypatch.setattr("keyring.get_password", lambda service, user: "tkn")
+    async with TidalPlugin() as plugin:
+        await plugin.authenticate()
+        assert plugin.token == "tkn"
+
+
+@pytest.mark.asyncio
+async def test_tidal_plugin_login(monkeypatch):
+    plugin = TidalPlugin(username="user", password="pass")
+    monkeypatch.setattr("keyring.get_password", lambda *a, **k: None)
+    monkeypatch.setattr("keyring.set_password", lambda *a, **k: None)
+
+    async def fake_request(endpoint: str, method: str = "get", **params):
+        assert method == "post"
+        return {"token": "newtoken"}
+
+    monkeypatch.setattr(plugin, "_request", fake_request)
+    await plugin.authenticate()
+    assert plugin.token == "newtoken"
