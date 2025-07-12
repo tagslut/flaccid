@@ -28,7 +28,7 @@ fla tag fetch <file> --provider qobuz
 fla tag apply <file> --metadata-file tags.json --yes
 fla set auth qobuz
 fla set path --library /mnt/music --cache ~/.cache/flaccid
-fla get qobuz <track_id> output.flac  # placeholder
+fla get qobuz <track_id> output.flac
 ```
 
 ## Installation

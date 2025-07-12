@@ -85,7 +85,7 @@ APPLE_TOKEN=your_apple_developer_token
 APPLE_STORE=us
 ```
 
-### Library Management (Placeholder)
+### Library Management
 
 ```bash
 # Scan directory for FLAC files
@@ -101,7 +101,7 @@ poetry run python -m fla lib index query "search term"
 poetry run python -m fla lib index stats
 ```
 
-### Download Music (Placeholder)
+### Download Music
 
 ```bash
 # Download from Qobuz

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+- Removed unused placeholder tests and updated documentation.
 - Ongoing improvements and bug fixes.
 
 ## [2025-07-10]
