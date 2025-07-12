@@ -2,14 +2,15 @@ from __future__ import annotations
 
 """Helper functions used by the CLI commands."""
 
-from pathlib import Path
-import json
-
 import asyncio
+import json
+from pathlib import Path
+
 import keyring
 from mutagen.flac import FLAC
 from typer import confirm
 
+from flaccid.plugins import BeatportPlugin, DiscogsPlugin
 from flaccid.shared.apple_api import AppleAPI
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
 from flaccid.shared.qobuz_api import QobuzAPI
@@ -23,7 +24,7 @@ def fetch_metadata(file: Path, provider: str) -> dict:
     file:
         FLAC file to inspect for existing metadata to build a search query.
     provider:
-        Name of the provider to query (``qobuz`` or ``apple``).
+        Name of the provider to query (``qobuz``, ``apple``, ``discogs``, or ``beatport``).
     """
     existing = get_existing_metadata(str(file))
     query = build_search_query(existing)
@@ -35,6 +36,12 @@ def fetch_metadata(file: Path, provider: str) -> dict:
         if provider.lower() == "apple":
             async with AppleAPI() as api:
                 return await api._itunes_search(query)
+        if provider.lower() == "discogs":
+            async with DiscogsPlugin() as api:
+                return await api.search_track(query)
+        if provider.lower() == "beatport":
+            async with BeatportPlugin() as api:
+                return await api.search_track(query)
         raise ValueError(f"Unsupported provider: {provider}")
 
     return asyncio.run(_search())

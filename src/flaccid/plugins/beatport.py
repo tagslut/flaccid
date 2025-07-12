@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Asynchronous Tidal API client (placeholder)."""
+"""Beatport API plugin."""
 
 import os
 from pathlib import Path
@@ -14,13 +14,13 @@ from flaccid.core import downloader
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
 
-class TidalPlugin(MetadataProviderPlugin):
-    """Simplified Tidal API wrapper."""
+class BeatportPlugin(MetadataProviderPlugin):
+    """Simplified Beatport API wrapper."""
 
-    BASE_URL = "https://api.tidalhifi.com/v1/"
+    BASE_URL = "https://api.beatport.com/"
 
     def __init__(self, token: Optional[str] = None) -> None:
-        self.token = token or os.getenv("TIDAL_TOKEN")
+        self.token = token or os.getenv("BEATPORT_TOKEN")
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:
@@ -33,7 +33,7 @@ class TidalPlugin(MetadataProviderPlugin):
 
     async def authenticate(self) -> None:
         if not self.token:
-            self.token = keyring.get_password("flaccid_tidal", "token")
+            self.token = keyring.get_password("flaccid_beatport", "token")
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"
@@ -47,30 +47,25 @@ class TidalPlugin(MetadataProviderPlugin):
         await self.authenticate()
         if not self.session:
             await self.open()
-        return await self._request("search/tracks", query=query)
+        return await self._request("search", query=query)
 
     async def get_track(self, track_id: str) -> TrackMetadata:
         await self.authenticate()
         data = await self._request(f"tracks/{track_id}")
         return TrackMetadata(
-            title=data.get("title", ""),
-            artist=data.get("artist", ""),
-            album=data.get("album", ""),
-            track_number=int(data.get("trackNumber", 0)),
-            disc_number=int(data.get("volumeNumber", 0)),
-            year=(
-                data.get("streamStartDate", "").split("-")[0]
-                if data.get("streamStartDate")
-                else None
-            ),
+            title=data.get("name", ""),
+            artist=data.get("artists", [{}])[0].get("name", ""),
+            album=data.get("release", {}).get("name", ""),
+            track_number=int(data.get("number", 0)),
+            disc_number=1,
         )
 
     async def get_album(self, album_id: str) -> AlbumMetadata:
         await self.authenticate()
-        data = await self._request(f"albums/{album_id}")
+        data = await self._request(f"releases/{album_id}")
         return AlbumMetadata(
-            title=data.get("title", ""),
-            artist=data.get("artist", ""),
+            title=data.get("name", ""),
+            artist=data.get("artists", [{}])[0].get("name", ""),
             year=(
                 data.get("releaseDate", "").split("-")[0]
                 if data.get("releaseDate")
@@ -78,19 +73,11 @@ class TidalPlugin(MetadataProviderPlugin):
             ),
         )
 
-    async def search_album(self, query: str) -> Any:
-        """Search albums by *query*."""
-        await self.authenticate()
-        if not self.session:
-            await self.open()
-        return await self._request("search/albums", query=query)
-
     async def download_track(self, track_id: str, dest: Path) -> bool:
-        """Download a track to *dest* (placeholder)."""
         await self.authenticate()
         if not self.session:
             await self.open()
-        data = await self._request(f"tracks/{track_id}/streamUrl")
+        data = await self._request(f"tracks/{track_id}/download")
         url = data.get("url")
         if not url:
             return False

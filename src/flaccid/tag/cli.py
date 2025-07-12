@@ -20,7 +20,9 @@ def fetch(
         help="Metadata source",
         show_choices=True,
         case_sensitive=False,
-        click_type=click.Choice(["qobuz", "apple"], case_sensitive=False),
+        click_type=click.Choice(
+            ["qobuz", "apple", "discogs", "beatport"], case_sensitive=False
+        ),
     ),
 ) -> None:
     """Fetch metadata for *file* from the specified *provider* and print it."""

@@ -3,6 +3,7 @@ from __future__ import annotations
 """Asynchronous Apple Music API client."""
 
 import os
+from pathlib import Path
 from typing import Any, Optional
 
 import aiohttp
@@ -73,3 +74,14 @@ class AppleMusicPlugin(MetadataProviderPlugin):
                 else None
             ),
         )
+
+    async def search_album(self, query: str) -> Any:
+        """Search albums by *query*."""
+        await self.authenticate()
+        if not self.session:
+            await self.open()
+        return await self._request(self.ITUNES_URL, term=query, entity="album")
+
+    async def download_track(self, track_id: str, dest: Path) -> bool:
+        """Downloading from Apple Music is not supported."""
+        raise NotImplementedError("Apple Music does not provide downloads")

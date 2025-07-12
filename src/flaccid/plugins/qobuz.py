@@ -3,10 +3,13 @@ from __future__ import annotations
 """Asynchronous Qobuz API client."""
 
 import os
+from pathlib import Path
 from typing import Any, Optional
 
 import aiohttp
 import keyring
+
+from flaccid.core import downloader
 
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
@@ -68,3 +71,22 @@ class QobuzPlugin(MetadataProviderPlugin):
             artist=data.get("artist", ""),
             year=data.get("year"),
         )
+
+    async def search_album(self, query: str) -> Any:
+        """Search albums by *query*."""
+        await self.authenticate()
+        if not self.session:
+            await self.open()
+        return await self._request("search", query=query, type="albums")
+
+    async def download_track(self, track_id: str, dest: Path) -> bool:
+        """Download a track to *dest*."""
+        await self.authenticate()
+        if not self.session:
+            await self.open()
+        data = await self._request("track/getFileUrl", track_id=track_id, format_id=6)
+        url = data.get("url")
+        if not url:
+            return False
+        assert self.session is not None
+        return await downloader.download_file(self.session, url, dest)

@@ -71,3 +71,11 @@ class MetadataProviderPlugin(MusicServicePlugin, ABC):
     @abstractmethod
     async def get_album(self, album_id: str) -> AlbumMetadata:
         """Get full metadata for an album."""
+
+
+class LyricsProviderPlugin(MusicServicePlugin, ABC):
+    """Abstract plugin for lyrics providers."""
+
+    @abstractmethod
+    async def get_lyrics(self, artist: str, title: str) -> Optional[str]:
+        """Retrieve lyrics for *artist* and *title*."""
