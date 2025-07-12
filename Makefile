@@ -20,7 +20,7 @@ clean:
         rm -rf dist build *.egg-info
 
 cli:
-        poetry run python fla.py --help
+        poetry run python -m fla --help
 # Run formatter followed by linter
 style: fmt lint
 

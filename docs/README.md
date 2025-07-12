@@ -41,7 +41,7 @@ FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive C
 ### Library Scanning
 
 ```bash
-fla lib scan stats /path/to/music --recursive
+fla lib scan stats /path/to/music --recursive  # WIP
 ```
 
 ### Metadata Tagging
@@ -53,7 +53,7 @@ fla tag qobuz search /path/to/track.flac
 ### Database Indexing
 
 ```bash
-fla lib index build /path/to/music --recursive
+fla lib index build /path/to/music --recursive  # experimental
 ```
 
 ### Tagging Files

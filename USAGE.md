@@ -10,13 +10,13 @@ First, store your service credentials securely:
 
 ```bash
 # Store Qobuz credentials
-poetry run python fla.py set auth qobuz --username your_username --password your_password
+poetry run python -m fla set auth qobuz --username your_username --password your_password
 
 # Store Apple Music developer token
-poetry run python fla.py set auth apple --developer-token your_token
+poetry run python -m fla set auth apple --developer-token your_token
 
 # List stored credentials
-poetry run python fla.py set auth list
+poetry run python -m fla set auth list
 ```
 
 ### 2. Setup Paths
@@ -25,13 +25,13 @@ Configure directory paths:
 
 ```bash
 # Create default directories
-poetry run python fla.py set path create
+poetry run python -m fla set path create
 
 # Set custom music directory
-poetry run python fla.py set path set music ~/Music/FLAC
+poetry run python -m fla set path set music ~/Music/FLAC
 
 # List configured paths
-poetry run python fla.py set path list
+poetry run python -m fla set path list
 ```
 
 ### 3. Tag Files
@@ -40,32 +40,32 @@ poetry run python fla.py set path list
 
 ```bash
 # Tag by Qobuz track ID
-poetry run python fla.py tag qobuz track /path/to/song.flac 12345678
+poetry run python -m fla tag qobuz track /path/to/song.flac 12345678
 
 # Interactive search and tag
-poetry run python fla.py tag qobuz search /path/to/song.flac "Artist Song Title"
+poetry run python -m fla tag qobuz search /path/to/song.flac "Artist Song Title"
 
 # Batch tag directory
-poetry run python fla.py tag qobuz batch /path/to/music/directory --recursive
+poetry run python -m fla tag qobuz batch /path/to/music/directory --recursive
 ```
 
 #### Tag with Apple Music
 
 ```bash
 # Tag by ISRC (extracted from file if available)
-poetry run python fla.py tag apple isrc /path/to/song.flac
+poetry run python -m fla tag apple isrc /path/to/song.flac
 
 # Tag with specific ISRC
-poetry run python fla.py tag apple isrc /path/to/song.flac USRC17607839
+poetry run python -m fla tag apple isrc /path/to/song.flac USRC17607839
 
 # Interactive search and tag
-poetry run python fla.py tag apple search /path/to/song.flac "Artist Song Title"
+poetry run python -m fla tag apple search /path/to/song.flac "Artist Song Title"
 
 # Batch tag files with ISRC codes
-poetry run python fla.py tag apple batch /path/to/music/directory --recursive
+poetry run python -m fla tag apple batch /path/to/music/directory --recursive
 
 # Tag by Apple Music track ID
-poetry run python fla.py tag apple track /path/to/song.flac 123456789
+poetry run python -m fla tag apple track /path/to/song.flac 123456789
 ```
 
 ## Advanced Usage
@@ -89,23 +89,23 @@ APPLE_STORE=us
 
 ```bash
 # Scan directory for FLAC files
-poetry run python fla.py lib scan directory /path/to/music
+poetry run python -m fla lib scan directory /path/to/music
 
 # Build library database
-poetry run python fla.py lib index build
+poetry run python -m fla lib index build
 
 # Query library
-poetry run python fla.py lib index query "search term"
+poetry run python -m fla lib index query "search term"
 
 # Show library stats
-poetry run python fla.py lib index stats
+poetry run python -m fla lib index stats
 ```
 
 ### Download Music (Placeholder)
 
 ```bash
 # Download from Qobuz
-poetry run python fla.py get qobuz track 12345678
+poetry run python -m fla get qobuz track 12345678
 ```
 
 ## CLI Structure
