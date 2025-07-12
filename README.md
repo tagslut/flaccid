@@ -57,6 +57,10 @@ fla get qobuz <track_id> output.flac
    fla set path --library ~/Music --cache ~/.cache/flaccid
    ```
 
+   The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the
+   environment. If the token is invalid it will be refreshed automatically
+   using the stored credentials.
+
 ## Usage
 
 ### Library Scanning
