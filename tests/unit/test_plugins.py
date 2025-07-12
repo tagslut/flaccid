@@ -3,7 +3,9 @@ from unittest.mock import patch
 
 import pytest
 
+from flaccid.plugins import PLUGINS
 from flaccid.plugins.base import TrackMetadata
+from flaccid.plugins.lyrics import LyricsPlugin
 from flaccid.plugins.qobuz import QobuzPlugin
 
 
@@ -27,3 +29,35 @@ def test_track_metadata_dataclass():
     )
     assert meta.title == "Song"
     assert meta.year == 2020
+
+
+def test_plugin_registry_contains_new_plugins():
+    assert "discogs" in PLUGINS
+    assert "beatport" in PLUGINS
+    assert "lyrics" in PLUGINS
+
+
+@pytest.mark.asyncio
+async def test_lyrics_plugin(tmp_path, monkeypatch):
+    """Ensure LyricsPlugin returns lyrics on success."""
+
+    def fake_get(url, **kwargs):
+        class Resp:
+            status = 200
+
+            async def json(self):
+                return {"lyrics": "la la"}
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                pass
+
+        return Resp()
+
+    plugin = LyricsPlugin()
+    async with plugin:
+        monkeypatch.setattr(plugin.session, "get", fake_get)
+        lyrics = await plugin.get_lyrics("artist", "song")
+        assert lyrics == "la la"
