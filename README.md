@@ -12,6 +12,8 @@ FLACCID is a comprehensive CLI toolkit designed for managing and enriching FLAC 
 
 - **Metadata Enrichment**: Fetch high-quality metadata from multiple sources (Qobuz, Tidal, Apple Music, Discogs, Beatport, etc.).
 - **FLAC Tagging**: Apply enriched metadata to FLAC files.
+- **Metadata Cascade**: Merge multiple metadata sources, preferring the first
+  non-empty value for each field.
 - **Library Management**: Scan, index, and search large music collections.
 - **Quality Analysis**: Analyze audio quality distribution *(planned)*.
 - **Interactive CLI**: User-friendly commands with rich progress indicators.

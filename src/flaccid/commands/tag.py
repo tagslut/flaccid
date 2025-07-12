@@ -7,7 +7,7 @@ from pathlib import Path
 
 import typer
 
-from flaccid.core.metadata import fetch_and_tag
+from flaccid.core.metadata import cascade, fetch_and_tag
 from flaccid.plugins.apple import AppleMusicPlugin
 
 app = typer.Typer(help="Tag files with metadata")
@@ -23,7 +23,8 @@ def apple(
     async def _run() -> None:
         async with AppleMusicPlugin() as plugin:
             data = await plugin.get_track(track_id)
-            await fetch_and_tag(file, data)
+            merged = cascade(data)
+            await fetch_and_tag(file, merged)
 
     asyncio.run(_run())
     typer.echo("Tagging complete")
