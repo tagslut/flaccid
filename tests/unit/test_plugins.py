@@ -7,6 +7,8 @@ from flaccid.plugins import PLUGINS
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
 from flaccid.plugins.qobuz import QobuzPlugin
+from flaccid.plugins.beatport import BeatportPlugin
+from flaccid.plugins.discogs import DiscogsPlugin
 
 
 @pytest.mark.asyncio
@@ -61,3 +63,33 @@ async def test_lyrics_plugin(tmp_path, monkeypatch):
         monkeypatch.setattr(plugin.session, "get", fake_get)
         lyrics = await plugin.get_lyrics("artist", "song")
         assert lyrics == "la la"
+
+
+@pytest.mark.asyncio
+async def test_discogs_search_album(monkeypatch):
+    """Ensure DiscogsPlugin.search_album returns JSON."""
+
+    async def fake_request(endpoint, **params):
+        return {"results": []}
+
+    monkeypatch.setattr("keyring.get_password", lambda *a: "token")
+    plugin = DiscogsPlugin()
+    async with plugin:
+        monkeypatch.setattr(plugin, "_request", fake_request)
+        result = await plugin.search_album("test")
+        assert result == {"results": []}
+
+
+@pytest.mark.asyncio
+async def test_beatport_search_album(monkeypatch):
+    """Ensure BeatportPlugin.search_album returns JSON."""
+
+    async def fake_request(endpoint, **params):
+        return {"releases": []}
+
+    monkeypatch.setattr("keyring.get_password", lambda *a: "token")
+    plugin = BeatportPlugin()
+    async with plugin:
+        monkeypatch.setattr(plugin, "_request", fake_request)
+        result = await plugin.search_album("test")
+        assert result == {"releases": []}

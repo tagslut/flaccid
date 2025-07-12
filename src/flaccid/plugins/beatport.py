@@ -49,6 +49,13 @@ class BeatportPlugin(MetadataProviderPlugin):
             await self.open()
         return await self._request("search", query=query)
 
+    async def search_album(self, query: str) -> Any:
+        """Search Beatport releases."""
+        await self.authenticate()
+        if not self.session:
+            await self.open()
+        return await self._request("search/releases", query=query)
+
     async def get_track(self, track_id: str) -> TrackMetadata:
         await self.authenticate()
         data = await self._request(f"tracks/{track_id}")

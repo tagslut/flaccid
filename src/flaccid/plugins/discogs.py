@@ -46,6 +46,13 @@ class DiscogsPlugin(MetadataProviderPlugin):
             await self.open()
         return await self._request("database/search", q=query, type="release")
 
+    async def search_album(self, query: str) -> Any:
+        """Search albums by *query*."""
+        await self.authenticate()
+        if not self.session:
+            await self.open()
+        return await self._request("database/search", q=query, type="release")
+
     async def get_track(self, track_id: str) -> TrackMetadata:
         await self.authenticate()
         data = await self._request(f"tracks/{track_id}")

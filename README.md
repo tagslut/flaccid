@@ -16,6 +16,7 @@ FLACCID is a comprehensive CLI toolkit designed for managing and enriching FLAC 
 - **Quality Analysis**: Analyze audio quality distribution *(planned)*.
 - **Interactive CLI**: User-friendly commands with rich progress indicators.
 - **Plugin System**: Easily extend support for new services via modular plugins *(in progress)*.
+- **Album Lookup**: Discogs and Beatport plugins support album searches for better tagging.
 - **Streamlined Tagging Workflow**: `fla tag <provider>` fetches and writes metadata in one step.
 - **Library Indexing**: `fla lib scan` and `fla lib index` maintain a searchable SQLite database *(WIP)*.
 
