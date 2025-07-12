@@ -60,7 +60,7 @@ fla get qobuz <track_id> output.flac
 ### Library Scanning
 
 ```bash
-fla lib scan /path/to/music --db library.db
+fla library scan /path/to/music --db library.db [--watch]
 ```
 
 ### Metadata Tagging
