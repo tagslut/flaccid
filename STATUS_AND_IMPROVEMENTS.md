@@ -56,8 +56,8 @@
 - **`set/auth.py`** - Credential management
   - ✅ Qobuz username/password storage
   - ✅ Apple Music developer/user token storage
-  - ✅ Tidal credentials (placeholder)
-  - ✅ Spotify credentials (placeholder)
+  - ✅ Tidal credentials - planned
+  - ✅ Spotify credentials - planned
   - ✅ Keyring integration for secure storage
   - ✅ List stored credentials
 
@@ -88,12 +88,8 @@
 
 ### Testing
 
-- **`tests/test_simple.py`** - Basic unit tests
-  - ✅ Configuration management tests
-  - ✅ Metadata utility tests
-  - ✅ Qobuz API basic tests
-  - ✅ Apple API basic tests
-  - ✅ All tests passing
+- Unit tests cover configuration, metadata utilities, and API clients
+- ✅ All tests passing
 
 ### CLI Structure
 
@@ -139,7 +135,7 @@
 ### ⚠️ Known Issues & Next Priorities
 
 - **Typer/Rich Help Bug**: Help formatting has compatibility issues (non-critical, functions work)
-- **Download Module**: `get/qobuz.py` is still a placeholder (for legal reasons)
+- **Download Module**: `get/qobuz.py` is intentionally not implemented due to legal considerations
 - **Plugin Expansion**: Tidal, Discogs, Beatport, and Lyrics plugins need full implementation
 - **Metadata Cascade**: Multi-source merge logic and filename templates in progress
 - **Advanced Search**: More sophisticated search with filters and sorting planned
