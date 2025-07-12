@@ -77,7 +77,9 @@ def test_watch_library(monkeypatch, tmp_path: Path):
             pass
 
     monkeypatch.setattr("watchdog.observers.Observer", FakeObserver)
-    monkeypatch.setattr("time.sleep", lambda t=1: (_ for _ in ()).throw(KeyboardInterrupt()))
+    monkeypatch.setattr(
+        "time.sleep", lambda t=1: (_ for _ in ()).throw(KeyboardInterrupt())
+    )
 
     class FakeFLAC(dict):
         def __init__(self, path: str) -> None:
@@ -94,7 +96,7 @@ def test_watch_library(monkeypatch, tmp_path: Path):
     new_file = tmp_path / "c.flac"
     new_file.write_text("data")
     event = type("E", (), {"src_path": str(new_file), "is_directory": False})()
-    handler.on_created(event)
+    handler.on_created(event)  # type: ignore[attr-defined]
 
     engine, tracks = library._init_db(db)
     with Session(engine) as session:
