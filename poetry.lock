@@ -172,16 +172,9 @@ tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" a
 name = "autoflake"
 version = "2.3.1"
 description = "Removes unused imports and unused variables"
-<<<<<<< HEAD
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-=======
-optional = true
-python-versions = ">=3.8"
-groups = ["main"]
-markers = "extra == \"dev\""
->>>>>>> b18920a (edited pyproject.toml 9)
 files = [
     {file = "autoflake-2.3.1-py3-none-any.whl", hash = "sha256:3ae7495db9084b7b32818b4140e6dc4fc280b712fb414f5b8fe57b0a8e85a840"},
     {file = "autoflake-2.3.1.tar.gz", hash = "sha256:c98b75dc5b0a86459c4f01a1d32ac7eb4338ec4317a4469515ff1e687ecd909e"},
@@ -2248,29 +2241,22 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.26.0"
+version = "0.21.2"
 description = "Pytest support for asyncio"
-<<<<<<< HEAD
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
-=======
-optional = true
-python-versions = ">=3.9"
-groups = ["main"]
-markers = "extra == \"dev\""
->>>>>>> b851939 (edited pyproject.toml 11)
 files = [
-    {file = "pytest_asyncio-0.26.0-py3-none-any.whl", hash = "sha256:7b51ed894f4fbea1340262bdae5135797ebbe21d8638978e35d31c6d19f72fb0"},
-    {file = "pytest_asyncio-0.26.0.tar.gz", hash = "sha256:c4df2a697648241ff39e7f0e4a73050b03f123f760673956cf0d72a4990e312f"},
+    {file = "pytest_asyncio-0.21.2-py3-none-any.whl", hash = "sha256:ab664c88bb7998f711d8039cacd4884da6430886ae8bbd4eded552ed2004f16b"},
+    {file = "pytest_asyncio-0.21.2.tar.gz", hash = "sha256:d67738fc232b94b326b9d060750beb16e0074210b98dd8b58a5239fa2a154f45"},
 ]
 
 [package.dependencies]
-pytest = ">=8.2,<9"
+pytest = ">=7.0.0"
 
 [package.extras]
-docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1)"]
-testing = ["coverage (>=6.2)", "hypothesis (>=5.7.1)"]
+docs = ["sphinx (>=5.3)", "sphinx-rtd-theme (>=1.0)"]
+testing = ["coverage (>=6.2)", "flaky (>=3.5.0)", "hypothesis (>=5.7.1)", "mypy (>=0.931)", "pytest-trio (>=0.7.0)"]
 
 [[package]]
 name = "pytest-cov"
@@ -2934,17 +2920,7 @@ enabler = ["pytest-enabler (>=2.2)"]
 test = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more_itertools", "pytest (>=6,!=8.1.*)", "pytest-ignore-flaky"]
 type = ["pytest-mypy"]
 
-<<<<<<< HEAD
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
 content-hash = "43d773b9d2ffa82d2eac687033f3ff4a037446f8b6dc91d71897d9ec6a6c179a"
-=======
-[extras]
-dev = ["autoflake", "flake8", "mypy", "pre-commit", "pytest", "pytest-asyncio", "pytest-cov", "types-PyYAML"]
-
-[metadata]
-lock-version = "2.1"
-python-versions = ">=3.11"
-content-hash = "ebd0255ce642829104a24b74068ce8c6c9e4e63c67b575e50c5f74201fc7f27f"
->>>>>>> b18920a (edited pyproject.toml 9)
