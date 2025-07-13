@@ -1,20 +1,24 @@
 steps:
-  # 1. Install dependencies (in home so we don’t need sudo)
-  - name: 'python:3.11-slim'
+  # 1. Install dependencies with Poetry (no requirements.txt needed)
+  - name: 'python:3.11.11-slim'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        pip install --user -r requirements.txt
+        curl -sSL https://install.python-poetry.org | python3 -
+        export PATH="$HOME/.local/bin:$PATH"
+        poetry config virtualenvs.in-project true
+        poetry install --sync --no-interaction --no-ansi --with dev
 
   # 2. Run tests
-  - name: 'python:3.11-slim'
+  - name: 'python:3.11.11-slim'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
         export PATH="$HOME/.local/bin:$PATH"
-        pytest -q
+        poetry run pre-commit run --all-files
+        poetry run pytest -q
 
   # 3. Deploy on success
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
