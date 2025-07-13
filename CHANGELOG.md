@@ -3,8 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-- Removed unused placeholder tests and updated documentation.
-- Ongoing improvements and bug fixes.
+- Documentation updated to match current CLI.
+- Archived obsolete status files.
 
 ## [2025-07-10]
 - Project structure finalized with Poetry and src/ layout.
