@@ -62,7 +62,10 @@ If the download fails, the command exits with an error message and a non-zero st
 ### Library Scanning
 
 ```bash
-fla library scan /path/to/music --db library.db [--watch]  # WIP
+fla library scan /path/to/music --db library.db
+fla library watch start /path/to/music --db library.db
+# later...
+fla library watch stop /path/to/music
 ```
 
 ### Metadata Tagging
