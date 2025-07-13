@@ -6,32 +6,28 @@
 
 ## Overview
 
-FLACCID is a comprehensive CLI toolkit designed for managing and enriching FLAC music libraries. It provides robust metadata enrichment, tagging, and library management features, leveraging APIs like Qobuz, Tidal, Apple Music, Discogs, Beatport and more.
+FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files with metadata. It currently supports Apple Music tagging and downloading tracks from Qobuz, Tidal and Beatport. Library indexing utilities help keep a small SQLite database in sync with your collection.
 
 ## Key Features
 
-- **Metadata Enrichment**: Fetch high-quality metadata from multiple sources (Qobuz, Tidal, Apple Music, Discogs, Beatport, etc.).
-- **FLAC Tagging**: Apply enriched metadata to FLAC files.
-- **Lyrics Embedding**: Optionally fetch and embed lyrics using a lyrics plugin.
-- **Library Management**: Scan, index, and search large music collections.
-- **Quality Analysis**: Analyze audio quality distribution *(planned)*.
-- **Interactive CLI**: User-friendly commands with rich progress indicators.
-- **Plugin System**: Easily extend support for new services via modular plugins *(in progress)*.
-- **Streamlined Tagging Workflow**: `fla tag <provider>` fetches and writes metadata in one step.
-- **Library Indexing**: `fla lib scan` and `fla lib index` maintain a searchable SQLite database *(WIP)*.
+- **Track Downloads**: `download qobuz|tidal|beatport` saves tracks locally.
+- **Metadata Tagging**: `meta apple` applies Apple Music metadata to FLAC files.
+- **Library Management**: Scan and watch directories to keep an SQLite index up to date.
+- **Credential Storage**: Store service tokens securely in your system keyring.
 
 ## CLI Overview
 
-Common operations use the `fla` command:
+Run commands via the `fla` module:
 
 ```bash
-fla tag fetch <file> --provider qobuz
-fla tag apply <file> --metadata-file tags.json --yes
-fla set auth qobuz
-fla set path --library /mnt/music --cache ~/.cache/flaccid
-fla get qobuz <track_id> output.flac
+poetry run python -m fla download qobuz 12345678 song.flac
+poetry run python -m fla meta apple song.flac 12345678
+poetry run python -m fla library scan ~/Music --db library.db
+poetry run python -m fla library watch start ~/Music --db library.db
+poetry run python -m fla settings store qobuz --token YOUR_TOKEN
 ```
-If the download fails, the command exits with an error message and a non-zero status code.
+
+Each command exits with a non-zero status code on failure.
 
 ## Installation
 
@@ -48,59 +44,18 @@ If the download fails, the command exits with an error message and a non-zero st
    poetry install
    ```
 
-3. Set up credentials for APIs:
-
-   ```bash
-   fla set auth qobuz
-   fla set auth apple
-   # Optional: configure directories
-   fla set path --library ~/Music --cache ~/.cache/flaccid
-   ```
-
-## Usage
-
-### Library Scanning
-
-```bash
-fla library scan /path/to/music --db library.db
-fla library watch start /path/to/music --db library.db
-# later...
-fla library watch stop /path/to/music
-```
-
-### Metadata Tagging
-
-```bash
-fla tag fetch /path/to/track.flac --provider qobuz
-```
-
-Use the new `fetch` and `apply` commands to manage metadata:
-
-```bash
-fla tag fetch /path/to/track.flac --provider qobuz
-fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
-```
-The apply command writes tags using built-in helpers and will attempt to
-retrieve lyrics automatically when they are missing. Metadata providers like
-Qobuz and Apple Music are accessed through modules in ``flaccid.tag`` which
-wrap the underlying plugin APIs.
-
-### Database Indexing
-
-```bash
-fla lib index --rebuild  # experimental
-fla lib scan /path/to/music --db library.db
-```
+3. Configure credentials using environment variables or the `settings store` command.
 
 ## Documentation
 
-For architectural details such as the plugin system, tagging workflow, and library indexing, see [FLACCID CLI Toolkit Developer Handbook](docs/FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md). Additional guides are available in the [docs folder](./docs).
+See [FLACCID CLI Toolkit Developer Handbook](docs/FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md) for architecture details. Additional guides live in the [docs folder](./docs).
 
 ## Contributing
 
 Contributions are welcome! Please see the [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## Running CI Locally
+
 ```sh
 # Install dependencies
 poetry install --sync

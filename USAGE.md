@@ -1,211 +1,66 @@
 # FLACCID Usage Examples
 
-This document shows how to use the FLACCID CLI toolkit for tagging FLAC files.
+This guide shows practical examples of the available CLI commands.
 
 ## Quick Start
 
-### 1. Setup Authentication
+### 1. Store Tokens
 
-First, store your service credentials securely:
-
-```bash
-# Store Qobuz credentials
-poetry run python -m fla set auth qobuz --username your_username --password your_password
-
-# Store Apple Music developer token
-poetry run python -m fla set auth apple --developer-token your_token
-
-# List stored credentials
-poetry run python -m fla set auth list
-```
-
-### 2. Setup Paths
-
-Configure directory paths:
+Save your service credentials in the system keyring:
 
 ```bash
-# Create default directories
-poetry run python -m fla set path create
-
-# Set custom music directory
-poetry run python -m fla set path set music ~/Music/FLAC
-
-# List configured paths
-poetry run python -m fla set path list
+poetry run python -m fla settings store qobuz --token YOUR_QOBUZ_TOKEN
+poetry run python -m fla settings store apple --token YOUR_APPLE_TOKEN
 ```
 
-### 3. Tag Files
+### 2. Tag Files
 
-#### Tag with Qobuz
+Apply Apple Music metadata to a track:
 
 ```bash
-# Tag by Qobuz track ID
-poetry run python -m fla tag qobuz track /path/to/song.flac 12345678
-
-# Interactive search and tag
-poetry run python -m fla tag qobuz search /path/to/song.flac "Artist Song Title"
-
-# Batch tag directory
-poetry run python -m fla tag qobuz batch /path/to/music/directory --recursive
+poetry run python -m fla meta apple /path/to/song.flac 123456789
 ```
 
-#### Tag with Apple Music
+### 3. Download Music
+
+Download tracks from supported services:
 
 ```bash
-# Tag by ISRC (extracted from file if available)
-poetry run python -m fla tag apple isrc /path/to/song.flac
-
-# Tag with specific ISRC
-poetry run python -m fla tag apple isrc /path/to/song.flac USRC17607839
-
-# Interactive search and tag
-poetry run python -m fla tag apple search /path/to/song.flac "Artist Song Title"
-
-# Batch tag files with ISRC codes
-poetry run python -m fla tag apple batch /path/to/music/directory --recursive
-
-# Tag by Apple Music track ID
-poetry run python -m fla tag apple track /path/to/song.flac 123456789
+poetry run python -m fla download qobuz 12345678 song.flac
+poetry run python -m fla download tidal 87654321 song.flac
+poetry run python -m fla download beatport 33445566 song.flac
 ```
 
-## Advanced Usage
-
-### Environment Configuration
-
-Create a `.env` file in your project root:
+### 4. Manage Your Library
 
 ```bash
-# Copy template and edit
-cp .env.template .env
-
-# Edit with your credentials
-QOBUZ_APP_ID=your_qobuz_app_id
-QOBUZ_TOKEN=your_qobuz_token
-APPLE_TOKEN=your_apple_developer_token
-APPLE_STORE=us
+poetry run python -m fla library scan /path/to/music --db library.db
+poetry run python -m fla library watch start /path/to/music --db library.db
+# later
+poetry run python -m fla library watch stop /path/to/music
 ```
 
-### Library Management
+## Environment Configuration
 
-```bash
-# Scan directory for FLAC files
-poetry run python -m fla lib scan directory /path/to/music
-
-# Build library database
-poetry run python -m fla lib index build
-
-# Query library
-poetry run python -m fla lib index query "search term"
-
-# Show library stats
-poetry run python -m fla lib index stats
-```
-
-### Download Music
-
-```bash
-# Download from Qobuz
-poetry run python -m fla get qobuz track 12345678
-```
+Create a `.env` file and set values such as `QOBUZ_APP_ID`, `QOBUZ_TOKEN`, `APPLE_TOKEN` and other service tokens. The CLI loads these automatically when present.
 
 ## CLI Structure
 
-The FLACCID CLI is organized into modules:
-
-- **`core`** - Core utilities and version info
-- **`tag`** - Tag FLAC files with metadata
-  - `qobuz` - Qobuz metadata tagging
-  - `apple` - Apple Music metadata tagging
-- **`set`** - Configuration and setup
-  - `auth` - Manage authentication credentials
-  - `path` - Configure directory paths
-- **`lib`** - Library management
-  - `scan` - Scan directories for FLAC files
-  - `index` - Build and query music database
-- **`get`** - Download music from services
-  - `qobuz` - Download from Qobuz
-
-## Metadata Tags Applied
-
-### Qobuz Tags
-- `TITLE` - Track title
-- `ARTIST` - Track artist
-- `ALBUM` - Album title
-- `ALBUMARTIST` - Album artist
-- `DATE` - Release date
-- `GENRE` - Genre
-- `LABEL` - Record label
-- `TRACKNUMBER` - Track number
-- `DISCNUMBER` - Disc number
-- `COMPOSER` - Composer
-- `FLACCID_QOBUZ_BITDEPTH` - Audio bit depth
-- `FLACCID_QOBUZ_SAMPLERATE` - Sample rate
-
-### Apple Music Tags
-- `TITLE` - Track title
-- `ARTIST` - Track artist
-- `ALBUM` - Album title
-- `ALBUMARTIST` - Album artist
-- `DATE` - Release year
-- `GENRE` - Primary genre
-- `ISRC` - ISRC code
-- `TRACKNUMBER` - Track number
-- `TOTALTRACKS` - Total tracks on album
-- `DISCNUMBER` - Disc number
-- `TOTALDISCS` - Total discs
-- `COPYRIGHT` - Copyright information
-- `FLACCID_APPLE_TRACKID` - Apple Music track ID
-- `FLACCID_APPLE_ALBUMID` - Apple Music album ID
-- `FLACCID_APPLE_ARTISTID` - Apple Music artist ID
-- `FLACCID_APPLE_COUNTRY` - Store country
-- `FLACCID_APPLE_EXPLICIT` - Explicit content flag
-
-## Error Handling
-
-The CLI provides helpful error messages and handles common issues:
-
-- **Invalid FLAC files**: Validates file format before processing
-- **Missing credentials**: Prompts to set up authentication
-- **API failures**: Graceful fallback and error reporting
-- **Network issues**: Retry mechanisms and timeout handling
-- **File permissions**: Clear error messages for access issues
-
-## Testing
-
-Run the unit tests to verify everything is working:
-
-```bash
-# Run all tests
-poetry run pytest tests/ -v
-
-# Run specific test module
-poetry run pytest tests/test_simple.py -v
-
-# Run with coverage
-poetry run pytest tests/ --cov=flaccid --cov-report=html
-```
+- **`download`** – Download music from Qobuz, Tidal or Beatport.
+- **`meta`** – Apply metadata. Currently only Apple Music is implemented.
+- **`library`** – Scan folders and build an SQLite index. Includes a `watch` group to monitor changes.
+- **`settings`** – Store credentials securely in the keyring.
 
 ## Tips
 
-1. **ISRC Matching**: For best results with Apple Music, ensure your FLAC files have ISRC tags
-2. **Batch Processing**: Use the `--recursive` flag to process entire directory trees
-3. **Backup**: Always backup your FLAC files before batch tagging
-4. **Credentials**: Use the keyring storage for security - avoid plain text credentials
-5. **Environment**: Use `.env` files for easy configuration management
+1. Always back up your FLAC files before modifying tags.
+2. Use environment variables for API keys when possible.
+3. Run commands with `poetry run` during development.
 
 ## Troubleshooting
 
-### Common Issues
+- **Authentication failures** – verify stored tokens with your keyring tool.
+- **File access errors** – ensure the process has read/write permissions.
+- **API limits** – avoid heavy batch operations that exceed rate limits.
 
-1. **Import Errors**: Ensure you're running commands with `poetry run`
-2. **Authentication Failures**: Check your stored credentials with `set auth list`
-3. **File Access**: Ensure FLACCID has read/write access to your music files
-4. **API Limits**: Respect service rate limits, especially for batch operations
-
-### Getting Help
-
-While the built-in help has formatting issues, you can:
-- Check the source code in `src/flaccid/` for command details
-- Refer to this documentation
-- Run commands without arguments to see usage information
-- Use the `core version` command to verify installation
+Run any command with `--help` for detailed arguments.
