@@ -104,3 +104,41 @@ def test_watch_library(monkeypatch, tmp_path: Path):
 
     assert str(new_file) in paths
     assert captured.get("stopped") is True
+
+
+def test_start_stop_watching(monkeypatch, tmp_path: Path) -> None:
+    """Starting and stopping a watcher should manage observers properly."""
+
+    db = tmp_path / "lib.db"
+    events: dict[str, object] = {}
+
+    class FakeObserver:
+        def schedule(self, handler, path, recursive=True) -> None:
+            events["handler"] = handler
+
+        def start(self) -> None:
+            events["started"] = True
+
+        def stop(self) -> None:
+            events["stopped"] = True
+
+        def join(self) -> None:
+            events["joined"] = True
+
+    monkeypatch.setattr("watchdog.observers.Observer", FakeObserver)
+    monkeypatch.setattr(library, "index_file", lambda dbp, p: events.setdefault("indexed", []).append(p))
+    monkeypatch.setattr(library, "remove_file", lambda dbp, p: events.setdefault("removed", []).append(p))
+
+    library.start_watching(tmp_path, db)
+    assert events.get("started") is True
+
+    handler = events["handler"]
+    flac = tmp_path / "x.flac"
+    flac.write_text("data")
+    ev = type("E", (), {"src_path": str(flac), "is_directory": False})()
+    handler.on_created(ev)  # type: ignore[attr-defined]
+    assert flac in events.get("indexed", [])
+
+    library.stop_watching(tmp_path)
+    assert events.get("stopped") is True
+    assert events.get("joined") is True
