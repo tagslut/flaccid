@@ -18,13 +18,14 @@ def test_metadata_cascade_merges() -> None:
     assert merged.album == "C"
 
 
-@pytest.mark.xfail(reason="Dynaconf configuration not implemented")
 def test_dynaconf_configuration_loading(tmp_path) -> None:
     """Configuration should load from TOML using Dynaconf and Pydantic."""
     from flaccid.core import config  # type: ignore
 
-    settings = config.load_settings(tmp_path / "settings.toml")  # type: ignore[attr-defined]
-    assert settings
+    cfg = tmp_path / "settings.toml"
+    cfg.write_text("[default]\nQOBUZ_APP_ID='abc'\n")
+    settings = config.load_settings(cfg)  # type: ignore[attr-defined]
+    assert settings.qobuz.app_id == "abc"
 
 
 @pytest.mark.skip(reason="watch_library stub not implemented")

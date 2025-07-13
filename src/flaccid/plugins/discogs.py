@@ -2,12 +2,12 @@ from __future__ import annotations
 
 """Discogs API plugin for metadata lookup."""
 
-import os
 from typing import Any, Optional
 
 import aiohttp
 import keyring
 
+from flaccid.core.config import load_settings
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
 
@@ -17,7 +17,8 @@ class DiscogsPlugin(MetadataProviderPlugin):
     BASE_URL = "https://api.discogs.com/"
 
     def __init__(self, token: Optional[str] = None) -> None:
-        self.token = token or os.getenv("DISCOGS_TOKEN")
+        settings = load_settings()
+        self.token = token or settings.discogs_token
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:

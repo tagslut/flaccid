@@ -2,7 +2,6 @@ from __future__ import annotations
 
 """Asynchronous Tidal API client (placeholder)."""
 
-import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -10,6 +9,7 @@ import aiohttp
 import keyring
 
 from flaccid.core import downloader
+from flaccid.core.config import load_settings
 
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
@@ -20,7 +20,8 @@ class TidalPlugin(MetadataProviderPlugin):
     BASE_URL = "https://api.tidalhifi.com/v1/"
 
     def __init__(self, token: Optional[str] = None) -> None:
-        self.token = token or os.getenv("TIDAL_TOKEN")
+        settings = load_settings()
+        self.token = token or settings.tidal_token
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:

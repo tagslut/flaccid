@@ -2,20 +2,21 @@
 Qobuz API client with authentication and metadata retrieval.
 """
 
-import os
 from typing import Optional
 
 import aiohttp
 
 
+from flaccid.core.config import load_settings
+
+
 class QobuzAPI:
     def __init__(self, app_id: Optional[str] = None, app_secret: Optional[str] = None):
-        self.app_id = app_id or os.getenv("QOBUZ_APP_ID", "default_app_id")
-        self.app_secret = app_secret or os.getenv(
-            "QOBUZ_APP_SECRET", "default_app_secret"
-        )
+        settings = load_settings()
+        self.app_id = app_id or settings.qobuz.app_id or "default_app_id"
+        self.app_secret = app_secret or "default_app_secret"
         self.user_auth_token = None
-        self.token = os.getenv("QOBUZ_TOKEN", "default_token")
+        self.token = settings.qobuz.token or "default_token"
         self.session = None
 
     async def __aenter__(self):
