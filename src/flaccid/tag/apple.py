@@ -6,7 +6,8 @@ import asyncio
 from pathlib import Path
 from typing import Any, Dict
 
-from flaccid.plugins import AppleMusicPlugin
+from flaccid.plugins import AppleMusicPlugin, LyricsPlugin
+from flaccid.core import metadata
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
 
 
@@ -21,3 +22,14 @@ def fetch_metadata(file: Path) -> Dict[str, Any]:
             return await api.search_track(query)
 
     return asyncio.run(_search())
+
+
+def tag_from_id(file: Path, track_id: str) -> None:
+    """Fetch metadata for ``track_id`` from Apple Music and apply it to ``file``."""
+
+    async def _tag() -> None:
+        async with AppleMusicPlugin() as api, LyricsPlugin() as lyr:
+            meta = await api.get_track(track_id)
+            await metadata.fetch_and_tag(file, meta, lyrics_plugin=lyr)
+
+    asyncio.run(_tag())
