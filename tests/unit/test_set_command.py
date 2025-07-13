@@ -1,7 +1,7 @@
 from typer.testing import CliRunner
 
 from fla.__main__ import app
-from flaccid.set import cli as set_cli
+from flaccid.commands import settings as settings_cli
 
 runner = CliRunner()
 
@@ -9,12 +9,12 @@ runner = CliRunner()
 def test_root_set_auth(monkeypatch):
     called = {}
 
-    def fake_store(provider: str, api_key: str) -> None:
-        called["args"] = (provider, api_key)
+    def fake_store(realm: str, service: str, token: str) -> None:
+        called["args"] = (realm, service, token)
 
-    monkeypatch.setattr(set_cli, "store_credentials", fake_store)
+    monkeypatch.setattr(settings_cli.keyring, "set_password", fake_store)
 
-    result = runner.invoke(app, ["set", "auth", "qobuz"], input="secret\n")
+    result = runner.invoke(app, ["settings", "store", "qobuz"], input="secret\n")
 
     assert result.exit_code == 0
-    assert called["args"] == ("qobuz", "secret")
+    assert called["args"] == ("flaccid", "qobuz", "secret")

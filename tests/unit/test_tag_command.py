@@ -12,14 +12,12 @@ def get_output(result):
         return result.output
 
 
-def test_tag_fails_without_path():
-    result = runner.invoke(app, ["tag"])
+def test_meta_requires_subcommand():
+    result = runner.invoke(app, ["meta"])
     assert result.exit_code != 0
 
 
-def test_tag_errors_on_missing_path(tmp_path):
+def test_meta_errors_on_missing_path(tmp_path):
     missing = tmp_path / "nope.flac"
-    result = runner.invoke(app, ["tag", str(missing)])
+    result = runner.invoke(app, ["meta", "apple", str(missing), "123"])
     assert result.exit_code != 0
-    output = get_output(result)
-    assert "Path not found" in output

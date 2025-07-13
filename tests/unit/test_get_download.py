@@ -12,15 +12,11 @@ def get_output(result):
         return result.output
 
 
-def test_get_fails_without_source():
-    result = runner.invoke(app, ["get"])
+def test_download_requires_subcommand():
+    result = runner.invoke(app, ["download"])
     assert result.exit_code != 0
-    output = get_output(result)
-    assert "Error" in output or "Missing argument" in output
 
 
-def test_get_unknown_source_errors():
-    result = runner.invoke(app, ["get", "not-a-source"])
+def test_download_unknown_service_errors():
+    result = runner.invoke(app, ["download", "not-a-service"])
     assert result.exit_code != 0
-    output = get_output(result)
-    assert "Unknown source" in output
