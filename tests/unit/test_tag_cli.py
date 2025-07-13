@@ -1,5 +1,6 @@
-from typer.testing import CliRunner
 import json
+
+from typer.testing import CliRunner
 
 import flaccid.tag.cli as tag_cli
 from flaccid.tag.cli import app as tag_app
@@ -7,14 +8,14 @@ from flaccid.tag.cli import app as tag_app
 runner = CliRunner()
 
 
-def test_fetch_invokes_placeholder(tmp_path, monkeypatch):
+def test_fetch_invokes_provider(tmp_path, monkeypatch):
     called = {}
 
-    def fake_fetch_metadata(file, provider):
-        called["args"] = (file, provider)
+    def fake_fetch_metadata(file):
+        called["file"] = file
         return {"ok": True}
 
-    monkeypatch.setattr(tag_cli, "fetch_metadata", fake_fetch_metadata)
+    monkeypatch.setattr(tag_cli.qobuz, "fetch_metadata", fake_fetch_metadata)
 
     flac = tmp_path / "song.flac"
     flac.write_text("data")
@@ -22,17 +23,17 @@ def test_fetch_invokes_placeholder(tmp_path, monkeypatch):
     result = runner.invoke(tag_app, ["fetch", str(flac)])
 
     assert result.exit_code == 0
-    assert called["args"] == (flac, "qobuz")
+    assert called["file"] == flac
     assert "{'ok': True}" in result.stdout
 
 
-def test_apply_invokes_placeholder(tmp_path, monkeypatch):
+def test_apply_invokes_helper(tmp_path, monkeypatch):
     called = {}
 
     def fake_apply_metadata(file, metadata_file, yes):
         called["args"] = (file, metadata_file, yes)
 
-    monkeypatch.setattr(tag_cli, "apply_metadata", fake_apply_metadata)
+    monkeypatch.setattr(tag_cli.utils, "apply_metadata", fake_apply_metadata)
 
     flac = tmp_path / "song.flac"
     flac.write_text("data")
@@ -79,15 +80,13 @@ def test_apply_real_logic(tmp_path, monkeypatch):
         async def get_lyrics(self, artist: str, title: str):
             return "la"
 
-    import flaccid.cli.placeholders as placeholders
+    import flaccid.tag.utils as tag_utils
 
-    monkeypatch.setattr(placeholders.metadata, "write_tags", fake_write)
-    monkeypatch.setattr(placeholders, "LyricsPlugin", lambda: FakeLyrics())
-    monkeypatch.setattr(placeholders, "confirm", lambda m: True)
+    monkeypatch.setattr(tag_utils.metadata, "write_tags", fake_write)
+    monkeypatch.setattr(tag_utils, "LyricsPlugin", lambda: FakeLyrics())
+    monkeypatch.setattr(tag_utils, "confirm", lambda m: True)
 
-    result = runner.invoke(
-        tag_app, ["apply", str(flac), "--metadata-file", str(meta)]
-    )
+    result = runner.invoke(tag_app, ["apply", str(flac), "--metadata-file", str(meta)])
 
     assert result.exit_code == 0
     assert called["write"] == flac

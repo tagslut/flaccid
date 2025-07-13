@@ -7,7 +7,14 @@ from pathlib import Path
 import click
 import typer
 
-from flaccid.cli.placeholders import apply_metadata, fetch_metadata
+from . import apple, beatport, discogs, qobuz, utils
+
+PROVIDERS = {
+    "qobuz": qobuz,
+    "apple": apple,
+    "discogs": discogs,
+    "beatport": beatport,
+}
 
 app = typer.Typer(help="Metadata-tagging operations")
 
@@ -27,7 +34,11 @@ def fetch(
 ) -> None:
     """Fetch metadata for *file* from the specified *provider* and print it."""
 
-    metadata = fetch_metadata(file, provider)
+    provider_mod = PROVIDERS.get(provider.lower())
+    if provider_mod is None:
+        raise typer.BadParameter(f"Unsupported provider: {provider}")
+
+    metadata = provider_mod.fetch_metadata(file)
     typer.echo(metadata)
 
 
@@ -41,5 +52,5 @@ def apply(
 ) -> None:
     """Apply metadata to *file*, optionally using *metadata_file*."""
 
-    apply_metadata(file, metadata_file, yes)
+    utils.apply_metadata(file, metadata_file, yes)
     typer.echo("Metadata applied successfully")

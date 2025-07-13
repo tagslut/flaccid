@@ -77,4 +77,3 @@ async def test_tidal_plugin_authentication() -> None:
 
     token = await _run()  # type: ignore[misc]
     assert token
-
