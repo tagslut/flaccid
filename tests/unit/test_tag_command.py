@@ -1,3 +1,5 @@
+"""Unit tests for the ``flaccid tag`` command group."""
+
 from typer.testing import CliRunner
 
 from fla.__main__ import app

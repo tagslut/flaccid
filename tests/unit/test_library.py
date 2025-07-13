@@ -1,8 +1,11 @@
+"""Unit tests for the persistent library layer."""
+
 from pathlib import Path
 
-from flaccid.core import library
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from flaccid.core import library
 
 
 def test_scan_directory(tmp_path: Path):
@@ -126,8 +129,14 @@ def test_start_stop_watching(monkeypatch, tmp_path: Path) -> None:
             events["joined"] = True
 
     monkeypatch.setattr("watchdog.observers.Observer", FakeObserver)
-    monkeypatch.setattr(library, "index_file", lambda dbp, p: events.setdefault("indexed", []).append(p))
-    monkeypatch.setattr(library, "remove_file", lambda dbp, p: events.setdefault("removed", []).append(p))
+    monkeypatch.setattr(
+        library, "index_file", lambda dbp, p: events.setdefault("indexed", []).append(p)
+    )
+    monkeypatch.setattr(
+        library,
+        "remove_file",
+        lambda dbp, p: events.setdefault("removed", []).append(p),
+    )
 
     library.start_watching(tmp_path, db)
     assert events.get("started") is True

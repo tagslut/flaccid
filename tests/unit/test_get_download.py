@@ -1,3 +1,5 @@
+"""Unit tests for the ``flaccid get`` download command."""
+
 from typer.testing import CliRunner
 
 from fla.__main__ import app
