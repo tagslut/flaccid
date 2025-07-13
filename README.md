@@ -31,6 +31,7 @@ fla set auth qobuz
 fla set path --library /mnt/music --cache ~/.cache/flaccid
 fla get qobuz <track_id> output.flac
 ```
+If the download fails, the command exits with an error message and a non-zero status code.
 
 ## Installation
 

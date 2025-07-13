@@ -8,7 +8,7 @@ from pathlib import Path
 import typer
 
 from flaccid.plugins.beatport import BeatportPlugin
-from flaccid.plugins.qobuz import QobuzPlugin
+from flaccid.get.qobuz import download_track as qobuz_download
 from flaccid.plugins.tidal import TidalPlugin
 
 app = typer.Typer(help="Download music from supported services")
@@ -19,14 +19,13 @@ def qobuz(
     track_id: str = typer.Argument(..., help="Qobuz track ID"),
     output: Path = typer.Argument(..., help="Where to save"),
 ) -> None:
-    """Download a track from Qobuz (placeholder implementation)."""
+    """Download a track from Qobuz."""
 
-    async def _run() -> None:
-        async with QobuzPlugin() as plugin:
-            await plugin.authenticate()
-            await plugin.download_track(track_id, output)
+    success = qobuz_download(track_id, output)
+    if not success:
+        typer.echo("Download failed", err=True)
+        raise typer.Exit(1)
 
-    asyncio.run(_run())
     typer.echo(f"Saved to {output}")
 
 
