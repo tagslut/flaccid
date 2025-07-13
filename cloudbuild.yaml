@@ -1,10 +1,11 @@
 steps:
-  # 1. Install dependencies with Poetry (no requirements.txt needed)
+  # 1. Install Poetry and dependencies (no requirements.txt needed)
   - name: 'python:3.11.11-slim'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
+        # Install Poetry
         curl -sSL https://install.python-poetry.org | python3 -
         export PATH="$HOME/.local/bin:$PATH"
         poetry config virtualenvs.in-project true
