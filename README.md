@@ -77,7 +77,9 @@ fla tag fetch /path/to/track.flac --provider qobuz
 fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
 ```
 The apply command writes tags using built-in helpers and will attempt to
-retrieve lyrics automatically when they are missing.
+retrieve lyrics automatically when they are missing. Metadata providers like
+Qobuz and Apple Music are accessed through modules in ``flaccid.tag`` which
+wrap the underlying plugin APIs.
 
 ### Database Indexing
 
