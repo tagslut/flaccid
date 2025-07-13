@@ -50,10 +50,12 @@ fla get qobuz <track_id> output.flac
 3. Set up credentials for APIs:
 
    ```bash
-   fla set auth qobuz
-   fla set auth apple
-   # Optional: configure directories
-   fla set path --library ~/Music --cache ~/.cache/flaccid
+fla set auth qobuz
+# Credentials are saved to your system keyring
+fla set auth apple
+# Optional: configure directories
+fla set path --library ~/Music --cache ~/.cache/flaccid
+# Path settings are stored in ~/.flaccid/paths.json and can be updated later
    ```
 
 ## Usage
