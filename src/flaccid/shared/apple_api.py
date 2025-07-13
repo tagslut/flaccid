@@ -2,18 +2,21 @@
 Apple Music API client with iTunes fallback.
 """
 
-import os
 from typing import Optional
 
 import aiohttp
 
 
+from flaccid.core.config import load_settings
+
+
 class AppleAPI:
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("APPLE_API_KEY", "default_api_key")
+        settings = load_settings()
+        self.api_key = api_key or "default_api_key"
         self.developer_token = None
-        self.store = os.getenv("APPLE_STORE", "default_store")
-        self.default_token = os.getenv("APPLE_TOKEN", "default_token")
+        self.store = settings.apple.store
+        self.default_token = settings.apple.developer_token or "default_token"
         self.session = None
 
     async def __aenter__(self):

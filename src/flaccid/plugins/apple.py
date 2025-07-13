@@ -2,13 +2,13 @@ from __future__ import annotations
 
 """Asynchronous Apple Music API client."""
 
-import os
 from pathlib import Path
 from typing import Any, Optional
 
 import aiohttp
 import keyring
 
+from flaccid.core.config import load_settings
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
 
@@ -18,7 +18,8 @@ class AppleMusicPlugin(MetadataProviderPlugin):
     ITUNES_URL = "https://itunes.apple.com/search"
 
     def __init__(self, developer_token: Optional[str] = None) -> None:
-        self.developer_token = developer_token or os.getenv("APPLE_TOKEN")
+        settings = load_settings()
+        self.developer_token = developer_token or settings.apple.developer_token
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:

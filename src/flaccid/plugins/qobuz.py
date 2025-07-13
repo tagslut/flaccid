@@ -2,7 +2,6 @@ from __future__ import annotations
 
 """Asynchronous Qobuz API client."""
 
-import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -10,6 +9,7 @@ import aiohttp
 import keyring
 
 from flaccid.core import downloader
+from flaccid.core.config import load_settings
 
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
@@ -22,8 +22,9 @@ class QobuzPlugin(MetadataProviderPlugin):
     def __init__(
         self, app_id: Optional[str] = None, token: Optional[str] = None
     ) -> None:
-        self.app_id = app_id or os.getenv("QOBUZ_APP_ID") or ""
-        self.token = token or os.getenv("QOBUZ_TOKEN")
+        settings = load_settings()
+        self.app_id = app_id or settings.qobuz.app_id
+        self.token = token or settings.qobuz.token
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:
