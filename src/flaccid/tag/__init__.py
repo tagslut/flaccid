@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Subcommands for manipulating metadata tags."""
+
 from pathlib import Path
 
 import typer

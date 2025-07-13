@@ -1,3 +1,5 @@
+"""Unit tests for the ``flaccid set`` CLI utilities."""
+
 from typer.testing import CliRunner
 
 import flaccid.set.cli as set_cli

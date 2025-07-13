@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+"""Subcommands for downloading media from supported services."""
+
 import typer
 
 app = typer.Typer()

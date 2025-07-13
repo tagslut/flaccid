@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+"""Unit tests for path and filename placeholder helpers."""
+
 import json
 from pathlib import Path
-
 
 import flaccid.cli.placeholders as placeholders
 

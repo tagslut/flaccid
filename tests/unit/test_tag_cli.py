@@ -1,3 +1,5 @@
+"""Unit tests for the ``flaccid tag`` CLI utilities."""
+
 import json
 
 from typer.testing import CliRunner

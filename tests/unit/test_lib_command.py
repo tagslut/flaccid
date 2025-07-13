@@ -1,8 +1,11 @@
+"""Unit tests for the ``flaccid lib`` CLI command group."""
+
 from pathlib import Path
+
 from typer.testing import CliRunner
 
-from fla.__main__ import app
 import flaccid.commands.lib as lib_cli
+from fla.__main__ import app
 
 runner = CliRunner()
 
@@ -15,7 +18,9 @@ def test_lib_fails_without_args():
 def test_lib_scan_invokes_core(monkeypatch, tmp_path):
     called = {}
 
-    monkeypatch.setattr(lib_cli.library, "scan_directory", lambda d: [tmp_path / "a.flac"])
+    monkeypatch.setattr(
+        lib_cli.library, "scan_directory", lambda d: [tmp_path / "a.flac"]
+    )
 
     def fake_index(db, files):
         called["args"] = (db, files)

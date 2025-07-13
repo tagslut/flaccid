@@ -1,3 +1,5 @@
+"""Unit tests for plugin discovery and registration."""
+
 import os
 from unittest.mock import patch
 
