@@ -8,6 +8,7 @@ import aiohttp
 import keyring
 
 from flaccid.core.config import load_settings
+
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
 
@@ -31,7 +32,9 @@ class DiscogsPlugin(MetadataProviderPlugin):
 
     async def authenticate(self) -> None:
         if not self.token:
-            self.token = keyring.get_password("flaccid_discogs", "token")
+            token = keyring.get_password("flaccid_discogs", "token")
+            if token:
+                self.token = token
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"

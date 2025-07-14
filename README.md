@@ -44,7 +44,45 @@ Each command exits with a non-zero status code on failure.
    poetry install
    ```
 
-3. Configure credentials using environment variables or the `settings store` command.
+3. Configure credentials using environment variables or the `settings store` command, or set up credentials for APIs:
+
+   ```bash
+   fla set auth qobuz
+   fla set auth apple
+   # Optional: configure directories
+   fla set path --library ~/Music --cache ~/.cache/flaccid
+   ```
+
+   The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the environment. If the token is invalid it will be refreshed automatically using the stored credentials.
+
+## Usage
+
+### Library Scanning
+
+```bash
+fla library scan /path/to/music --db library.db [--watch]  # WIP
+```
+
+### Metadata Tagging
+
+```bash
+fla tag fetch /path/to/track.flac --provider qobuz
+```
+
+Use the new `fetch` and `apply` commands to manage metadata:
+
+```bash
+fla tag fetch /path/to/track.flac --provider qobuz
+fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
+```
+The apply command writes tags using built-in helpers and will attempt to retrieve lyrics automatically when they are missing.
+
+### Database Indexing
+
+```bash
+fla lib index --rebuild  # experimental
+fla lib scan /path/to/music --db library.db
+```
 
 ## Documentation
 

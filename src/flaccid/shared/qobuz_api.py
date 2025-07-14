@@ -6,7 +6,6 @@ from typing import Optional
 
 import aiohttp
 
-
 from flaccid.core.config import load_settings
 
 

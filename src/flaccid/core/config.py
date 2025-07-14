@@ -34,11 +34,15 @@ class Settings(BaseModel):
 
 
 def _load_dynaconf(settings_file: Optional[Path] = None) -> Dynaconf:
-    files = [str(settings_file)] if settings_file else [
-        "settings.toml",
-        ".secrets.toml",
-        ".env",
-    ]
+    files = (
+        [str(settings_file)]
+        if settings_file
+        else [
+            "settings.toml",
+            ".secrets.toml",
+            ".env",
+        ]
+    )
     return Dynaconf(
         envvar_prefix=False,
         settings_files=files,

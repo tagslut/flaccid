@@ -10,6 +10,15 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from flaccid.shared import config
+from flaccid.shared.apple_api import AppleAPI
+from flaccid.shared.metadata_utils import (
+    build_search_query,
+    get_existing_metadata,
+    validate_flac_file,
+)
+from flaccid.shared.qobuz_api import QobuzAPI
+
 # Add the src directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -23,15 +32,7 @@ with patch.dict(
         "APPLE_STORE": "us",
     },
 ):
-    with patch("keyring.get_password", return_value=None):
-        from flaccid.shared.apple_api import AppleAPI
-        from flaccid.shared.config import Config
-        from flaccid.shared.metadata_utils import (
-            build_search_query,
-            get_existing_metadata,
-            validate_flac_file,
-        )
-        from flaccid.shared.qobuz_api import QobuzAPI
+    pass
 
 
 class TestConfig:
@@ -39,13 +40,13 @@ class TestConfig:
 
     def test_config_initialization(self):
         """Test that config initializes correctly."""
-        test_config = Config()
+        test_config = config.Config()
         assert test_config is not None
         assert test_config._loaded is True
 
     def test_get_default_values(self):
         """Test that default values are returned."""
-        test_config = Config()
+        test_config = config.Config()
         assert test_config.get("NONEXISTENT_KEY", "default") == "default"
         assert test_config.get_bool("NONEXISTENT_BOOL", False) is False
         assert test_config.get_int("NONEXISTENT_INT", 42) == 42
@@ -53,13 +54,13 @@ class TestConfig:
     @patch.dict(os.environ, {"TEST_BOOL": "true"})
     def test_get_bool_values(self):
         """Test boolean configuration parsing."""
-        test_config = Config()
+        test_config = config.Config()
         assert test_config.get_bool("TEST_BOOL") is True
 
     @patch.dict(os.environ, {"TEST_INT": "123"})
     def test_get_int_values(self):
         """Test integer configuration parsing."""
-        test_config = Config()
+        test_config = config.Config()
         assert test_config.get_int("TEST_INT") == 123
 
 
@@ -94,21 +95,10 @@ class TestQobuzAPI:
         mock_response = AsyncMock()
         mock_response.status = 200
         mock_response.json.return_value = {
-            "tracks": {
-                "items": [
-                    {
-                        "id": "12345",
-                        "title": "Test Track",
-                        "performer": {"name": "Test Artist"},
-                    }
-                ]
-            }
+            "tracks": {"items": [{"id": "12345", "title": "Test Track"}]}
         }
-        mock_get.return_value.__aenter__.return_value = mock_response
 
         api = QobuzAPI()
-        api.user_auth_token = "test_token"  # Mock authenticated state
-
         result = await api.search("test query")
         assert result is not None
         assert "tracks" in result

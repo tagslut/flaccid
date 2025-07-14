@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.11
+  python: python3.12
 
 repos:
   - repo: https://github.com/psf/black
@@ -40,13 +40,13 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        entry: mypy
+        entry: poetry run mypy
         language: system
         types: [python]
-        args: [--exclude, '(^|/)archive/', --exclude, '^archive/.*$']
-        files: ^(src/|tests/)
+        require_serial: true
       - id: pytest
         name: pytest
-        entry: pytest tests/ -v
+        entry: poetry run pytest --cov=flaccid --cov-report=html
         language: system
+        types: [python]
         pass_filenames: false

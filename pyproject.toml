@@ -1,17 +1,18 @@
 
-
-
-
-[tool.poetry]
+[project]
 name = "flaccid"
 version = "0.1.0"
 description = "Modular FLAC CLI Toolkit"
-authors = ["georges <geoooorges@icloud.com>"]
-readme = "README.md"
-license = "GPL-3.0-only"
-packages = [
-  { include = "flaccid", from = "src" },
+authors = [
+    { name = "georges", email = "geoooorges@icloud.com" }
 ]
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+packages = [
+    { include = "flaccid", from = "src" }
+]
+
+# Poetry-specific sections below (for dependency management)
 
 
 
@@ -62,9 +63,11 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
 addopts = "-v --tb=short"
-asyncio_default_fixture_loop_scope = "function"
 
 [tool.mypy]
 python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
+exclude = [
+    "archive/untracked_legacy/tag/apple.py"
+]

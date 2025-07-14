@@ -15,7 +15,9 @@ from flaccid.plugins.base import TrackMetadata
         ("flaccid.tag.discogs", "DiscogsPlugin"),
     ],
 )
-def test_tag_from_id_invokes_plugins(module_name: str, plugin_attr: str, tmp_path: Path, monkeypatch):
+def test_tag_from_id_invokes_plugins(
+    module_name: str, plugin_attr: str, tmp_path: Path, monkeypatch
+):
     module = importlib.import_module(module_name)
 
     file = tmp_path / "song.flac"
@@ -28,7 +30,9 @@ def test_tag_from_id_invokes_plugins(module_name: str, plugin_attr: str, tmp_pat
         track_number=1,
         disc_number=1,
     )
-    called = {}
+    from typing import Any
+
+    called: dict[str, Any] = {}
 
     class FakePlugin:
         async def __aenter__(self):
@@ -48,10 +52,14 @@ def test_tag_from_id_invokes_plugins(module_name: str, plugin_attr: str, tmp_pat
         async def __aexit__(self, exc_type, exc, tb):
             pass
 
-        async def get_lyrics(self, artist: str, title: str):  # pragma: no cover - not used
+        async def get_lyrics(
+            self, artist: str, title: str
+        ):  # pragma: no cover - not used
             return "la"
 
-    async def fake_fetch(path: Path, data: TrackMetadata, lyrics_plugin=None, art_data=None):
+    async def fake_fetch(
+        path: Path, data: TrackMetadata, lyrics_plugin=None, art_data=None
+    ):
         called["fetch"] = (path, data)
 
     monkeypatch.setattr(module, plugin_attr, lambda: FakePlugin())

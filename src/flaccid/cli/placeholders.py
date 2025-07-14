@@ -80,7 +80,9 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
     async def _apply() -> None:
         if not track_meta.lyrics:
             async with LyricsPlugin() as lyr:
-                track_meta.lyrics = await lyr.get_lyrics(track_meta.artist, track_meta.title) or None
+                track_meta.lyrics = (
+                    await lyr.get_lyrics(track_meta.artist, track_meta.title) or None
+                )
 
         metadata.write_tags(file, track_meta)
 

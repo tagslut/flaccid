@@ -807,6 +807,34 @@ def test_cli_help():
     cli = importlib.import_module("flaccid.cli")
     assert hasattr(cli, "app")
 ''')
-```
 
-After running the above script (e.g. saving it as scaffold_flaccid.py and executing it), you will have the full project directory with all the files populated. You can then run python -m flaccid --help to see the CLI help message and available subcommands (since we defined the Typer app in flaccid/cli.py as the entry point). For example, fla get qobuz --album-id <ID> or fla tag apple "<Artist> - <Album>" <folder> would invoke the corresponding plugin logic to download or tag music. Ensure you install the required dependencies (Typer, aiohttp, requests, mutagen, dynaconf, pydantic, keyring, SQLAlchemy, etc.) in your environment. This completes the scaffold with “real code” for the FLACCID CLI toolkit – you now have a fully structured project that matches the design outlined in the developer handbook.
+### Tidal Plugin: `download_tracks` Method
+
+The `download_tracks` method in the Tidal plugin is responsible for downloading a list of tracks asynchronously to a specified destination directory. Below is a detailed explanation of its functionality:
+
+1. **Parameters**:
+   - `tracks`: A list of `TrackMetadata` objects containing metadata for each track to be downloaded.
+   - `dest_dir`: The destination directory where the tracks will be saved. If not a `Path` object, it is converted to one.
+   - `quality`: A string representing the desired quality of the tracks (e.g., "lossless").
+
+2. **Workflow**:
+   - **Session Management**: An `aiohttp.ClientSession` is created for making asynchronous HTTP requests.
+   - **Track Processing**: For each track in the `tracks` list:
+     - A simulated streaming URL is generated using the track's ID.
+     - The destination directory is ensured to exist using `mkdir` with `parents=True` and `exist_ok=True`.
+     - The file path is constructed using the track's number and title.
+     - A download task is appended to the `tasks` list, which calls the `downloader.download_file` method with the session, URL, and file path.
+   - **Concurrent Downloads**: All download tasks are executed concurrently using `asyncio.gather`.
+
+3. **Key Features**:
+   - Simulates streaming URLs for Tidal tracks.
+   - Ensures the destination directory exists before saving files.
+   - Downloads files asynchronously for efficiency.
+
+4. **Example Usage**:
+
+```python
+async def example_usage():
+    tidal_plugin = TidalPlugin()
+    await tidal_plugin.download_tracks(tracks, "~/Music/Tidal", "lossless")
+```

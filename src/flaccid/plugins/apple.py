@@ -9,6 +9,7 @@ import aiohttp
 import keyring
 
 from flaccid.core.config import load_settings
+
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
 
@@ -32,7 +33,9 @@ class AppleMusicPlugin(MetadataProviderPlugin):
 
     async def authenticate(self) -> None:
         if not self.developer_token:
-            self.developer_token = keyring.get_password("flaccid_apple", "token")
+            token = keyring.get_password("flaccid_apple", "token")
+            if token:
+                self.developer_token = token
 
     async def _request(self, url: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"

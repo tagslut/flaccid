@@ -10,17 +10,24 @@ class Config:
         self._loaded = True
 
     def get(self, key: str, default=None):
-        """Retrieve a configuration value."""
         return os.getenv(key, default)
 
     def get_bool(self, key: str, default: bool = False) -> bool:
-        """Retrieve a boolean configuration value."""
-        value = os.getenv(key, str(default)).lower()
-        return value in ("true", "1", "yes")
+        value = os.getenv(key)
+        if value is None:
+            return default
+        value = value.lower()
+        if value in ("true", "1", "yes"):  # Accept common true values
+            return True
+        if value in ("false", "0", "no"):  # Accept common false values
+            return False
+        return default
 
     def get_int(self, key: str, default: int = 0) -> int:
-        """Retrieve an integer configuration value."""
         try:
-            return int(os.getenv(key, default))
-        except ValueError:
+            value = os.getenv(key)
+            if value is None:
+                return default
+            return int(value)
+        except (ValueError, TypeError):
             return default

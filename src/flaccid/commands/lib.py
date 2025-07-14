@@ -49,7 +49,9 @@ def watch_start(
 
 @watch_app.command("stop")
 def watch_stop(
-    directory: Path = typer.Argument(..., exists=True, file_okay=False, resolve_path=True)
+    directory: Path = typer.Argument(
+        ..., exists=True, file_okay=False, resolve_path=True
+    )
 ) -> None:
     """Stop watching *directory* if active."""
 

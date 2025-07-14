@@ -3,22 +3,25 @@ from __future__ import annotations
 """Library management utilities."""
 
 from pathlib import Path
-from typing import Dict, Iterable, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Iterable, List
 
-from mutagen.flac import FLAC
-from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine, select
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
+if TYPE_CHECKING:
+    pass
 
 # ---------------------------------------------------------------------------
 # Internal state for active observers. Keys are watched directories and values
 # are watchdog Observer instances. This allows starting and stopping watching
 # programmatically through the API.
 # ---------------------------------------------------------------------------
-if TYPE_CHECKING:  # pragma: no cover - import for type checking only
-    from watchdog.observers import Observer
+# Use Any for Observer to avoid mypy issues if watchdog is missing at type-check time
+from typing import Any
 
-_WATCHERS: Dict[Path, "Observer"] = {}
+from mutagen.flac import FLAC
+from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine, select
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
+_WATCHERS: Dict[Path, Any] = {}
 
 
 def scan_directory(directory: Path) -> List[Path]:
@@ -80,9 +83,7 @@ def index_changed_files(db_path: Path, files: Iterable[Path]) -> None:
 
             if str(path) in db_set:
                 session.execute(
-                    tracks.update()
-                    .where(tracks.c.path == str(path))
-                    .values(**values)
+                    tracks.update().where(tracks.c.path == str(path)).values(**values)
                 )
             else:
                 session.execute(tracks.insert().values(path=str(path), **values))
@@ -110,7 +111,6 @@ def remove_file(db_path: Path, file: Path) -> None:
 
 def start_watching(directory: Path, db_path: Path) -> None:
     """Start watching *directory* and update *db_path* on changes."""
-
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
 
@@ -130,7 +130,7 @@ def start_watching(directory: Path, db_path: Path) -> None:
             if not event.is_directory and event.src_path.endswith(".flac"):
                 remove_file(db_path, Path(event.src_path))
 
-    observer = Observer()
+    observer: Any = Observer()
     handler = Handler()
     observer.schedule(handler, str(directory), recursive=True)
     observer.start()
@@ -139,9 +139,8 @@ def start_watching(directory: Path, db_path: Path) -> None:
 
 def stop_watching(directory: Path) -> None:
     """Stop watching *directory* if it is being observed."""
-
     observer = _WATCHERS.pop(directory, None)
-    if observer:
+    if observer is not None:
         observer.stop()
         observer.join()
 

@@ -6,8 +6,8 @@ import asyncio
 from pathlib import Path
 from typing import Any, Dict
 
-from flaccid.plugins import LyricsPlugin, QobuzPlugin
 from flaccid.core import metadata
+from flaccid.plugins import LyricsPlugin, QobuzPlugin
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
 
 

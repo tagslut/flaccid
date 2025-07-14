@@ -7,8 +7,8 @@ from pathlib import Path
 
 import typer
 
-from flaccid.plugins.beatport import BeatportPlugin
 from flaccid.get.qobuz import download_track as qobuz_download
+from flaccid.plugins.beatport import BeatportPlugin
 from flaccid.plugins.tidal import TidalPlugin
 
 app = typer.Typer(help="Download music from supported services")

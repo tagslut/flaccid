@@ -35,7 +35,13 @@ def write_tags(path: Path, metadata: TrackMetadata, art: bytes | None = None) ->
     if art:
         pic = Picture()
         pic.type = 3  # front cover
-        pic.mime = "image/jpeg"
+        # Try to detect MIME type from image header
+        if art[:3] == b"\xff\xd8\xff":
+            pic.mime = "image/jpeg"
+        elif art[:8] == b"\x89PNG\r\n\x1a\n":
+            pic.mime = "image/png"
+        else:
+            pic.mime = "image/jpeg"  # fallback
         pic.data = art
         audio.add_picture(pic)
 

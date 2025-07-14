@@ -20,11 +20,13 @@ def test_load_from_environment() -> None:
 def test_load_from_file(tmp_path: Path) -> None:
     """Settings should load from a TOML file."""
     cfg = tmp_path / "settings.toml"
-    cfg.write_text("""\
+    cfg.write_text(
+        """\
 [default]
 QOBUZ_APP_ID = 'file_id'
 QOBUZ_TOKEN = 'file_tok'
-""")
+"""
+    )
     settings = load_settings(cfg)
     assert settings.qobuz.app_id == "file_id"
     assert settings.qobuz.token == "file_tok"
