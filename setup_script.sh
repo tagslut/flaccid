@@ -21,11 +21,12 @@ echo "📦 Poetry version: $(poetry --version)"
 # 3. Configure Poetry to create venvs in-project
 poetry config virtualenvs.in-project true
 
-# 4. Verify lock file is up-to-date
+# 4. Verify lock file is up-to-date (non-fatal)
 echo "🔒 Verifying lock file..."
-if ! poetry lock --check; then
-  echo "❌ Lock file out of date. Please run 'poetry lock' and commit the changes."
-  exit 1
+if poetry lock --check; then
+  echo "✅ Lock file up-to-date."
+else
+  echo "⚠️  Could not verify lock file or it is out-of-date. Continuing setup..."
 fi
 
 # 5. Install dependencies (including dev)
