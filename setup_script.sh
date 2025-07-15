@@ -30,6 +30,7 @@ if [[ "$PY_BIN" == *".pyenv"* ]]; then
   PY_BIN="/usr/bin/python3"
 fi
 export POETRY_PYTHON="$PY_BIN"
+poetry env use "$POETRY_PYTHON"  # Set Poetry's Python interpreter *before* PATH adjustments
 # --- Remove any pyenv *shims* from PATH to avoid Poetry invoking them ----
 if [[ ":$PATH:" == *":$HOME/.pyenv/shims:"* ]] || [[ ":$PATH:" == *":/root/.pyenv/shims:"* ]]; then
   echo "🔧 Removing pyenv shims from PATH to avoid interpreter confusion..."
@@ -43,7 +44,6 @@ if [[ ":$PATH:" == *":$HOME/.pyenv/shims:"* ]] || [[ ":$PATH:" == *":/root/.pyen
   export PATH="$NEW_PATH"
 fi
 # Tell Poetry to use this interpreter for the virtualenv
-poetry env use "$POETRY_PYTHON" || true
 
 # 3. Configure Poetry to create venvs in-project
 poetry config virtualenvs.in-project true

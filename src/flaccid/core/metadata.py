@@ -48,14 +48,14 @@ def cascade(*sources: TrackMetadata) -> TrackMetadata:
 
 
 async def write_tags(
-    path: str,
+    path: Path,
     metadata: TrackMetadata,
     *,
     art: bytes | None = None,
     plugin: MetadataProviderPlugin | None = None,
     lyrics_plugin: LyricsProviderPlugin | None = None,
     filename_template: str | None = None,
-) -> str:
+) -> Path:
     """Write ``metadata`` and optional art to ``path``."""
 
     if not art and plugin and metadata.art_url:
@@ -77,7 +77,7 @@ async def write_tags(
         raise FileNotFoundError(f"write_tags: File does not exist at {path}")
     print(f"write_tags: File exists at {path}")
 
-    audio = FLAC(str(path))
+    audio = FLAC(path)
     if not audio:
         raise ValueError(f"write_tags: Failed to initialize FLAC object for {path}")
     print(f"write_tags: Initialized FLAC object for {path}")
