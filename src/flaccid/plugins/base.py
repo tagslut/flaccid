@@ -72,6 +72,14 @@ class MetadataProviderPlugin(MusicServicePlugin, ABC):
     async def get_album(self, album_id: str) -> AlbumMetadata:
         """Get full metadata for an album."""
 
+    async def fetch_cover_art(self, url: str) -> bytes:
+        """Return raw bytes for the cover art at ``url``."""
+        if not self.session:
+            await self.open()
+        assert self.session is not None
+        async with self.session.get(url) as resp:
+            return await resp.read()
+
 
 class LyricsProviderPlugin(MusicServicePlugin, ABC):
     """Abstract plugin for lyrics providers."""
