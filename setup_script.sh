@@ -17,6 +17,7 @@ fi
 # 2. Print versions
 echo "🐍 Python version: $(python3 --version)"
 echo "📦 Poetry version: $(poetry --version)"
+export POETRY_PYTHON=$(command -v python3)
 
 # 3. Configure Poetry to create venvs in-project
 poetry config virtualenvs.in-project true
