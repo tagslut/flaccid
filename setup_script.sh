@@ -26,7 +26,10 @@ poetry --version
 
 # Tell Poetry to keep the venv local and to use the default python3 in PATH
 poetry config virtualenvs.in-project true
-poetry env use python3 || echo "⚠️ Unable to pin environment; using default Poetry venv"
+# Pin Poetry venv to the default python3, but tolerate failures (e.g., pyenv shims)
+if ! poetry env use python3 > /dev/null 2>&1; then
+  echo "⚠️ Could not pin Poetry venv to python3; using default Poetry venv (see https://github.com/jdx/mise/discussions/4345)"
+fi
 
 # 1b. Validate Poetry project
 if ! poetry check; then
