@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
-# setup_script.sh - Bootstrap FLACCID dev environment
-
 set -euo pipefail
-# Uncomment for debug: set -x
 
-# 0. Check for Python 3
+# 0. Ensure Python 3 is available
 if ! command -v python3 &>/dev/null; then
   echo "❌ Python 3 is required but not found. Please install Python 3."
   exit 1
 fi
-
-# Remove stale requirements.txt if present (for clean Poetry export)
-rm -f requirements.txt
 
 # 1. Ensure Poetry is installed
 if ! command -v poetry &>/dev/null; then
@@ -20,64 +14,32 @@ if ! command -v poetry &>/dev/null; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Print versions for reproducibility
-python3 --version
-poetry --version
+# 2. Print versions
+echo "🐍 Python version: $(python3 --version)"
+echo "📦 Poetry version: $(poetry --version)"
 
-# Tell Poetry to keep the venv local and to use the default python3 in PATH
-# (Removed poetry env use pinning due to shim errors)
+# 3. Configure Poetry to create venvs in-project
+poetry config virtualenvs.in-project true
 
-# 1b. Validate Poetry project
-if ! poetry check; then
-  echo "❌ Poetry project validation failed. Please fix pyproject.toml."
-  exit 1
-fi
-
-# 1c. Update lock file if needed, without upgrading dependencies
-echo "🔒 Verifying lock file is up to date..."
+# 4. Verify lock file is up-to-date
+echo "🔒 Verifying lock file..."
 if ! poetry lock --check; then
   echo "❌ Lock file out of date. Please run 'poetry lock' and commit the changes."
   exit 1
 fi
 
-# 2. Install dependencies
-echo "📦 Installing dependencies..."
-if ! poetry install --sync --no-interaction --no-ansi --with dev; then
-  echo "❌ Poetry install failed."
-  exit 1
-fi
+# 5. Install dependencies (including dev)
+echo "📥 Installing dependencies..."
+poetry install --sync --no-interaction --no-ansi --with dev
 
-# 3. Optional deterministic requirements export
-echo "📝 Exporting requirements.txt for external tools..."
-poetry export --without-hashes --sort -f requirements.txt -o requirements.txt || true
-
-# 4. Pre-commit hooks
+# 6. Install and run pre-commit hooks
 echo "🔧 Setting up pre-commit hooks..."
 poetry run pre-commit install
-poetry run pre-commit gc
-echo "▶ Running all pre-commit hooks to format and check the code..."
-if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
-  echo -e "\n❌ Pre-commit hooks failed. Please review the errors above."
-  exit 1
-fi
+echo "▶ Running all pre-commit hooks..."
+poetry run pre-commit run --all-files --show-diff-on-failure
 
-# 5. mypy stub auto-install
-echo "▶ Installing common type stubs for mypy..."
-if ! $(poetry env info --path)/bin/pip install --disable-pip-version-check types-click types-sqlalchemy; then
-  echo "⚠️  Failed to install some type stubs; continuing anyway."
-fi
-poetry run mypy --install-types --non-interactive --ignore-missing-imports || true
+# 7. Optionally install mypy type stubs
+echo "🔍 Installing common type stubs for mypy..."
+poetry run pip install --disable-pip-version-check types-PyYAML types-aiohttp types-click types-sqlalchemy || true
 
-# 6. Note about integration tests
-echo -e "\nℹ️  NOTE: Some integration tests may require credentials for services like Qobuz or Apple Music."
-echo "   If tests fail with connection errors, configure credentials via:"
-echo "     poetry run flaccid set auth <service_name>"
-
-# 7. Final notes
-echo -e "\n✅  Setup complete! Activate your environment with:"
-echo "      poetry shell"
-echo "   or run commands directly via:"
-echo "      poetry run <cmd>"
-echo -e "\nUseful commands:"
-echo "  poetry run pytest                      # Run the full test suite"
-echo "  poetry run pre-commit run --all-files  # Re-run all pre-commit checks"
+echo "✅ Setup complete! To enter the shell: 'poetry shell' or run 'poetry run <cmd>'."
