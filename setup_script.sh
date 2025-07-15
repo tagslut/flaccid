@@ -34,8 +34,11 @@ if ! poetry check; then
 fi
 
 # 1c. Update lock file if needed, without upgrading dependencies
-echo "🔒 Ensuring lock file is up to date..."
-poetry lock
+echo "🔒 Verifying lock file is up to date..."
+if ! poetry lock --check; then
+  echo "❌ Lock file out of date. Please run 'poetry lock' and commit the changes."
+  exit 1
+fi
 
 # 2. Install dependencies
 echo "📦 Installing dependencies..."
@@ -60,7 +63,9 @@ fi
 
 # 5. mypy stub auto-install
 echo "▶ Installing common type stubs for mypy..."
-poetry run pip install --disable-pip-version-check types-click types-sqlalchemy || true
+if ! $(poetry env info --path)/bin/pip install --disable-pip-version-check types-click types-sqlalchemy; then
+  echo "⚠️  Failed to install some type stubs; continuing anyway."
+fi
 poetry run mypy --install-types --non-interactive --ignore-missing-imports || true
 
 # 6. Note about integration tests
