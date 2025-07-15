@@ -57,7 +57,16 @@ fi
 
 # 5. Install dependencies (including dev)
 echo "📥 Installing dependencies..."
-$POETRY_PYTHON -m poetry install --sync --no-interaction --no-ansi --with dev
+# Try using Poetry directly, if it's available in the environment
+if command -v poetry &>/dev/null; then
+  echo "✅ Poetry found in current environment, using 'poetry install'..."
+  poetry install --sync --no-interaction --no-ansi --with dev
+else
+  # If Poetry isn't directly available, use the Python interpreter we identified
+  echo "ℹ️  Poetry not found in current environment, using '$POETRY_PYTHON -m poetry install'..."
+  "$POETRY_PYTHON" -m poetry install --sync --no-interaction --no-ansi --with dev
+fi
+
 
 # 6. Install and run pre-commit hooks
 echo "🔧 Setting up pre-commit hooks..."
