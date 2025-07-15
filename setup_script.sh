@@ -30,6 +30,18 @@ if [[ "$PY_BIN" == *".pyenv"* ]]; then
   PY_BIN="/usr/bin/python3"
 fi
 export POETRY_PYTHON="$PY_BIN"
+# --- Remove any pyenv *shims* from PATH to avoid Poetry invoking them ----
+if [[ ":$PATH:" == *":$HOME/.pyenv/shims:"* ]] || [[ ":$PATH:" == *":/root/.pyenv/shims:"* ]]; then
+  echo "🔧 Removing pyenv shims from PATH to avoid interpreter confusion..."
+  # rebuild PATH without any segment that ends with '/.pyenv/shims'
+  NEW_PATH=""
+  IFS=':' read -ra SEGMENTS <<< "$PATH"
+  for seg in "${SEGMENTS[@]}"; do
+    [[ "$seg" == */.pyenv/shims ]] && continue
+    NEW_PATH="${NEW_PATH:+$NEW_PATH:}$seg"
+  done
+  export PATH="$NEW_PATH"
+fi
 # Tell Poetry to use this interpreter for the virtualenv
 poetry env use "$POETRY_PYTHON" || true
 
