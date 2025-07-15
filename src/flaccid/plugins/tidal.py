@@ -18,12 +18,12 @@ class TidalPlugin(MetadataProviderPlugin):
     """Simplified Tidal API wrapper."""
 
     BASE_URL = "https://api.tidalhifi.com/v1/"
+    token: str
 
     def __init__(self, token: Optional[str] = None) -> None:
         settings = load_settings()
-        # Allow caller‑supplied token or fallback to configuration; may still be None
-        # Must be a concrete str to satisfy the base-class type
-        self.token: str = token or settings.tidal_token or ""
+        # Allow caller-supplied token or fallback to configuration
+        self.token = token or settings.tidal_token or ""
         assert self.token, "TIDAL_API_TOKEN is required"
         self.session: Optional[aiohttp.ClientSession] = None
 
@@ -37,7 +37,9 @@ class TidalPlugin(MetadataProviderPlugin):
 
     async def authenticate(self) -> None:
         if not self.token:
-            self.token = keyring.get_password("flaccid_tidal", "token")
+            keyring_token = keyring.get_password("flaccid_tidal", "token")
+            if keyring_token:
+                self.token = keyring_token
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from mutagen.flac import FLAC
+
 import flaccid.cli.placeholders as placeholders
 
 
@@ -48,7 +50,8 @@ def test_fetch_metadata_qobuz(monkeypatch, tmp_path):
 
 def test_apply_metadata(monkeypatch, tmp_path):
     flac = tmp_path / "t.flac"
-    flac.write_text("data")
+    # Create a minimal, valid FLAC file so mutagen doesn't fail
+    FLAC().save(flac)
     meta_file = tmp_path / "meta.json"
     meta_file.write_text(
         json.dumps(
@@ -64,11 +67,14 @@ def test_apply_metadata(monkeypatch, tmp_path):
 
     called = {"write": []}  # Initialize the dictionary with the 'write' key
 
-    def mock_write_tags(file, metadata):
+    # write_tags is async, so our mock must be too.
+    async def mock_write_tags(file, metadata, **kwargs):
         called["write"].append(file)
-        return True
+        return str(file)  # It should return a path string
 
-    monkeypatch.setattr("flaccid.tag.write_tags", mock_write_tags)
+    # Mock `write_tags` where it is used: in the `placeholders` module.
+    # The original test was mocking the wrong target, causing the real function to run.
+    monkeypatch.setattr(placeholders, "write_tags", mock_write_tags)
 
     class FakeLyrics:
         async def __aenter__(self):

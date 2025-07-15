@@ -44,6 +44,6 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
                 )
 
         print(f"Debug: file={file}, track_meta={track_meta}")
-        await write_tags(file, track_meta)
+        await write_tags(str(file), track_meta)
 
     asyncio.run(_apply())

@@ -36,7 +36,9 @@ class BeatportPlugin(MetadataProviderPlugin):
 
     async def authenticate(self) -> None:
         if not self.token:
-            self.token = keyring.get_password("flaccid_beatport", "token")
+            keyring_token = keyring.get_password("flaccid_beatport", "token")
+            if keyring_token:
+                self.token = keyring_token
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"
@@ -71,8 +73,8 @@ class BeatportPlugin(MetadataProviderPlugin):
             title=data.get("name", ""),
             artist=data.get("artists", [{}])[0].get("name", ""),
             year=(
-                data.get("releaseDate", "").split("-")[0]
-                if data.get("releaseDate")
+                data.get("release_date", "").split("-")[0]
+                if data.get("release_date")
                 else None
             ),
         )
