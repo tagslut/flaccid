@@ -7,7 +7,11 @@ from pathlib import Path
 import pytest
 
 from flaccid.core import metadata
-from flaccid.plugins.base import LyricsProviderPlugin, TrackMetadata
+from flaccid.plugins.base import (
+    LyricsProviderPlugin,
+    MetadataProviderPlugin,
+    TrackMetadata,
+)
 
 
 class FakeFLAC(dict):
@@ -29,7 +33,8 @@ class FakePic:
         self.data: bytes | None = None
 
 
-def test_write_tags(monkeypatch, tmp_path: Path) -> None:
+@pytest.mark.asyncio
+async def test_write_tags(monkeypatch, tmp_path: Path) -> None:
     """``write_tags`` should populate FLAC fields and embed art."""
     created: dict[str, FakeFLAC] = {}
 
@@ -54,11 +59,50 @@ def test_write_tags(monkeypatch, tmp_path: Path) -> None:
     file_path = tmp_path / "x.flac"
     file_path.write_text("data")
 
-    metadata.write_tags(file_path, meta, art=b"img")
+    class DummyProvider(MetadataProviderPlugin):
+        async def authenticate(self) -> None:
+            pass
+
+        async def open(self) -> None:  # pragma: no cover - unused
+            pass
+
+        async def close(self) -> None:  # pragma: no cover - unused
+            pass
+
+        async def search_track(self, query: str) -> object:
+            return {}
+
+        async def get_track(self, track_id: str) -> TrackMetadata:
+            return meta
+
+        async def get_album(self, album_id: str):  # pragma: no cover - unused
+            return None
+
+        async def fetch_cover_art(self, url: str) -> bytes:
+            return b"img"
+
+    class DummyLyrics(LyricsProviderPlugin):
+        async def get_lyrics(self, artist: str, title: str) -> str:
+            return "la"
+
+        async def open(self) -> None:  # pragma: no cover - unused
+            pass
+
+        async def close(self) -> None:  # pragma: no cover - unused
+            pass
+
+    new_path = await metadata.write_tags(
+        file_path,
+        meta,
+        plugin=DummyProvider(),
+        lyrics_plugin=DummyLyrics(),
+        filename_template="{track_number}-{title}.flac",
+    )
     flac = created["obj"]
     assert isinstance(flac["pic"], FakePic)
     assert flac["pic"].data == b"img"
     assert flac.get("saved") is True
+    assert new_path.name == "1-S.flac"
 
 
 @pytest.mark.asyncio
@@ -70,8 +114,17 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
         captured["lyrics"] = (artist, title)
         return "words"
 
-    def fake_write(path: Path, meta: TrackMetadata, art: bytes | None = None) -> None:
-        captured["write"] = (path, meta, art)
+    async def fake_write(
+        path: Path,
+        meta: TrackMetadata,
+        *,
+        art: bytes | None = None,
+        plugin: MetadataProviderPlugin | None = None,
+        lyrics_plugin: LyricsProviderPlugin | None = None,
+        filename_template: str | None = None,
+    ) -> Path:
+        captured["write"] = (path, meta, art, filename_template)
+        return path
 
     monkeypatch.setattr(metadata, "write_tags", fake_write)
 
@@ -98,5 +151,28 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
     await metadata.fetch_and_tag(path, meta, lyrics_plugin=Plugin(), art_data=b"a")
 
     assert meta.lyrics == "words"
-    assert captured["write"] == (path, meta, b"a")
+    assert captured["write"] == (path, meta, b"a", None)
     assert captured["lyrics"] == ("A", "T")
+
+
+def test_cascade_merges() -> None:
+    base = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+    )
+    extra = TrackMetadata(
+        title="",
+        artist="",
+        album="",
+        track_number=1,
+        disc_number=1,
+        year=2024,
+        lyrics="la",
+    )
+
+    merged = metadata.cascade(base, extra)
+    assert merged.year == 2024
+    assert merged.lyrics == "la"
