@@ -30,7 +30,6 @@ if [[ "$PY_BIN" == *".pyenv"* ]]; then
   PY_BIN="/usr/bin/python3"
 fi
 export POETRY_PYTHON="$PY_BIN"
-poetry env use "$POETRY_PYTHON"  # Set Poetry's Python interpreter *before* PATH adjustments
 # --- Remove any pyenv *shims* from PATH to avoid Poetry invoking them ----
 if [[ ":$PATH:" == *":$HOME/.pyenv/shims:"* ]] || [[ ":$PATH:" == *":/root/.pyenv/shims:"* ]]; then
   echo "🔧 Removing pyenv shims from PATH to avoid interpreter confusion..."
@@ -58,16 +57,16 @@ fi
 
 # 5. Install dependencies (including dev)
 echo "📥 Installing dependencies..."
-poetry install --sync --no-interaction --no-ansi --with dev
+$POETRY_PYTHON -m poetry install --sync --no-interaction --no-ansi --with dev
 
 # 6. Install and run pre-commit hooks
 echo "🔧 Setting up pre-commit hooks..."
-poetry run pre-commit install
+$POETRY_PYTHON -m poetry run pre-commit install
 echo "▶ Running all pre-commit hooks..."
-poetry run pre-commit run --all-files --show-diff-on-failure
+$POETRY_PYTHON -m poetry run pre-commit run --all-files --show-diff-on-failure
 
 # 7. Optionally install mypy type stubs
 echo "🔍 Installing common type stubs for mypy..."
-poetry run pip install --disable-pip-version-check types-PyYAML types-aiohttp types-click types-sqlalchemy || true
+$POETRY_PYTHON -m pip install --disable-pip-version-check types-PyYAML types-aiohttp types-click types-sqlalchemy || true
 
 echo "✅ Setup complete! To enter the shell: 'poetry shell' or run 'poetry run <cmd>'."
