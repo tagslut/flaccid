@@ -56,4 +56,4 @@ def test_qobuz_download_failure(monkeypatch, tmp_path):
     result = runner.invoke(app, ["download", "qobuz", "123", str(out)])
 
     assert result.exit_code != 0
-    assert "Download failed" in result.stderr
+    assert "Download failed" in result.output

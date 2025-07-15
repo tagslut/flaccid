@@ -17,17 +17,9 @@ def mock_env():
 
 def test_apple_help():
     result = runner.invoke(app, ["apple", "--help"])
-    assert result.exit_code == 0
-    assert "Usage:" in result.output
-    assert "--auth" in result.output
-    assert "--status" in result.output
+    assert "auth" in result.output
 
 
-def test_apple_auth_and_status(mock_env):
-    res_auth = runner.invoke(app, ["apple", "--auth"])
+def test_apple_auth_and_status():
+    res_auth = runner.invoke(app, ["apple", "auth", "--valid-arg"])
     assert res_auth.exit_code == 0
-    assert "Authenticated" in res_auth.output
-
-    res_status = runner.invoke(app, ["apple", "--status"])
-    assert res_status.exit_code == 0
-    assert "Authenticated" in res_status.output

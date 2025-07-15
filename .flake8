@@ -1,3 +1,8 @@
+
 [flake8]
 max-line-length = 120
-exclude = .git,__pycache__,.venv
+extend-exclude = .git,.venv,__pycache__,archive,archive_legacy,archive_untracked_legacy
+per-file-ignores =
+    archive/*: W391
+    archive_legacy/*: W391
+    archive_untracked_legacy/*: W391

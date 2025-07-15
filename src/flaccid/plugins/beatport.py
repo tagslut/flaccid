@@ -21,7 +21,9 @@ class BeatportPlugin(MetadataProviderPlugin):
 
     def __init__(self, token: Optional[str] = None) -> None:
         settings = load_settings()
-        self.token = token or settings.beatport_token
+        # Must be a concrete str to satisfy the base-class type
+        self.token: str = token or settings.beatport_token or ""
+        assert self.token, "Beatport token is required"
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:
@@ -38,6 +40,7 @@ class BeatportPlugin(MetadataProviderPlugin):
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"
+        assert self.token is not None, "Not authenticated"
         headers = {"Authorization": f"Bearer {self.token}"}
         async with self.session.get(
             self.BASE_URL + endpoint, params=params, headers=headers

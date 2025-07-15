@@ -62,10 +62,13 @@ def test_apply_metadata(monkeypatch, tmp_path):
         )
     )
 
-    called: dict[str, object] = {}
+    called = {"write": []}  # Initialize the dictionary with the 'write' key
 
-    def fake_write(path, meta_obj, art=None):
-        called["write"] = (path, meta_obj)
+    def mock_write_tags(file, metadata):
+        called["write"].append(file)
+        return True
+
+    monkeypatch.setattr("flaccid.tag.write_tags", mock_write_tags)
 
     class FakeLyrics:
         async def __aenter__(self):
@@ -78,7 +81,6 @@ def test_apply_metadata(monkeypatch, tmp_path):
             called["lyrics"] = (artist, title)
             return "la"
 
-    monkeypatch.setattr(placeholders.metadata, "write_tags", fake_write)
     monkeypatch.setattr(placeholders, "LyricsPlugin", lambda: FakeLyrics())
     monkeypatch.setattr(placeholders, "confirm", lambda msg: True)
 

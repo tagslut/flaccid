@@ -1,41 +1,41 @@
 #!/usr/bin/env python3
-"""FLACCID console-script entrypoint."""
+"""FLACCID command‑line interface package.
+
+This module defines the root Typer application (`app`) and wires up each
+sub‑command group (download, meta, apple, library, settings).  It should not
+contain any test code ― tests live exclusively under the *tests/* tree.
+"""
+
 from __future__ import annotations
 
 import typer
 
+# Sub‑command groups
 from flaccid.commands.apple import app as apple_app
-from flaccid.commands.get import app as new_get_app
-from flaccid.commands.lib import app as new_lib_app
-from flaccid.commands.settings import app as new_settings_app
-from flaccid.commands.tag import app as new_tag_app
+from flaccid.commands.get import app as get_app
+from flaccid.commands.lib import app as lib_app
+from flaccid.commands.settings import app as settings_app
+from flaccid.commands.tag import app as tag_app
 
-from .placeholders import apply_metadata, fetch_metadata, save_paths, store_credentials
-
-__all__ = [
-    "app",
-    "apply_metadata",
-    "fetch_metadata",
-    "save_paths",
-    "store_credentials",
-]
-
-# Add other subcommands as needed
+# --------------------------------------------------------------------------- #
+# Root application
+# --------------------------------------------------------------------------- #
 
 app = typer.Typer(
     help=(
-        "FLACCID CLI root app. Provides 'download', 'meta', 'library', and "
-        "'settings' commands."
+        "FLACCID CLI root application.  Provides 'download', 'meta', 'apple', "
+        "'library', and 'settings' sub‑commands."
     )
 )
 
-# New command group implementations
-app.add_typer(new_get_app, name="download")
-app.add_typer(new_tag_app, name="meta")
+# Attach sub‑commands
+app.add_typer(get_app, name="download")
+app.add_typer(tag_app, name="meta")
 app.add_typer(apple_app, name="apple")
-app.add_typer(new_lib_app, name="library")
-app.add_typer(new_settings_app, name="settings")
-# Add other subcommands as needed
+app.add_typer(lib_app, name="library")
+app.add_typer(settings_app, name="settings")
 
-if __name__ == "__main__":
-    app()
+# What we intend to export when someone does: `from flaccid.cli import *`
+__all__: list[str] = [
+    "app",
+]

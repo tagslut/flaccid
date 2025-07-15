@@ -21,8 +21,11 @@ class TidalPlugin(MetadataProviderPlugin):
 
     def __init__(self, token: Optional[str] = None) -> None:
         settings = load_settings()
-        self.token = token or settings.tidal_token
-        self.session: aiohttp.ClientSession | None = None
+        # Allow caller‑supplied token or fallback to configuration; may still be None
+        # Must be a concrete str to satisfy the base-class type
+        self.token: str = token or settings.tidal_token or ""
+        assert self.token, "TIDAL_API_TOKEN is required"
+        self.session: Optional[aiohttp.ClientSession] = None
 
     async def open(self) -> None:
         self.session = aiohttp.ClientSession()
@@ -38,6 +41,8 @@ class TidalPlugin(MetadataProviderPlugin):
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
         assert self.session is not None, "Session not initialized"
+        # mypy: after this assert self.token is str
+        assert self.token is not None, "Not authenticated"
         headers = {"Authorization": f"Bearer {self.token}"}
         async with self.session.get(
             self.BASE_URL + endpoint, params=params, headers=headers

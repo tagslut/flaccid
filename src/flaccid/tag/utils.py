@@ -8,7 +8,7 @@ from pathlib import Path
 
 from typer import confirm
 
-from flaccid.core import metadata
+from flaccid.core.metadata import write_tags
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
 
@@ -43,6 +43,7 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
                     await lyr.get_lyrics(track_meta.artist, track_meta.title) or None
                 )
 
-        metadata.write_tags(file, track_meta)
+        print(f"Debug: file={file}, track_meta={track_meta}")
+        await write_tags(file, track_meta)
 
     asyncio.run(_apply())

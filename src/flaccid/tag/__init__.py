@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .utils import write_tags  # makes flaccid.tag.write_tags importable
+
 """Subcommands for manipulating metadata tags."""
 
 from pathlib import Path

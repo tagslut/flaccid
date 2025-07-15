@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Metadata tagging utilities."""
 
+from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Optional
-from dataclasses import asdict, fields
 
 from mutagen.flac import FLAC, Picture
 
@@ -48,14 +48,14 @@ def cascade(*sources: TrackMetadata) -> TrackMetadata:
 
 
 async def write_tags(
-    path: Path,
+    path: str,
     metadata: TrackMetadata,
     *,
     art: bytes | None = None,
     plugin: MetadataProviderPlugin | None = None,
     lyrics_plugin: LyricsProviderPlugin | None = None,
     filename_template: str | None = None,
-) -> Path:
+) -> str:
     """Write ``metadata`` and optional art to ``path``."""
 
     if not art and plugin and metadata.art_url:
@@ -73,7 +73,15 @@ async def write_tags(
         except Exception:
             metadata.lyrics = None
 
+    if not path.exists():
+        raise FileNotFoundError(f"write_tags: File does not exist at {path}")
+    print(f"write_tags: File exists at {path}")
+
     audio = FLAC(str(path))
+    if not audio:
+        raise ValueError(f"write_tags: Failed to initialize FLAC object for {path}")
+    print(f"write_tags: Initialized FLAC object for {path}")
+
     _set_common_tags(audio, metadata)
 
     if art:
@@ -88,20 +96,31 @@ async def write_tags(
         pic.data = art
         audio.add_picture(pic)
 
-    audio.save()
+    try:
+        audio.save()
+        print(f"write_tags: Saved metadata for {path}")
+    except Exception as e:
+        print(f"write_tags: Failed to save metadata for {path}: {e}")
+        raise
 
     if filename_template:
-        new_name = filename_template.format(
-            artist=metadata.artist,
-            title=metadata.title,
-            album=metadata.album,
-            track_number=f"{metadata.track_number:02d}",
-            disc_number=f"{metadata.disc_number}",
-        )
-        new_path = path.with_name(new_name)
-        path.rename(new_path)
-        return new_path
+        try:
+            new_name = filename_template.format(
+                artist=metadata.artist,
+                title=metadata.title,
+                album=metadata.album,
+                track_number=f"{metadata.track_number:02d}",
+                disc_number=f"{metadata.disc_number}",
+            )
+            new_path = path.with_name(new_name)
+            path.rename(new_path)
+            print(f"write_tags: Renamed file to {new_path}")
+            return new_path
+        except Exception as e:
+            print(f"write_tags: Failed to rename file {path} to {new_name}: {e}")
+            raise
 
+    print(f"write_tags: Returning original path {path}")
     return path
 
 

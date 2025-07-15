@@ -30,7 +30,7 @@ rich = ">=13.6,<14.0"
 sqlalchemy = ">=2.0,<3.0"
 watchdog = ">=4.0,<5.0"
 python-dotenv = ">=1.0,<2.0"
-click = ">=8.1.7,<9.0"
+click = ">=8.0,<8.1"
 google-cloud-storage = "==2.14.0"
 gcsfs = "==2023.10.0"
 pandas = "==2.1.4"
@@ -50,6 +50,7 @@ pytest-cov = "^6.2.1"
 types-PyYAML = "^6.0.12.20250516"
 mypy = "^1.16.1"
 autoflake = "^2.3.1"
+dynaconf = "^3.2.11"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -69,5 +70,7 @@ python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
 exclude = [
-    "archive/untracked_legacy/tag/apple.py"
+    "archive/.*",
+    "archive_legacy/.*",
+    "archive_untracked_legacy/.*"
 ]

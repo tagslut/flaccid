@@ -51,6 +51,10 @@ def test_apply_invokes_helper(tmp_path, monkeypatch):
     assert "Metadata applied successfully" in result.stdout
 
 
+async def fake_write_tags(*args, **kwargs):
+    return args[0]  # or a Path object as needed
+
+
 def test_apply_real_logic(tmp_path, monkeypatch):
     flac = tmp_path / "song.flac"
     flac.write_text("data")
@@ -67,10 +71,11 @@ def test_apply_real_logic(tmp_path, monkeypatch):
         )
     )
 
-    called: dict[str, object] = {}
+    called = {"write": []}  # Initialize the dictionary with the 'write' key
 
-    def fake_write(path, meta_obj, art=None):
-        called["write"] = path
+    def mock_write_tags(file, metadata):
+        called["write"].append(file)
+        return True
 
     class FakeLyrics:
         async def __aenter__(self):
@@ -84,11 +89,12 @@ def test_apply_real_logic(tmp_path, monkeypatch):
 
     import flaccid.tag.utils as tag_utils
 
-    monkeypatch.setattr(tag_utils.metadata, "write_tags", fake_write)
+    monkeypatch.setattr(tag_utils, "write_tags", fake_write_tags)
     monkeypatch.setattr(tag_utils, "LyricsPlugin", lambda: FakeLyrics())
     monkeypatch.setattr(tag_utils, "confirm", lambda m: True)
+    monkeypatch.setattr("flaccid.tag.write_tags", mock_write_tags)
 
     result = runner.invoke(tag_app, ["apply", str(flac), "--metadata-file", str(meta)])
 
     assert result.exit_code == 0
-    assert called["write"] == flac
+    assert called["write"] == [flac]

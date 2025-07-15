@@ -9,8 +9,9 @@ from pathlib import Path
 import keyring
 from typer import confirm
 
-from flaccid.core import metadata
+from flaccid.core.metadata import write_tags
 from flaccid.plugins import BeatportPlugin, DiscogsPlugin, LyricsPlugin
+from flaccid.plugins.base import TrackMetadata
 from flaccid.shared.apple_api import AppleAPI
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
 from flaccid.shared.qobuz_api import QobuzAPI
@@ -66,7 +67,7 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
     if not yes and not confirm("Apply metadata?"):
         return
 
-    track_meta = metadata.TrackMetadata(
+    track_meta = TrackMetadata(
         title=data.get("title", ""),
         artist=data.get("artist", ""),
         album=data.get("album", ""),
@@ -84,7 +85,8 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
                     await lyr.get_lyrics(track_meta.artist, track_meta.title) or None
                 )
 
-        metadata.write_tags(file, track_meta)
+        print(f"Debug: file={file}, track_meta={track_meta}")
+        await write_tags(file, track_meta)
 
     asyncio.run(_apply())
 

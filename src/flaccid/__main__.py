@@ -1,26 +1,11 @@
-"""Package entry‑point so that both
+#!/usr/bin/env python3
+"""Module so `python -m flaccid` works.
 
-    $ python -m flaccid
-    $ poetry run flaccid …
+It simply delegates to the Typer application defined in
+`flaccid.cli.__init__`.
+"""
 
-work consistently."""
+from flaccid.cli import app
 
-from __future__ import annotations
-
-from flaccid import cli
-
-# ---------------------------------------------------------------------------
-# Expose the Typer application expected by the console‑script declaration
-# (`flaccid = "flaccid.__main__:app"` in pyproject.toml).
-# ---------------------------------------------------------------------------
-
-app = cli.app  # Console script looks for this symbol
-
-
-def main() -> None:  # pragma: no cover
-    """Run the CLI when executed as a module."""
+if __name__ == "__main__":
     app()
-
-
-if __name__ == "__main__":  # pragma: no cover
-    main()
