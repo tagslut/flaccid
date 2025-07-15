@@ -17,7 +17,21 @@ fi
 # 2. Print versions
 echo "🐍 Python version: $(python3 --version)"
 echo "📦 Poetry version: $(poetry --version)"
-export POETRY_PYTHON=$(command -v python3)
+
+# Resolve the actual Python binary (avoid pyenv shims that may be broken)
+PY_BIN=$(python3 -Es <<'PY'
+import os, sys
+print(os.path.realpath(sys.executable))
+PY
+)
+# If the resolved path still points inside a pyenv shim directory, fallback to /usr/bin/python3
+if [[ "$PY_BIN" == *".pyenv"* ]]; then
+  echo "⚠️  Detected pyenv shim ($PY_BIN). Falling back to system Python at /usr/bin/python3."
+  PY_BIN="/usr/bin/python3"
+fi
+export POETRY_PYTHON="$PY_BIN"
+# Tell Poetry to use this interpreter for the virtualenv
+poetry env use "$POETRY_PYTHON" || true
 
 # 3. Configure Poetry to create venvs in-project
 poetry config virtualenvs.in-project true
