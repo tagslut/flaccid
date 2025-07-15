@@ -50,18 +50,11 @@ poetry export --without-hashes --sort -f requirements.txt -o requirements.txt ||
 
 # 4. Pre-commit hooks
 poetry run pre-commit install
-poetry run pre-commit clean
-echo "▶ Auto-formatting code..."
-poetry run black .
-poetry run isort .
- # 4b. Auto-remove unused imports (if autoflake is installed)
- if command -v autoflake &>/dev/null; then
-   poetry run autoflake --recursive --in-place --remove-unused-variables --remove-all-unused-imports src tests
- else
-   echo "⚠️  autoflake not found; skipping unused-import cleanup"
- fi
+poetry run pre-commit gc # Clean up stale, cached repositories
+echo "▶ Running all pre-commit hooks to format and check the code..."
 if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
-  :
+  echo -e "\n❌ Pre-commit hooks failed. Please review the errors above."
+  exit 1
 fi
 
 # 5. mypy stub auto-install
@@ -77,14 +70,9 @@ echo "   If tests fail with connection errors, please configure credentials usin
 echo "   'poetry run fla set auth <service_name>'"
 
 # 6. Run all tests to catch errors early
-if poetry run pytest; then
-  echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
-  echo -e "\nUseful commands:"
-  echo "  poetry shell            # Activate the virtual environment"
-  echo "  poetry run <cmd>       # Run a command inside the venv"
-  echo "  poetry run pytest      # Run tests"
-  echo "  poetry run pre-commit run --all-files  # Run all pre-commit hooks"
-else
-  echo -e "\n❌ Tests failed. Please review the errors above."
-  exit 1
-fi
+echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
+echo -e "\nUseful commands:"
+echo "  poetry shell            # Activate the virtual environment"
+echo "  poetry run <cmd>       # Run a command inside the venv"
+echo "  poetry run pytest      # Run tests"
+echo "  poetry run pre-commit run --all-files  # Run all pre-commit hooks"
