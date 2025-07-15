@@ -6,10 +6,10 @@ This document describes the shared API modules for the FLACCID CLI toolkit.
 
 The shared API modules provide reusable, async-first interfaces for music metadata services:
 
-- **`shared/qobuz_api.py`** - Qobuz API client with authentication and metadata retrieval
-- **`shared/apple_api.py`** - Apple Music API client with iTunes fallback
-- **`shared/metadata_utils.py`** - Common FLAC metadata operations
-- **`shared/config.py`** - Configuration management with .env support
+* <b>`shared/qobuz_api.py`</b> \- Qobuz API client with authentication and metadata retrieval
+* <b>`shared/apple_api.py`</b> \- Apple Music API client with iTunes fallback
+* <b>`shared/metadata_utils.py`</b> \- Common FLAC metadata operations
+* <b>`shared/config.py`</b> \- Configuration management with \.env support
 
 ## Configuration
 
@@ -17,7 +17,7 @@ The shared API modules provide reusable, async-first interfaces for music metada
 
 Create a `.env` file in your project root (use `.env.template` as a starting point):
 
-```bash
+``` bash
 # Qobuz Configuration
 QOBUZ_APP_ID=your_qobuz_app_id_here
 QOBUZ_TOKEN=your_qobuz_auth_token_here
@@ -28,14 +28,14 @@ APPLE_STORE=us
 
 # General Configuration
 FLACCID_LOG_LEVEL=INFO
-FLACCID_CACHE_DIR=~/.flaccid/cache
+FLACCID_CACHE_DIR=~/.cache
 ```
 
 ### Keyring Storage
 
 For secure credential storage, use the auth commands:
 
-```bash
+``` bash
 # Store Qobuz credentials
 fla set auth qobuz --username your_username --password your_password
 
@@ -47,7 +47,7 @@ fla set auth apple --developer-token your_token --user-token optional_user_token
 
 ### Qobuz API
 
-```python
+``` python
 from flaccid.shared.qobuz_api import QobuzAPI
 
 async def example():
@@ -64,7 +64,7 @@ async def example():
 
 ### Apple Music API
 
-```python
+``` python
 from flaccid.shared.apple_api import AppleAPI
 
 async def example():
@@ -81,7 +81,7 @@ async def example():
 
 ### Metadata Utils
 
-```python
+``` python
 from flaccid.shared.metadata_utils import (
     validate_flac_file,
     get_existing_metadata,
@@ -104,60 +104,65 @@ if validate_flac_file("/path/to/file.flac"):
 ## Features
 
 ### Qobuz API Features
-- ✅ Token-based authentication with keyring support
-- ✅ Track search and metadata retrieval
-- ✅ Album metadata retrieval
-- ✅ Streaming URL generation (subscription required)
-- ✅ Automatic token refresh
-- ✅ Async context manager support
+
+* ✅ Token-based authentication with keyring support
+* ✅ Track search and metadata retrieval
+* ✅ Album metadata retrieval
+* ✅ Streaming URL generation (subscription required)
+* ✅ Automatic token refresh
+* ✅ Async context manager support
 
 ### Apple Music API Features
-- ✅ Developer token authentication
-- ✅ iTunes Search API fallback (no auth required)
-- ✅ ISRC-based lookups
-- ✅ Track and album metadata retrieval
-- ✅ User token support for personalized features
-- ✅ Async context manager support
+
+* ✅ Developer token authentication
+* ✅ iTunes Search API fallback (no auth required)
+* ✅ ISRC-based lookups
+* ✅ Track and album metadata retrieval
+* ✅ User token support for personalized features
+* ✅ Async context manager support
 
 ### Metadata Utils Features
-- ✅ FLAC file validation
-- ✅ Metadata extraction from existing files
-- ✅ Search query building from metadata
-- ✅ ISRC extraction from FLAC tags
-- ✅ Generic metadata application
+
+* ✅ FLAC file validation
+* ✅ Metadata extraction from existing files
+* ✅ Search query building from metadata
+* ✅ ISRC extraction from FLAC tags
+* ✅ Generic metadata application
 
 ## Error Handling
 
 All APIs include comprehensive error handling:
 
-- Network errors are caught and logged
-- Authentication failures trigger re-authentication
-- Rate limiting is respected
-- Graceful degradation (e.g., iTunes fallback for Apple Music)
+* Network errors are caught and logged
+* Authentication failures trigger re-authentication
+* Rate limiting is respected
+* Graceful degradation (e.g., iTunes fallback for Apple Music)
 
 ## Testing
 
 Run the unit tests:
 
-```bash
+``` bash
 poetry run pytest tests/test_shared_apis.py -v
 ```
 
 Tests cover:
-- Configuration management
-- API initialization
-- Async context managers
-- Mocked API responses
-- Metadata utility functions
+
+* Configuration management
+* API initialization
+* Async context managers
+* Mocked API responses
+* Metadata utility functions
 
 ## Dependencies
 
 Required packages:
-- `aiohttp` - Async HTTP client
-- `keyring` - Secure credential storage
-- `mutagen` - FLAC metadata handling
-- `python-dotenv` - Environment variable loading
-- `rich` - Console output formatting
+
+* `aiohttp` \- Async HTTP client
+* `keyring` \- Secure credential storage
+* `mutagen` \- FLAC metadata handling
+* `python-dotenv` \- Environment variable loading
+* `rich` \- Console output formatting
 
 ## Next Steps
 
