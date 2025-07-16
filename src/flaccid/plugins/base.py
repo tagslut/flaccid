@@ -7,8 +7,6 @@ Base plugin classes for the FLACCID CLI.
 This module defines the interfaces that plugins must implement.
 """
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path

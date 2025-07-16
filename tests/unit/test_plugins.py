@@ -1,7 +1,7 @@
 """Unit tests for plugin discovery and registration."""
 
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -10,15 +10,44 @@ from flaccid.plugins.registry import get_provider
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
 from flaccid.plugins.qobuz import QobuzPlugin
+from flaccid.core import downloader
 
 
 @pytest.mark.asyncio
 async def test_qobuz_plugin_auth(monkeypatch):
-    monkeypatch.setattr("keyring.get_password", lambda service, user: "secret")
+    monkeypatch.setattr("keyring.get_password", lambda s, u: "user" if u == "username" else "pass")
+
+    def fake_post(url, data=None):
+        class Resp:
+            async def json(self):
+                return {"user_auth_token": "tok"}
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, exc_type, exc, tb):
+                pass
+
+        return Resp()
+
     with patch.dict(os.environ, {"QOBUZ_APP_ID": "id"}, clear=False):
         async with QobuzPlugin() as plugin:
+            monkeypatch.setattr(plugin.session, "post", fake_post)
             await plugin.authenticate()
-            assert plugin.token == "secret"
+            assert plugin.token == "tok"
+
+
+@pytest.mark.asyncio
+async def test_qobuz_download(monkeypatch, tmp_path):
+    async with QobuzPlugin(app_id="id", token="tok") as plugin:
+        monkeypatch.setattr(plugin, "_request", AsyncMock(return_value={"url": "http://test"}))
+        monkeypatch.setattr(
+            downloader,
+            "download_file",
+            AsyncMock(return_value=True),
+        )
+        result = await plugin.download("123", tmp_path / "file.flac")
+        assert result is True
 
 
 def test_track_metadata_dataclass():

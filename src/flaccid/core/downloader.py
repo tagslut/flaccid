@@ -1,11 +1,11 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 #!/usr/bin/env python3
 """
 File download utilities for the FLACCID CLI.
 """
-
-from __future__ import annotations
 
 import asyncio
 import os

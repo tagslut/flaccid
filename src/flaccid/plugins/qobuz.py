@@ -23,6 +23,7 @@ class QobuzPlugin(MetadataProviderPlugin):
     """Simple Qobuz API wrapper."""
 
     BASE_URL = "https://www.qobuz.com/api.json/0.2/"
+    LOGIN_URL = "https://www.qobuz.com/api.json/0.2.0/login"
 
     def __init__(
         self, app_id: Optional[str] = None, token: Optional[str] = None
@@ -50,14 +51,32 @@ class QobuzPlugin(MetadataProviderPlugin):
             self.session = None
 
     async def authenticate(self) -> bool:
-        """Ensure a valid authentication token is available."""
-        if not self.token:
-            self.token = keyring.get_password("flaccid_qobuz", "token")
-            if self.token is None:
-                raise RuntimeError(
-                    "Qobuz token not found in keyring. Please set your token."
-                )
-            await self._refresh_token()
+        """Authenticate the user via the Qobuz login API."""
+        if self.token:
+            return True
+
+        assert self.session is not None, "Session not initialized"
+
+        username = keyring.get_password("flaccid_qobuz", "username")
+        password = keyring.get_password("flaccid_qobuz", "password")
+        if not username or not password:
+            raise RuntimeError(
+                "Qobuz credentials missing. Run 'fla set auth qobuz' first."
+            )
+
+        payload = {"app_id": self.app_id, "username": username, "password": password}
+        async with self.session.post(self.LOGIN_URL, data=payload) as resp:
+            data = await resp.json()
+
+        token = data.get("user_auth_token")
+        if not token:
+            raise RuntimeError("Failed to authenticate with Qobuz")
+
+        self.token = token
+        try:
+            keyring.set_password("flaccid_qobuz", "token", token)
+        except Exception:
+            pass
         return True
 
     async def _refresh_token(self) -> None:
@@ -125,6 +144,36 @@ class QobuzPlugin(MetadataProviderPlugin):
             art_url=art_url,
         )
 
+    async def fetch_track(self, isrc: str) -> TrackMetadata:
+        """Lookup a track by ISRC code."""
+        await self.authenticate()
+        data = await self._request("track/get", isrc=isrc)
+
+        album_info = data.get("album", {})
+        year = None
+        date_str = album_info.get("release_date_original") or data.get("year")
+        if isinstance(date_str, str) and date_str:
+            with contextlib.suppress(ValueError):
+                year = int(date_str.split("-")[0])
+
+        image = album_info.get("image")
+        art_url = None
+        if isinstance(image, dict):
+            art_url = image.get("large") or image.get("small")
+        elif isinstance(image, str):
+            art_url = image
+
+        return TrackMetadata(
+            title=data.get("title", ""),
+            artist=data.get("performer", {}).get("name") or data.get("artist", ""),
+            album=album_info.get("title", data.get("album", "")),
+            track_number=int(data.get("track_number", data.get("trackNumber", 0))),
+            disc_number=int(data.get("disc_number", data.get("media_number", 0))),
+            year=year,
+            isrc=data.get("isrc"),
+            art_url=art_url,
+        )
+
     async def get_album(self, album_id: str) -> AlbumMetadata:
         await self.authenticate()
         data = await self._request("album/get", album_id=album_id)
@@ -157,8 +206,8 @@ class QobuzPlugin(MetadataProviderPlugin):
         await self.authenticate()
         return await self._request("search", query=query, type="albums")
 
-    async def download_track(self, track_id: str, dest: Path) -> bool:
-        """Download a track to *dest*."""
+    async def download(self, track_id: str, dest: Path) -> bool:
+        """Download a track to ``dest`` asynchronously."""
         await self.authenticate()
         data = await self._request("track/getFileUrl", track_id=track_id, format_id=6)
         url = data.get("url")

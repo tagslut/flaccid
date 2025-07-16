@@ -27,6 +27,6 @@ def download_track(track_id: str, dest: Path) -> bool:
     async def _run() -> bool:
         async with QobuzPlugin() as plugin:
             await plugin.authenticate()
-            return await plugin.download_track(track_id, dest)
+            return await plugin.download(track_id, dest)
 
     return asyncio.run(_run())
