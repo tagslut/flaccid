@@ -1,12 +1,20 @@
 #!/bin/bash
 #
 # Description: Performs git operations
-# Usage: ./git_commands.sh
+# Usage: ./scripts/git_commands.sh "Your commit message"
 #
 set -euo pipefail
 
+COMMIT_MSG="${1-}"
+if [ -z "$COMMIT_MSG" ]; then
+  echo "Error: No commit message provided." >&2
+  echo "Usage: $0 \"Your commit message\"" >&2
+  exit 1
+fi
+
 # Get the repository root directory
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
 
 # Verify Git installation
 git --version
@@ -24,12 +32,20 @@ git add .
 # Check if there are changes to commit
 if git diff --cached --quiet; then
   echo "No changes to commit. Working tree clean."
-  echo "No action needed. Exiting."
+  echo "Pulling latest changes to ensure branch is up-to-date..."
+  # Use a simple pull since there's nothing to rebase
+  git pull origin "$CURRENT_BRANCH"
+  echo "Branch is up-to-date. Exiting."
   exit 0
 else
   # Commit the changes with --no-verify to bypass pre-commit hooks
   echo "Committing changes..."
-  git commit --no-verify -m "Update documentation and fix CLI command structure"
+  git commit --no-verify -m "$COMMIT_MSG"
+
+  # Now, pull with rebase to integrate remote changes.
+  # This will place your new commit on top of any new commits from the remote.
+  echo "Pulling latest changes from origin..."
+  git pull --rebase origin "$CURRENT_BRANCH"
 
   # Push to the remote repository
   echo "Pushing to remote repository..."
