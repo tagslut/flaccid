@@ -3,6 +3,7 @@ from __future__ import annotations
 """Unit tests for path and filename placeholder helpers."""
 
 import json
+import asyncio
 from pathlib import Path
 
 from mutagen.flac import FLAC
@@ -100,6 +101,9 @@ def test_apply_metadata(monkeypatch, tmp_path):
 
     assert called["write"][0] == flac
     assert called["lyrics"] == ("Artist", "Song")
+    # Ensure the coroutine was awaited by verifying the stored value
+    # is not a coroutine object.
+    assert not asyncio.iscoroutine(called["write"][0])
 
 
 def test_store_credentials(monkeypatch):
