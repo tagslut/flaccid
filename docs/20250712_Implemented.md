@@ -27,7 +27,7 @@
 
 1. **Full Plugin Capabilities**
    - Many service-specific modules under `src/flaccid/tag/` are empty (e.g. `apple.py`, `qobuz.py`, `beatport.py`).
-   - Download/authentication flows for Qobuz, Tidal and other providers are simplified and may not handle real API tokens or parallel downloads.
+   - Download/authentication flows for Qobuz are simplified and may not handle real API tokens or parallel downloads. Other providers, including Tidal, are not yet implemented.
 2. **Metadata Cascade & Tagging Logic**
    - Metadata merging implemented via the `cascade` helper in
      `src/flaccid/core/metadata.py`. Missing fields are filled left-to-right

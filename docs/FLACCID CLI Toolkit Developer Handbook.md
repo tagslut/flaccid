@@ -2030,7 +2030,7 @@ ChatGPT can make mistakes. Check important info.
 
 ## Introduction
 
-**FLACCID** is a modular command-line toolkit designed for managing FLAC audio libraries and integrating with music streaming services. The name "FLACCID" reflects its focus on FLAC audio and a CLI-first design. This toolkit enables users to download high-quality music from services like Qobuz and Tidal, tag their local FLAC files with rich metadata (including album art and lyrics), and maintain a well-organized music library database. The rebuild of FLACCID focuses on a clean architecture with clear module separation, plugin support for multiple providers, and modern Python libraries for robust functionality.
+**FLACCID** is a modular command-line toolkit designed for managing FLAC audio libraries and integrating with music streaming services. The name "FLACCID" reflects its focus on FLAC audio and a CLI-first design. This toolkit enables users to download high-quality music from Qobuz, tag their local FLAC files with rich metadata (including album art and lyrics), and maintain a well-organized music library database. Support for additional services such as Tidal is planned. The rebuild of FLACCID focuses on a clean architecture with clear module separation, plugin support for multiple providers, and modern Python libraries for robust functionality.
 
 **Key Features:**
 
