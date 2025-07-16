@@ -24,7 +24,8 @@ def fetch_metadata(file: Path, provider: str) -> dict:
     file:
         FLAC file to inspect for existing metadata to build a search query.
     provider:
-        Name of the provider to query (``qobuz``, ``apple``, ``discogs``, or ``beatport``).
+        Name of the provider to query (``qobuz``, ``apple``, ``discogs``,
+        or ``beatport``).
     """
     existing = get_existing_metadata(str(file))
     query = build_search_query(existing)
@@ -80,9 +81,10 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
     asyncio.run(_apply())
 
 
-def store_credentials(provider: str, api_key: str) -> None:
-    """Save ``api_key`` for ``provider`` using the system keyring."""
-    keyring.set_password("flaccid", provider, api_key)
+def store_credentials(provider: str, api_key: str, api_secret: str) -> None:
+    """Save API credentials for ``provider`` using the system keyring."""
+    keyring.set_password("flaccid", f"{provider}_key", api_key)
+    keyring.set_password("flaccid", f"{provider}_secret", api_secret)
 
 
 def save_paths(library: Path | None, cache: Path | None) -> dict:

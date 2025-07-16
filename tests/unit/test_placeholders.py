@@ -105,14 +105,19 @@ def test_apply_metadata(monkeypatch, tmp_path):
 def test_store_credentials(monkeypatch):
     called = {}
 
-    def fake_set(service, provider, key):
-        called["args"] = (service, provider, key)
+    def fake_set(service: str, name: str, value: str) -> None:
+        called.setdefault("calls", []).append((service, name, value))
 
     monkeypatch.setattr(
         placeholders, "keyring", type("KR", (), {"set_password": fake_set})
     )
-    placeholders.store_credentials("qobuz", "secret")
-    assert called["args"] == ("flaccid", "qobuz", "secret")
+
+    placeholders.store_credentials("qobuz", "key123", "secret456")
+
+    assert called["calls"] == [
+        ("flaccid", "qobuz_key", "key123"),
+        ("flaccid", "qobuz_secret", "secret456"),
+    ]
 
 
 def test_save_paths(monkeypatch, tmp_path):
@@ -124,4 +129,3 @@ def test_save_paths(monkeypatch, tmp_path):
     assert saved == data
     assert saved["library"].endswith("lib")
     assert saved["cache"].endswith("cache")
-
