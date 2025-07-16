@@ -38,21 +38,31 @@ class TidalPlugin(MetadataProviderPlugin):
             self.session = None
 
     async def authenticate(self) -> None:
-        """Authenticate using a stored refresh token."""
+        """Authenticate using OAuth and store the refresh token."""
         if self.token:
             return
 
-        refresh_token = keyring.get_password("flaccid_tidal", "refresh_token")
-        if not refresh_token:
-            raise RuntimeError(
-                "Tidal refresh token missing. Run 'fla set auth tidal' first."
-            )
-
         assert self.session is not None, "Session not initialized"
-        payload = {
-            "grant_type": "refresh_token",
-            "refresh_token": refresh_token,
-        }
+
+        refresh_token = keyring.get_password("flaccid_tidal", "refresh_token")
+        if refresh_token:
+            payload = {
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+            }
+        else:
+            username = keyring.get_password("flaccid_tidal", "username")
+            password = keyring.get_password("flaccid_tidal", "password")
+            if not username or not password:
+                raise RuntimeError(
+                    "Tidal credentials missing. Run 'fla set auth tidal' first."
+                )
+            payload = {
+                "grant_type": "password",
+                "username": username,
+                "password": password,
+            }
+
         async with self.session.post(self.AUTH_URL, data=payload) as resp:
             data = await resp.json()
 
@@ -78,15 +88,9 @@ class TidalPlugin(MetadataProviderPlugin):
         ) as resp:
             return await resp.json()
 
-    async def search_track(self, query: str) -> Any:
-        await self.authenticate()
-        if not self.session:
-            await self.open()
-        return await self._request("search/tracks", query=query)
-
-    async def get_track(self, track_id: str) -> TrackMetadata:
-        await self.authenticate()
-        data = await self._request(f"tracks/{track_id}")
+    @staticmethod
+    def _map_track(data: dict[str, Any]) -> TrackMetadata:
+        """Convert API response to :class:`TrackMetadata`."""
         year: int | None = None
         date_str = data.get("streamStartDate")
         if isinstance(date_str, str) and date_str:
@@ -116,9 +120,9 @@ class TidalPlugin(MetadataProviderPlugin):
             art_url=art_url,
         )
 
-    async def get_album(self, album_id: str) -> AlbumMetadata:
-        await self.authenticate()
-        data = await self._request(f"albums/{album_id}")
+    @staticmethod
+    def _map_album(data: dict[str, Any]) -> AlbumMetadata:
+        """Convert API response to :class:`AlbumMetadata`."""
         year: int | None = None
         date_str = data.get("releaseDate")
         if isinstance(date_str, str) and date_str:
@@ -134,6 +138,22 @@ class TidalPlugin(MetadataProviderPlugin):
             year=year,
             cover_url=data.get("cover"),
         )
+
+    async def search_track(self, query: str) -> Any:
+        await self.authenticate()
+        if not self.session:
+            await self.open()
+        return await self._request("search/tracks", query=query)
+
+    async def get_track(self, track_id: str) -> TrackMetadata:
+        await self.authenticate()
+        data = await self._request(f"tracks/{track_id}")
+        return self._map_track(data)
+
+    async def get_album(self, album_id: str) -> AlbumMetadata:
+        await self.authenticate()
+        data = await self._request(f"albums/{album_id}")
+        return self._map_album(data)
 
     async def search_album(self, query: str) -> Any:
         """Search albums by *query*."""

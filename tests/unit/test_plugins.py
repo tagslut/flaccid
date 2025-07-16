@@ -178,6 +178,47 @@ async def test_tidal_auth_refresh(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_tidal_auth_login(monkeypatch):
+    """Authenticate using username/password when no refresh token exists."""
+
+    class FakeResp:
+        async def json(self):
+            return {"access_token": "tok", "refresh_token": "newref"}
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    class FakeSession:
+        def post(self, url, data=None):  # pragma: no cover - trivial
+            assert data["grant_type"] == "password"
+            assert data["username"] == "user"
+            assert data["password"] == "pass"
+            return FakeResp()
+
+    plugin = TidalPlugin(token=None)
+    plugin.session = FakeSession()
+
+    def get_password(service: str, user: str) -> str | None:
+        mapping = {"username": "user", "password": "pass"}
+        return mapping.get(user)
+
+    monkeypatch.setattr(keyring, "get_password", get_password)
+    saved: dict[str, str] = {}
+
+    def save(service: str, user: str, token: str) -> None:  # pragma: no cover - simple
+        saved[user] = token
+
+    monkeypatch.setattr(keyring, "set_password", save)
+
+    await plugin.authenticate()
+    assert plugin.token == "tok"
+    assert saved["refresh_token"] == "newref"
+
+
+@pytest.mark.asyncio
 async def test_tidal_hls_download(tmp_path, monkeypatch):
     """Download an HLS playlist by concatenating segments."""
 
