@@ -9,7 +9,11 @@ from pathlib import Path
 from typer import confirm
 
 from flaccid.core import metadata
-from flaccid.plugins.base import TrackMetadata
+from flaccid.plugins.base import (
+    MetadataProviderPlugin,
+    LyricsProviderPlugin,
+    TrackMetadata,
+)
 from flaccid.plugins.lyrics import LyricsPlugin
 
 
@@ -47,3 +51,24 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
         await metadata.write_tags(str(file), track_meta)
 
     asyncio.run(_apply())
+
+
+async def write_tags(
+    file: Path,
+    meta: TrackMetadata,
+    *,
+    art: bytes | None = None,
+    plugin: MetadataProviderPlugin | None = None,
+    lyrics_plugin: LyricsProviderPlugin | None = None,
+    filename_template: str | None = None,
+) -> Path:
+    """Proxy to :func:`flaccid.core.metadata.write_tags`."""
+
+    return await metadata.write_tags(
+        file,
+        meta,
+        art=art,
+        plugin=plugin,
+        lyrics_plugin=lyrics_plugin,
+        filename_template=filename_template,
+    )
