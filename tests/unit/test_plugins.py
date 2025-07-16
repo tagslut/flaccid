@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from flaccid.plugins import PLUGINS
+from flaccid.plugins.registry import get_provider
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
 from flaccid.plugins.qobuz import QobuzPlugin
@@ -37,6 +38,12 @@ def test_plugin_registry_contains_new_plugins():
     assert "discogs" in PLUGINS
     assert "beatport" in PLUGINS
     assert "lyrics" in PLUGINS
+
+
+def test_get_provider_returns_plugin():
+    assert get_provider("qobuz") is QobuzPlugin
+    with pytest.raises(ValueError):
+        get_provider("unknown")
 
 
 @pytest.mark.asyncio
@@ -89,3 +96,4 @@ async def test_lyrics_plugin_handles_errors(monkeypatch):
         monkeypatch.setattr(plugin.session, "get", fake_get)
         lyrics = await plugin.get_lyrics("artist", "song")
         assert lyrics is None
+

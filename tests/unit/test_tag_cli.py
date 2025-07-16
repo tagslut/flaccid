@@ -13,11 +13,20 @@ runner = CliRunner()
 def test_fetch_invokes_provider(tmp_path, monkeypatch):
     called = {}
 
-    def fake_fetch_metadata(file):
-        called["file"] = file
-        return {"ok": True}
+    class FakePlugin:
+        async def __aenter__(self):
+            return self
 
-    monkeypatch.setattr(tag_cli.qobuz, "fetch_metadata", fake_fetch_metadata)
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def search_track(self, query: str):
+            called["query"] = query
+            return {"ok": True}
+
+    monkeypatch.setattr(tag_cli, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(tag_cli, "get_existing_metadata", lambda path: {})
+    monkeypatch.setattr(tag_cli, "build_search_query", lambda meta: "A B")
 
     flac = tmp_path / "song.flac"
     flac.write_text("data")
@@ -25,7 +34,7 @@ def test_fetch_invokes_provider(tmp_path, monkeypatch):
     result = runner.invoke(tag_app, ["fetch", str(flac)])
 
     assert result.exit_code == 0
-    assert called["file"] == flac
+    assert called["query"] == "A B"
     assert "{'ok': True}" in result.stdout
 
 
@@ -98,3 +107,4 @@ def test_apply_real_logic(tmp_path, monkeypatch):
 
     assert result.exit_code == 0
     assert called["write"] == [flac]
+

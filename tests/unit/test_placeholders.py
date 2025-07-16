@@ -40,12 +40,18 @@ def test_fetch_metadata_qobuz(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(placeholders, "build_search_query", lambda meta: "A B")
 
-    fake_api = AsyncContext({"ok": True})
-    monkeypatch.setattr(placeholders, "QobuzAPI", lambda: fake_api)
+    called = {}
+
+    class FakePlugin(AsyncContext):
+        async def search_track(self, query: str):
+            called["query"] = query
+            return self.result
+
+    monkeypatch.setattr(placeholders, "get_provider", lambda name: FakePlugin)
 
     result = placeholders.fetch_metadata(flac, "qobuz")
     assert result == {"ok": True}
-    assert fake_api.query == "A B"
+    assert called["query"] == "A B"
 
 
 def test_apply_metadata(monkeypatch, tmp_path):
@@ -118,3 +124,4 @@ def test_save_paths(monkeypatch, tmp_path):
     assert saved == data
     assert saved["library"].endswith("lib")
     assert saved["cache"].endswith("cache")
+

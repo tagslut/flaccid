@@ -3,18 +3,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+import asyncio
 
 import click
 import typer
 
-from . import apple, beatport, discogs, qobuz, utils
-
-PROVIDERS = {
-    "qobuz": qobuz,
-    "apple": apple,
-    "discogs": discogs,
-    "beatport": beatport,
-}
+from flaccid.plugins.registry import get_provider
+from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
+from . import utils
 
 app = typer.Typer(help="Metadata-tagging operations")
 
@@ -34,11 +30,14 @@ def fetch(
 ) -> None:
     """Fetch metadata for *file* from the specified *provider* and print it."""
 
-    provider_mod = PROVIDERS.get(provider.lower())
-    if provider_mod is None:
-        raise typer.BadParameter(f"Unsupported provider: {provider}")
+    async def _search() -> dict:
+        plugin_cls = get_provider(provider)
+        existing = get_existing_metadata(str(file))
+        query = build_search_query(existing)
+        async with plugin_cls() as api:
+            return await api.search_track(query)
 
-    metadata = provider_mod.fetch_metadata(file)
+    metadata = asyncio.run(_search())
     typer.echo(metadata)
 
 
@@ -54,3 +53,4 @@ def apply(
 
     utils.apply_metadata(file, metadata_file, yes)
     typer.echo("Metadata applied successfully")
+
