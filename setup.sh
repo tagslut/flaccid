@@ -36,7 +36,8 @@ function setup_with_pip() {
     echo "Setup complete! Activate the virtual environment with:"
     echo "source .venv/bin/activate  # Linux/macOS"
     echo "or"
-    echo ".venv\Scripts\activate  # Windows"
+    echo # Refactored code with improvements for readability and maintainability
+WINDOWS_VENV_ACTIVATION=".venv\\Scripts\\activate"  # Command to activate the virtual environment on Windows
     echo "Then you can use 'fla' to run commands."
 }
 
@@ -171,7 +172,7 @@ if ! command -v poetry &>/dev/null; then
         if [[ -d "$HOME/.local/bin" ]]; then
             export PATH="$HOME/.local/bin:$PATH"
         elif [[ -d "$HOME/Library/Python/*/bin" ]]; then  # macOS
-            export PATH="$(echo $HOME/Library/Python/*/bin | tr ' ' ':'):$PATH"
+            export PATH="$(echo "$HOME"/Library/Python/*/bin | tr ' ' ':'):$PATH"
         fi
 
         if ! command -v poetry &>/dev/null; then

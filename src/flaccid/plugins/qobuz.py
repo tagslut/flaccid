@@ -8,9 +8,8 @@ This module provides functionality for downloading tracks from Qobuz.
 from __future__ import annotations
 
 import contextlib
-import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import aiohttp
 import keyring
