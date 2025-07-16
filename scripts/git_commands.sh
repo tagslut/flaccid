@@ -20,12 +20,21 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 # Create a small change to commit
 echo "Creating a small change to commit..."
-if grep -q "Last updated:" "$REPO_ROOT/docs/README.md"; then
-  # Replace existing timestamp line - works for both formats
-  sed -i '' 's/[*#] Last updated:.*$/\*Last updated: '"$(date)"'\*/' "$REPO_ROOT/docs/README.md"
+README_PATH="$REPO_ROOT/docs/README.md"
+if [ -f "$README_PATH" ]; then
+  # Create a temp file with the updated content
+  awk '{
+    if ($0 ~ /\*Last updated:/) {
+      print "*Last updated: '"$(date)"'*"
+    } else {
+      print $0
+    }
+  }' "$README_PATH" > "$README_PATH.tmp"
+
+  # Replace the original file
+  mv "$README_PATH.tmp" "$README_PATH"
 else
-  # Add timestamp as the last line
-  echo "*Last updated: $(date)*" >> "$REPO_ROOT/docs/README.md"
+  echo "Warning: README.md not found at $README_PATH"
 fi
 
 # Add all changes to staging
