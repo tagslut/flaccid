@@ -48,3 +48,38 @@ def test_lib_scan_watch(monkeypatch, tmp_path):
 
     assert result.exit_code == 0
     assert called["args"] == (tmp_path, Path("library.db"))
+
+
+def test_lib_search_invokes_core(monkeypatch):
+    called = {}
+
+    def fake_search(db, query, sort=None, limit=None, offset=0):
+        called["args"] = (db, query, sort, limit, offset)
+        return []
+
+    monkeypatch.setattr(lib_cli.library, "search_library", fake_search)
+
+    result = runner.invoke(
+        app,
+        [
+            "library",
+            "search",
+            "--filter",
+            "beatles",
+            "--sort",
+            "title",
+            "--limit",
+            "5",
+            "--offset",
+            "1",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert called["args"] == (
+        Path("library.db"),
+        "beatles",
+        "title",
+        5,
+        1,
+    )
