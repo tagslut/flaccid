@@ -69,6 +69,7 @@ Each command exits with a non-zero status code on failure.
    ```bash
    fla set auth qobuz
    fla set auth apple
+   # Both commands prompt for an API key and secret
    # Optional: configure directories
    fla set path --library ~/Music --cache ~/.cache/flaccid
    ```

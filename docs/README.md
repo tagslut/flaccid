@@ -32,6 +32,7 @@ FLACCID (FLAC Library and Canonical Content Identification) is a comprehensive C
    ```bash
    fla set auth qobuz
    fla set auth apple
+   # Both commands prompt for an API key and secret
    # Optional: configure directories
    fla set path --library ~/Music --cache ~/.cache/flaccid
    ```
