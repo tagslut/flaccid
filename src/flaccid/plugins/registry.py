@@ -2,23 +2,20 @@ from __future__ import annotations
 
 """Plugin registry utilities."""
 
-from .apple import AppleMusicPlugin
-from .beatport import BeatportPlugin
-from .discogs import DiscogsPlugin
-from .lyrics import LyricsPlugin
-from .qobuz import QobuzPlugin
-from .tidal import TidalPlugin
+import os
+from pathlib import Path
+
 from .base import MetadataProviderPlugin
+from .loader import PluginLoader
 
 # Mapping of provider names to plugin classes
-PLUGINS: dict[str, type[MetadataProviderPlugin]] = {
-    "apple": AppleMusicPlugin,
-    "beatport": BeatportPlugin,
-    "discogs": DiscogsPlugin,
-    "lyrics": LyricsPlugin,
-    "qobuz": QobuzPlugin,
-    "tidal": TidalPlugin,
-}
+paths = [Path(__file__).parent]
+extra = os.getenv("FLACCID_PLUGIN_PATH")
+if extra:
+    paths.extend(Path(p) for p in extra.split(os.pathsep))
+
+_loader = PluginLoader(*paths)
+PLUGINS: dict[str, type[MetadataProviderPlugin]] = _loader.discover()
 
 
 def get_provider(name: str) -> type[MetadataProviderPlugin]:
@@ -43,4 +40,3 @@ def get_provider(name: str) -> type[MetadataProviderPlugin]:
         return PLUGINS[name.lower()]
     except KeyError as exc:  # pragma: no cover - error path
         raise ValueError(f"Unknown provider: {name}") from exc
-
