@@ -12,6 +12,8 @@ from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
 from flaccid.plugins.qobuz import QobuzPlugin
 from flaccid.plugins.tidal import TidalPlugin
+from flaccid.plugins.discogs import DiscogsPlugin
+from flaccid.plugins.beatport import BeatportPlugin
 import keyring
 from flaccid.core import downloader
 
@@ -219,3 +221,60 @@ async def test_tidal_hls_download(tmp_path, monkeypatch):
     result = await plugin.download_track("1", dest)
     assert result is True
     assert dest.read_bytes() == b"ab"
+
+
+@pytest.mark.asyncio
+async def test_discogs_auth(monkeypatch):
+    monkeypatch.setattr(keyring, "get_password", lambda *a: "tok")
+
+    plugin = DiscogsPlugin(token=None)
+    await plugin.authenticate()
+    assert plugin.token == "tok"
+
+
+@pytest.mark.asyncio
+async def test_discogs_get_track(monkeypatch):
+    async with DiscogsPlugin(token="tok") as plugin:
+        monkeypatch.setattr(
+            plugin,
+            "_request",
+            AsyncMock(
+                return_value={
+                    "title": "Song",
+                    "artists": [{"name": "Artist"}],
+                    "album": "Album",
+                    "position": "1",
+                }
+            ),
+        )
+        track = await plugin.get_track("123")
+        assert track.title == "Song"
+        assert track.artist == "Artist"
+
+
+@pytest.mark.asyncio
+async def test_beatport_auth(monkeypatch):
+    monkeypatch.setattr(keyring, "get_password", lambda *a: "tok")
+
+    plugin = BeatportPlugin(token="")
+    await plugin.authenticate()
+    assert plugin.token == "tok"
+
+
+@pytest.mark.asyncio
+async def test_beatport_get_track(monkeypatch):
+    async with BeatportPlugin(token="tok") as plugin:
+        monkeypatch.setattr(
+            plugin,
+            "_request",
+            AsyncMock(
+                return_value={
+                    "name": "Song",
+                    "artists": [{"name": "Artist"}],
+                    "release": {"name": "Album"},
+                    "number": 2,
+                }
+            ),
+        )
+        track = await plugin.get_track("1")
+        assert track.album == "Album"
