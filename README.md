@@ -169,13 +169,3 @@ make ci
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
-# Last updated: Wed Jul 16 18:06:25 EEST 2025
