@@ -178,6 +178,13 @@ fla library watch start /path/to/music --db library.db
 fla library watch stop /path/to/music
 ```
 
+#### Searching
+
+```bash
+# Search your library for "beatles" sorted by title
+fla library search --filter "beatles" --sort title --limit 20
+```
+
 ### Settings Commands (`fla settings`)
 
 Manage credentials and configuration.

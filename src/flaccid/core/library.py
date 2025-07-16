@@ -1,13 +1,21 @@
-from __future__ import annotations
-
 """Library management utilities."""
+
+from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence
 
 from mutagen.flac import FLAC
-from sqlalchemy import (Column, Integer, MetaData, String, Table,
-                        create_engine, select)
+from sqlalchemy import (
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    select,
+    text,
+)
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -39,6 +47,12 @@ def _init_db(db_path: Path) -> tuple[Engine, Table]:
         Column("album", String),
     )
     metadata.create_all(engine)
+    # Create the FTS table for full-text search if it doesn't exist
+    with engine.begin() as conn:
+        conn.exec_driver_sql(
+            "CREATE VIRTUAL TABLE IF NOT EXISTS tracks_fts "
+            "USING fts5(title, artist, album, path UNINDEXED)"
+        )
     return engine, tracks
 
 
@@ -49,13 +63,20 @@ def index_files(db_path: Path, files: Iterable[Path]) -> None:
     with Session(engine) as session:
         for path in files:
             audio = FLAC(str(path))
+            values = {
+                "path": str(path),
+                "title": "".join(audio.get("title", [])),
+                "artist": "".join(audio.get("artist", [])),
+                "album": "".join(audio.get("album", [])),
+            }
+            result = session.execute(tracks.insert().values(**values))
+            track_id = result.inserted_primary_key[0]
             session.execute(
-                tracks.insert().values(
-                    path=str(path),
-                    title="".join(audio.get("title", [])),
-                    artist="".join(audio.get("artist", [])),
-                    album="".join(audio.get("album", [])),
-                )
+                text(
+                    "INSERT INTO tracks_fts(rowid, title, artist, album, path) "
+                    "VALUES (:rowid, :title, :artist, :album, :path)"
+                ),
+                {"rowid": track_id, **values},
             )
         session.commit()
 
@@ -81,11 +102,35 @@ def index_changed_files(db_path: Path, files: Iterable[Path]) -> None:
                 session.execute(
                     tracks.update().where(tracks.c.path == str(path)).values(**values)
                 )
+                track_id = session.execute(
+                    select(tracks.c.id).where(tracks.c.path == str(path))
+                ).scalar_one()
             else:
-                session.execute(tracks.insert().values(path=str(path), **values))
+                result = session.execute(
+                    tracks.insert().values(path=str(path), **values)
+                )
+                track_id = result.inserted_primary_key[0]
+            session.execute(
+                text("DELETE FROM tracks_fts WHERE rowid = :rowid"),
+                {"rowid": track_id},
+            )
+            session.execute(
+                text(
+                    "INSERT INTO tracks_fts(rowid, title, artist, album, path) "
+                    "VALUES (:rowid, :title, :artist, :album, :path)"
+                ),
+                {"rowid": track_id, "path": str(path), **values},
+            )
 
         for old in db_set - disk_set:
-            session.execute(tracks.delete().where(tracks.c.path == old))
+            track_id = session.execute(
+                select(tracks.c.id).where(tracks.c.path == old)
+            ).scalar_one()
+            session.execute(tracks.delete().where(tracks.c.id == track_id))
+            session.execute(
+                text("DELETE FROM tracks_fts WHERE rowid = :rowid"),
+                {"rowid": track_id},
+            )
 
         session.commit()
 
@@ -128,13 +173,39 @@ class IncrementalIndexer:
                         .where(self._tracks.c.path == str(path))
                         .values(**values)
                     )
+                    track_id = session.execute(
+                        select(self._tracks.c.id).where(
+                            self._tracks.c.path == str(path)
+                        )
+                    ).scalar_one()
                 else:
-                    session.execute(
+                    result = session.execute(
                         self._tracks.insert().values(path=str(path), **values)
                     )
+                    track_id = result.inserted_primary_key[0]
+                session.execute(
+                    text("DELETE FROM tracks_fts WHERE rowid = :rowid"),
+                    {"rowid": track_id},
+                )
+                session.execute(
+                    text(
+                        "INSERT INTO tracks_fts(rowid, title, artist, album, path) "
+                        "VALUES (:rowid, :title, :artist, :album, :path)"
+                    ),
+                    {"rowid": track_id, "path": str(path), **values},
+                )
 
             for old in db_set - disk_set:
-                session.execute(self._tracks.delete().where(self._tracks.c.path == old))
+                old_id = session.execute(
+                    select(self._tracks.c.id).where(self._tracks.c.path == old)
+                ).scalar_one()
+                session.execute(
+                    self._tracks.delete().where(self._tracks.c.id == old_id)
+                )
+                session.execute(
+                    text("DELETE FROM tracks_fts WHERE rowid = :rowid"),
+                    {"rowid": old_id},
+                )
 
             session.commit()
 
@@ -150,6 +221,13 @@ def remove_file(db_path: Path, file: Path) -> None:
 
     engine, tracks = _init_db(db_path)
     with Session(engine) as session:
+        track_id = session.execute(
+            select(tracks.c.id).where(tracks.c.path == str(file))
+        ).scalar_one_or_none()
+        if track_id is not None:
+            session.execute(
+                text("DELETE FROM tracks_fts WHERE rowid = :rowid"), {"rowid": track_id}
+            )
         session.execute(tracks.delete().where(tracks.c.path == str(file)))
         session.commit()
 
@@ -205,3 +283,33 @@ def watch_library(directories: Sequence[Path], db_path: Path) -> None:
         pass
     finally:
         stop_watching(directories)
+
+
+def search_library(
+    db_path: Path,
+    query: str,
+    *,
+    sort: str | None = None,
+    limit: int | None = None,
+    offset: int = 0,
+) -> List[Dict[str, Any]]:
+    """Search the library using an FTS query."""
+
+    engine, tracks = _init_db(db_path)
+    with Session(engine) as session:
+        stmt = select(tracks).join_from(
+            tracks, text("tracks_fts"), tracks.c.id == text("tracks_fts.rowid")
+        )
+        if query:
+            stmt = stmt.where(text("tracks_fts MATCH :q")).params(q=query)
+
+        if sort in {"path", "title", "artist", "album"}:
+            stmt = stmt.order_by(getattr(tracks.c, sort))
+
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        if offset:
+            stmt = stmt.offset(offset)
+
+        rows = session.execute(stmt).mappings().all()
+        return [dict(row) for row in rows]

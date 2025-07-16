@@ -187,3 +187,25 @@ def test_incremental_indexer(monkeypatch, tmp_path: Path) -> None:
     with Session(engine) as session:
         paths = {row.path for row in session.execute(select(tracks.c.path))}
     assert paths == {str(f1), str(f2)}
+
+
+def test_search_library(monkeypatch, tmp_path: Path) -> None:
+    db = tmp_path / "lib.db"
+    f1 = tmp_path / "a.flac"
+    f2 = tmp_path / "b.flac"
+    f1.write_text("d1")
+    f2.write_text("d2")
+
+    class FakeFLAC(dict):
+        def __init__(self, path: str) -> None:
+            super().__init__()
+            self["title"] = [Path(path).stem]
+            self["artist"] = ["Artist"]
+            self["album"] = ["Album"]
+
+    monkeypatch.setattr(library, "FLAC", FakeFLAC)
+    library.index_files(db, [f1, f2])
+
+    results = library.search_library(db, "a")
+    assert len(results) == 1
+    assert results[0]["path"] == str(f1)

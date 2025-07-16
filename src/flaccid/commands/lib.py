@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Library management CLI."""
+
+from __future__ import annotations
 
 from pathlib import Path
 from typing import List
@@ -60,3 +60,18 @@ def watch_stop(
 
     library.stop_watching(directory)
     typer.echo(f"Stopped watching {', '.join(map(str, directory))}")
+
+
+@app.command("search")
+def search(
+    db: Path = typer.Option(Path("library.db"), help="SQLite database path"),
+    filter: str = typer.Option("", "--filter", "-f", help="Search query"),
+    sort: str | None = typer.Option(None, "--sort", "-s", help="Sort column"),
+    limit: int | None = typer.Option(None, "--limit", "-l", help="Max results"),
+    offset: int = typer.Option(0, "--offset", "-o", help="Offset results"),
+) -> None:
+    """Query the library database."""
+
+    rows = library.search_library(db, filter, sort=sort, limit=limit, offset=offset)
+    for row in rows:
+        typer.echo(row["path"])
