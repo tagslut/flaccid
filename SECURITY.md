@@ -1,11 +1,11 @@
-# SECURITY.md
+# Security Policy
 
 ## Reporting Security Issues
 
 If you discover a security vulnerability in FLACCID, please do the following:
 
 1. **Do not open a public issue.**
-2. Email the maintainers directly at the address listed in the repository or in the `pyproject.toml` (if available).
+2. Email us at [security@flaccid.example.com](mailto:security@flaccid.example.com).
 3. Provide a detailed description of the vulnerability and steps to reproduce it.
 4. We will respond as quickly as possible and coordinate a fix.
 
