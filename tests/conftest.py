@@ -51,3 +51,27 @@ def temp_flac_file(temp_dir):
     # Clean up the file
     if temp_flac_path.exists():
         temp_flac_path.unlink()
+
+
+@pytest.fixture
+def lyrics_ovh_response() -> dict[str, str]:
+    """Return sample lyrics API response."""
+
+    import json
+    from pathlib import Path
+
+    fixture = Path(__file__).parent / "fixtures" / "lyrics_ovh.json"
+    with fixture.open(encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+@pytest.fixture
+def tidal_track_response() -> dict[str, object]:
+    """Return sample Tidal track response."""
+
+    import json
+    from pathlib import Path
+
+    fixture = Path(__file__).parent / "fixtures" / "tidal_track.json"
+    with fixture.open(encoding="utf-8") as fh:
+        return json.load(fh)

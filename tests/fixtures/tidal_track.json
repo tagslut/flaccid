@@ -1,0 +1,12 @@
+{
+  "title": "My Song",
+  "trackNumber": 1,
+  "volumeNumber": 1,
+  "streamStartDate": "2021-01-01T00:00:00",
+  "isrc": "XYZ123456789",
+  "album": {
+    "title": "My Album",
+    "cover": "cover.jpg",
+    "artist": {"name": "My Artist"}
+  }
+}
