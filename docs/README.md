@@ -21,6 +21,7 @@ FLACCID (FLAC Library and Canonical Content Identification) is a modular command
 - **[Architecture Overview](architecture/README.md)** - System architecture, design patterns, and technical specifications
 - **[Architecture Decision Records](architecture/adr/)** - Formal architectural decisions and rationale
 - **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute to the project
+- **[Plugin Development Guide](plugin-development.md)** - Writing custom provider plugins
 
 ### Project Status
 - **[Project Status](PROJECT_STATUS.md)** - Current implementation status and roadmap
