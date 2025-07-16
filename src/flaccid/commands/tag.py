@@ -67,6 +67,11 @@ def apple(
     status: bool = typer.Option(
         False, "--status", help="Check authentication status (placeholder)."
     ),
+    template: str | None = typer.Option(
+        None,
+        "--template",
+        help="Rename file using this filename template after tagging.",
+    ),
 ) -> None:
     """Tag a file with metadata from Apple Music."""
     if auth:
@@ -87,7 +92,7 @@ def apple(
         async with AppleMusicPlugin() as plugin:
             try:
                 data = await plugin.get_track(track_id)
-                await fetch_and_tag(file, data)
+                await fetch_and_tag(file, data, filename_template=template)
                 typer.echo(f"✅ Successfully tagged '{file.name}'")
             except ValueError as e:
                 typer.echo(f"❌ Error: {e}", err=True)
