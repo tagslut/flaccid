@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from pathlib import Path
 
 from typer import confirm
@@ -11,30 +10,48 @@ from typer import confirm
 from flaccid.core import metadata
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin
+from flaccid.plugins.registry import get_provider
+from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
 
 
-def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
-    """Apply metadata from *metadata_file* to *file*."""
+async def write_tags(path: Path, meta: TrackMetadata) -> Path:
+    """Wrapper around :func:`flaccid.core.metadata.write_tags`."""
+    return await metadata.write_tags(str(path), meta)
 
-    if metadata_file is None:
-        raise ValueError("metadata_file is required")
 
-    with metadata_file.open("r", encoding="utf-8") as fh:
-        data: dict = json.load(fh)
+def fallback_fetch(path: Path) -> TrackMetadata:
+    """Fetch metadata for ``path`` using the default provider."""
+
+    existing = get_existing_metadata(str(path))
+    query = build_search_query(existing)
+
+    async def _fetch() -> TrackMetadata:
+        plugin_cls = get_provider("qobuz")
+        async with plugin_cls() as api:
+            result = await api.search_track(query)
+            if isinstance(result, TrackMetadata):
+                return result
+            track_id = None
+            if isinstance(result, dict):
+                if "id" in result:
+                    track_id = result["id"]
+                elif result.get("results"):
+                    first = result["results"][0]
+                    track_id = first.get("id") or first.get("trackId")
+            if not track_id:
+                raise ValueError("Unable to extract track id from provider response")
+            return await api.get_track(str(track_id))
+
+    return asyncio.run(_fetch())
+
+
+def apply_metadata(file: Path, meta: TrackMetadata, yes: bool) -> None:
+    """Apply ``meta`` to ``file``."""
 
     if not yes and not confirm("Apply metadata?"):
         return
 
-    track_meta = TrackMetadata(
-        title=data.get("title", ""),
-        artist=data.get("artist", ""),
-        album=data.get("album", ""),
-        track_number=int(data.get("track_number", 0)),
-        disc_number=int(data.get("disc_number", 0)),
-        year=data.get("year"),
-        isrc=data.get("isrc"),
-        lyrics=data.get("lyrics"),
-    )
+    track_meta = meta
 
     async def _apply() -> None:
         if not track_meta.lyrics:
@@ -43,7 +60,6 @@ def apply_metadata(file: Path, metadata_file: Path | None, yes: bool) -> None:
                     await lyr.get_lyrics(track_meta.artist, track_meta.title) or None
                 )
 
-        print(f"Debug: file={file}, track_meta={track_meta}")
         await metadata.write_tags(str(file), track_meta)
 
     asyncio.run(_apply())
