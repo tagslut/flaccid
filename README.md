@@ -22,7 +22,8 @@ Run commands via the `fla` module:
 
 ```bash
 poetry run python -m fla download qobuz 12345678 song.flac
-poetry run python -m fla meta apple song.flac 12345678
+poetry run python -m fla meta apple song.flac --track-id 12345678 \
+  --template "{artist} - {title}.flac"
 poetry run python -m fla library scan ~/Music --db library.db
 poetry run python -m fla library watch start ~/Music --db library.db
 poetry run python -m fla settings store qobuz --token YOUR_TOKEN

@@ -108,3 +108,47 @@ def test_apply_real_logic(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert called["write"] == [flac]
 
+
+def test_apple_template_option(tmp_path, monkeypatch):
+    """``apple`` should forward ``--template`` to ``fetch_and_tag``."""
+
+    import flaccid.commands.tag as commands_tag
+
+    captured: dict[str, object] = {}
+
+    class FakePlugin:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def get_track(self, track_id: str):
+            captured["track_id"] = track_id
+            return {"meta": True}
+
+    async def fake_fetch_and_tag(file, data, *, filename_template=None):
+        captured["template"] = filename_template
+        captured["file"] = file
+
+    monkeypatch.setattr(commands_tag, "AppleMusicPlugin", lambda: FakePlugin())
+    monkeypatch.setattr(commands_tag, "fetch_and_tag", fake_fetch_and_tag)
+
+    flac = tmp_path / "song.flac"
+    flac.write_text("data")
+
+    runner = CliRunner()
+    result = runner.invoke(
+        commands_tag.app,
+        [
+            "apple",
+            str(flac),
+            "--track-id",
+            "123",
+            "--template",
+            "{artist}-{title}.flac",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured["template"] == "{artist}-{title}.flac"
