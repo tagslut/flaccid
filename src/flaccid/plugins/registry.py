@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Plugin registry utilities."""
+
+from __future__ import annotations
 
 import os
 from pathlib import Path
@@ -15,7 +15,13 @@ if extra:
     paths.extend(Path(p) for p in extra.split(os.pathsep))
 
 _loader = PluginLoader(*paths)
-PLUGINS: dict[str, type[MetadataProviderPlugin]] = _loader.discover()
+PLUGINS: dict[str, type[MetadataProviderPlugin]] = {}
+
+
+def load_plugins() -> None:
+    """Discover and cache available plugins."""
+    if not PLUGINS:
+        PLUGINS.update(_loader.discover())
 
 
 def get_provider(name: str) -> type[MetadataProviderPlugin]:
@@ -36,6 +42,7 @@ def get_provider(name: str) -> type[MetadataProviderPlugin]:
     ValueError
         If ``name`` is not a known provider.
     """
+    load_plugins()
     try:
         return PLUGINS[name.lower()]
     except KeyError as exc:  # pragma: no cover - error path

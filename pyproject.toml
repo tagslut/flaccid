@@ -66,6 +66,7 @@ target-version = ["py312"]
 minversion = "6.0"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+addopts = "--cov=src --cov-fail-under=85"
 
 [tool.poetry.scripts]
 fla = "flaccid.cli.__init__:main"

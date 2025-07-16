@@ -6,27 +6,13 @@ from __future__ import annotations
 
 import pytest
 
-import importlib.util
-import sys
-import types
-from pathlib import Path
-
-path = Path(__file__).resolve().parents[3] / "src" / "flaccid" / "plugins" / "base.py"
-sys.modules.setdefault("flaccid", types.ModuleType("flaccid"))
-sys.modules.setdefault("flaccid.plugins", types.ModuleType("flaccid.plugins"))
-spec = importlib.util.spec_from_file_location(
-    "flaccid.plugins.base", path, submodule_search_locations=[str(path.parent)]
+from flaccid.plugins.base import (
+    AlbumMetadata,
+    LyricsProviderPlugin,
+    MetadataProviderPlugin,
+    MusicServicePlugin,
+    TrackMetadata,
 )
-base = importlib.util.module_from_spec(spec)
-sys.modules["flaccid.plugins.base"] = base
-assert spec.loader is not None
-spec.loader.exec_module(base)
-
-AlbumMetadata = base.AlbumMetadata
-LyricsProviderPlugin = base.LyricsProviderPlugin
-MetadataProviderPlugin = base.MetadataProviderPlugin
-MusicServicePlugin = base.MusicServicePlugin
-TrackMetadata = base.TrackMetadata
 
 
 def test_track_metadata_defaults() -> None:
