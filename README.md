@@ -4,6 +4,25 @@
 [![Release](https://github.com/<your-org>/flaccid/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-org>/flaccid/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/<your-org>/flaccid/badge.svg?branch=main)](https://coveralls.io/github/<your-org>/flaccid?branch=main)
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [CLI Overview](#cli-overview)
+- [Installation](#installation)
+- [Plugin Loading](#plugin-loading)
+- [Usage](#usage)
+  - [Library Scanning](#library-scanning)
+  - [Metadata Tagging](#metadata-tagging)
+  - [Database Indexing](#database-indexing)
+  - [Finding and Managing Duplicates](#finding-and-managing-duplicates)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Running CI Locally](#running-ci-locally)
+- [License](#license)
+
+For a complete documentation index see [docs/README.md](docs/README.md).
+
 ## Overview
 
 FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files with metadata. It currently supports Apple Music tagging and downloading tracks from Qobuz. Library indexing utilities help keep a small SQLite database in sync with your collection.
@@ -31,6 +50,12 @@ poetry run python -m fla meta apple song.flac --track-id 12345678 \
 poetry run python -m fla library scan ~/Music --db library.db
 poetry run python -m fla library watch start ~/Music ~/MoreMusic --db library.db
 poetry run python -m fla settings store qobuz --token YOUR_TOKEN
+```
+Sample output for storing credentials:
+
+```text
+$ fla settings store qobuz --token YOUR_TOKEN
+✅ Token stored for qobuz in system keyring
 ```
 
 Each command exits with a non-zero status code on failure.
@@ -84,6 +109,12 @@ The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the environment. If
 ### Plugin Loading
 
 Additional provider plugins can be placed in directories referenced by the `FLACCID_PLUGIN_PATH` environment variable (colon separated). The built-in `PluginLoader` will automatically discover any modules defining subclasses of `MetadataProviderPlugin` and register them for use with the CLI.
+Example:
+
+```bash
+export FLACCID_PLUGIN_PATH=~/my-flaccid-plugins
+fla download custom-provider 1234 song.flac
+```
 ## Usage
 
 ### Library Scanning
@@ -145,6 +176,15 @@ fla duplicates remove ~/Music --by hash --strategy keep-highest-quality --no-dry
 # Keep the newest file of each duplicate set
 fla duplicates remove ~/Music --by hash --strategy keep-newest --no-dry-run
 ```
+Sample output for an interactive removal:
+
+```text
+$ fla duplicates remove ~/Music --by hash --strategy interactive
+🎵 Scanning 200 FLAC files …
+🔍 Found 3 duplicate group(s)
+📋 2 file(s) will be removed
+```
+For more help see the [Troubleshooting section](./docs/user-guide.md#troubleshooting).
 
 ## Documentation
 
@@ -179,3 +219,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
+# Last updated: Wed Jul 16 21:11:30 UTC 2025

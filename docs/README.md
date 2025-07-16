@@ -2,6 +2,8 @@
 
 Welcome to the FLACCID CLI Toolkit documentation. This directory contains comprehensive documentation for developers and users.
 
+Return to the [project README](../README.md) for installation instructions and an overview.
+
 ## Overview
 
 FLACCID (FLAC Library and Canonical Content Identification) is a modular command-line toolkit designed for managing FLAC audio libraries and integrating with music streaming services. It enables users to download high-quality music from Qobuz, tag their local FLAC files with rich metadata (including album art and lyrics), and maintain a well-organized music library database.
