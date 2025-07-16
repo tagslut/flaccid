@@ -22,6 +22,7 @@ FLACCID (FLAC Library and Canonical Content Identification) is a modular command
 
 ### Project Status
 - **[Project Status](PROJECT_STATUS.md)** - Current implementation status and roadmap
+- **[Phase 2 Plan](PHASE2_PLAN.md)** - Detailed implementation plan for Phase 2
 - **[Development Log](development-log.md)** - Historical development notes and decisions
 - **[Changelog](../CHANGELOG.md)** - Version history and changes
 
@@ -111,4 +112,4 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 
 ---
 
-*Last updated: 2025-07-16*
+*Last updated: Wed Jul 16 18:06:12 EEST 2025*
