@@ -9,6 +9,7 @@ from flaccid.plugins.apple import AppleMusicPlugin
 async def test_lookup_by_isrc(mock_get):
     mock_resp = AsyncMock()
     mock_resp.status = 200
+    mock_resp.raise_for_status = lambda: None
     mock_resp.json.return_value = {
         "results": [
             {
@@ -37,4 +38,3 @@ async def test_lookup_by_isrc(mock_get):
     params = mock_get.call_args.kwargs["params"]
     assert params["isrc"] == "CODE"
     assert params["entity"] == "song"
-
