@@ -7,5 +7,11 @@ It simply delegates to the Typer application defined in
 
 from flaccid.cli import app
 
-if __name__ == "__main__":
+
+def main():
+    """Entry point for the CLI when installed via pip/poetry."""
     app()
+
+
+if __name__ == "__main__":
+    main()

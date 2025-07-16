@@ -1,16 +1,3 @@
-<<<<<<< Updated upstream
-# Implementation Status
-
-This document has been archived. See
-[../archive/docs_legacy/docs_IMPLEMENTATION_STATUS.md](../archive/docs_legacy/docs_IMPLEMENTATION_STATUS.md)
-# Implementation Status
-
-This document has been archived. See [../archive/docs_legacy/docs_IMPLEMENTATION_STATUS.md](../archive/docs_legacy/docs_IMPLEMENTATION_STATUS.md) for historical information.
-
-------
-
-for historical information.
-=======
 ### Implemented
 
 1. **Plugin Framework**
@@ -31,6 +18,7 @@ for historical information.
    - Pre‑commit configuration enabling black, flake8, isort, autoflake, mypy and pytest.
 5. **Documentation & Scripts**
    - Extensive documentation in `docs/`, developer handbook, usage examples, and a Cloud Shell setup guide.
+   - `setup_script.sh` bootstraps a local development environment and runs tests.
    - Cloud Build YAML for optional deployment.
 
 ------
@@ -56,6 +44,7 @@ for historical information.
    - `pyproject.toml` lacks console-script entry points and is missing sections for mypy exclusions and release job configuration.
    - `LICENSE` file is empty, despite GPL references in documentation.
 7. **Documentation & Examples**
+   - Numerous documents (e.g. `IMPLEMENTATION_STATUS.md`) are empty or outdated.
    - README and USAGE files describe commands and capabilities that are not fully implemented in the code.
 
 ------
@@ -82,4 +71,3 @@ for historical information.
    - Finalize GitHub Actions release job and verify `cloudbuild.yaml` uses Poetry consistently.
 7. **Documentation Cleanup**
    - Consolidate docs, remove obsolete files, and ensure the README/USAGE describe only implemented featu
->>>>>>> Stashed changes

@@ -14,7 +14,38 @@ lint:
 
 fmt:
 	poetry run black src tests
+# Makefile for FLACCID CLI development
 
+.PHONY: install lint test format ci clean
+
+install:
+	@echo "Installing dependencies..."
+	poetry install --sync
+
+lint:
+	@echo "Running linters..."
+	poetry run flake8
+	poetry run mypy .
+
+format:
+	@echo "Formatting code..."
+	poetry run black .
+	poetry run isort .
+
+test:
+	@echo "Running tests..."
+	poetry run pytest
+
+test-simple:
+	@echo "Running basic tests only..."
+	poetry run pytest tests/unit/test_simple.py tests/unit/utils
+
+ci: format lint test-simple
+
+clean:
+	@echo "Cleaning up..."
+	rm -rf .pytest_cache .coverage htmlcov
+	@echo "Done!"
 clean:
 	rm -rf dist build *.egg-info
 

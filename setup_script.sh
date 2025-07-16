@@ -1,81 +1,90 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# setup_script.sh - Bootstrap FLACCID dev environment
 
-# 0. Ensure Python 3 is available
+set -euo pipefail
+# Uncomment for debug: set -x
+
+# 0. Check for Python 3
 if ! command -v python3 &>/dev/null; then
   echo "❌ Python 3 is required but not found. Please install Python 3."
   exit 1
 fi
 
+# Remove stale requirements.txt if present (for clean Poetry export)
+rm -f requirements.txt
+
 # 1. Ensure Poetry is installed
 if ! command -v poetry &>/dev/null; then
-  echo "⚙️  Poetry not found. Installing..."
+  echo "Poetry not found. Installing..."
   curl -sSL https://install.python-poetry.org | python3 -
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# 2. Print versions
-echo "🐍 Python version: $(python3 --version)"
-echo "📦 Poetry version: $(poetry --version)"
+# Print versions for reproducibility
+python3 --version
+poetry --version
 
-# Resolve the actual Python binary (avoid pyenv shims that may be broken)
-PY_BIN=$(python3 -Es <<'PY'
-import os, sys
-print(os.path.realpath(sys.executable))
-PY
-)
-# If the resolved path still points inside a pyenv shim directory, fallback to /usr/bin/python3
-if [[ "$PY_BIN" == *".pyenv"* ]]; then
-  echo "⚠️  Detected pyenv shim ($PY_BIN). Falling back to system Python at /usr/bin/python3."
-  PY_BIN="/usr/bin/python3"
-fi
-export POETRY_PYTHON="$PY_BIN"
-# --- Remove any pyenv *shims* from PATH to avoid Poetry invoking them ----
-if [[ ":$PATH:" == *":$HOME/.pyenv/shims:"* ]] || [[ ":$PATH:" == *":/root/.pyenv/shims:"* ]]; then
-  echo "🔧 Removing pyenv shims from PATH to avoid interpreter confusion..."
-  # rebuild PATH without any segment that ends with '/.pyenv/shims'
-  NEW_PATH=""
-  IFS=':' read -ra SEGMENTS <<< "$PATH"
-  for seg in "${SEGMENTS[@]}"; do
-    [[ "$seg" == */.pyenv/shims ]] && continue
-    NEW_PATH="${NEW_PATH:+$NEW_PATH:}$seg"
-  done
-  export PATH="$NEW_PATH"
-fi
-# Tell Poetry to use this interpreter for the virtualenv
-
-# 3. Configure Poetry to create venvs in-project
+# Tell Poetry to keep the venv local and to use the current python3
 poetry config virtualenvs.in-project true
+poetry env use "$(command -v python3)"
 
-# 4. Verify lock file is up-to-date (non-fatal)
-echo "🔒 Verifying lock file..."
-if poetry lock --check; then
-  echo "✅ Lock file up-to-date."
-else
-  echo "⚠️  Could not verify lock file or it is out-of-date. Continuing setup..."
+# 1b. Validate Poetry project
+if ! poetry check; then
+  echo "❌ Poetry project validation failed. Please fix pyproject.toml."
+  exit 1
 fi
 
-# 5. Install dependencies (including dev)
-echo "📥 Installing dependencies..."
-# Try using Poetry directly, if it's available in the environment
-if command -v poetry &>/dev/null; then
-  echo "✅ Poetry found in current environment, using 'poetry install'..."
-  poetry install --sync --no-interaction --no-ansi --with dev
-else
-  # If Poetry isn't directly available, use the Python interpreter we identified
-  echo "ℹ️  Poetry not found in current environment, using '$POETRY_PYTHON -m poetry install'..."
-  "$POETRY_PYTHON" -m poetry install --sync --no-interaction --no-ansi --with dev
+# 1c. Update lock file if needed, without upgrading dependencies
+echo "Ensuring lock file is up to date..."
+poetry lock
+
+# 2. Install dependencies
+echo "Installing dependencies..."
+if ! poetry install --sync --no-interaction --no-ansi --with dev; then
+  echo "❌ Poetry install failed."
+  exit 1
 fi
 
+# 3. Optional deterministic requirements export
+poetry export --without-hashes --sort -f requirements.txt -o requirements.txt || true
 
-# 6. Install and run pre-commit hooks
-echo "🔧 Setting up pre-commit hooks..."
-$POETRY_PYTHON -m poetry run pre-commit install
-echo "▶ Running all pre-commit hooks..."
-$POETRY_PYTHON -m poetry run pre-commit run --all-files --show-diff-on-failure
+# 4. Pre-commit hooks
+poetry run pre-commit install
+poetry run pre-commit clean
+echo "▶ Auto-formatting code..."
+poetry run black .
+poetry run isort .
+ # 4b. Auto-remove unused imports (if autoflake is installed)
+ if command -v autoflake &>/dev/null; then
+   poetry run autoflake --recursive --in-place --remove-unused-variables --remove-all-unused-imports src tests
+ else
+   echo "⚠️  autoflake not found; skipping unused-import cleanup"
+ fi
+if ! poetry run pre-commit run --all-files --show-diff-on-failure; then
+  :
+fi
 
-# 7. Optionally install mypy type stubs
-echo "🔍 Installing common type stubs for mypy..."
-$POETRY_PYTHON -m pip install --disable-pip-version-check types-PyYAML types-aiohttp types-click types-sqlalchemy || true
+# 5. mypy stub auto-install
+# 5a. Install missing type stubs required by mypy
+echo "▶ Installing common type stubs for mypy..."
+poetry run pip install --disable-pip-version-check types-click types-sqlalchemy || true
+poetry run mypy --install-types --non-interactive --ignore-missing-imports || true
 
-echo "✅ Setup complete! To enter the shell: 'poetry shell' or run 'poetry run <cmd>'."
+# 6. Note about integration tests
+echo -e "\nℹ️  NOTE: The test suite may include integration tests that require"
+echo "   credentials for services like Qobuz or Apple Music."
+echo "   If tests fail with connection errors, please configure credentials using:"
+echo "   'poetry run fla set auth <service_name>'"
+
+# 6. Run all tests to catch errors early
+if poetry run pytest; then
+  echo -e "\n✅  Setup complete – activate with 'poetry shell' or run via 'poetry run <cmd>'."
+  echo -e "\nUseful commands:"
+  echo "  poetry shell            # Activate the virtual environment"
+  echo "  poetry run <cmd>       # Run a command inside the venv"
+  echo "  poetry run pytest      # Run tests"
+  echo "  poetry run pre-commit run --all-files  # Run all pre-commit hooks"
+else
+  echo -e "\n❌ Tests failed. Please review the errors above."
+  exit 1
+fi

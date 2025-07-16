@@ -1,4 +1,4 @@
-# Implemented
+### Implemente
 
 1. **Plugin Framework**
    - Dataclasses and abstract plugin interfaces defining track/album metadata and service behavior
@@ -51,53 +51,23 @@
 
 ### Prioritized Next Steps
 
-**High Urgency:**
-
-1.  **Finish Core CLI Functionality**
-    -   Replace placeholder helpers with real metadata fetch and apply logic, linking the CLI directly to plugin operations.
-    -   Implement `cascade` metadata merging and integrate with tagging commands.
-2.  **Complete Plugin Implementations**
-    -   Flesh out Qobuz, Tidal, and Apple Music plugins for full authentication and download flows.
-    -   Implement missing modules (Discogs, Beatport, AcoustID, MusicBrainz) or remove until ready.
-3.  **Library Indexing Enhancements**
-    -   Expand the database schema (albums table, relationships).
-    -   Improve `index_changed_files` to detect modifications reliably and integrate with watch functionality.
-
-**Medium Urgency:**
-
-4.  **Testing Expansion**
-    -   Replace outdated tests with meaningful unit tests for every plugin and CLI command.
-    -   Add integration tests exercising a basic end-to-end tagging scenario (using mocked network responses).
-5.  **Packaging & Release Prep**
-    -   Add `[tool.poetry.scripts]` entry for the `flaccid` CLI.
-    -   Provide complete LICENSE text and update pyproject/README accordingly.
-    -   Finalize GitHub Actions release job and verify `cloudbuild.yaml` uses Poetry consistently.
-
-**Low Urgency:**
-
-6.  **Configuration Overhaul**
-    -   Introduce Dynaconf-based settings with Pydantic validation and seamless keyring integration.
-7.  **Documentation Cleanup**
-    -   Consolidate docs, remove obsolete files, and ensure the README/USAGE describe only implemented features.
-
-------
-
-# Implementation Updates
-
-### Configuration Tests
-   - Added tests for parsing boolean and integer values from environment variables using the `Config` class.
-   - Verified default values are returned when keys are missing.
-
-### Basic Configuration Functionality
-   - Ensured the `Config` class retrieves values correctly from environment variables.
-   - Tested fallback to default values when keys are absent.
-
-### FLAC File Validation
-   - Implemented tests to validate `.flac` files and reject files with incorrect extensions.
-   - Used `tmp_path` fixture to create temporary files for testing.
-
-### Metadata Utility Functions
-   - Added tests for normalizing artist names and extracting metadata from FLAC files.
-   - Verified ISRC extraction and metadata query building.
-
-These updates ensure comprehensive coverage of configuration management and metadata utility functions.
+1. **Finish Core CLI Functionality**
+   - Replace placeholder helpers with real metadata fetch and apply logic, linking the CLI directly to plugin operations.
+   - Implement `cascade` metadata merging and integrate with tagging commands.
+2. **Complete Plugin Implementations**
+   - Flesh out Qobuz, Tidal, and Apple Music plugins for full authentication and download flows.
+   - Implement missing modules (Discogs, Beatport, AcoustID, MusicBrainz) or remove until ready.
+3. **Configuration Overhaul**
+   - Introduce Dynaconf-based settings with Pydantic validation and seamless keyring integration.
+4. **Library Indexing Enhancements**
+   - Expand the database schema (albums table, relationships).
+   - Improve `index_changed_files` to detect modifications reliably and integrate with watch functionality.
+5. **Testing Expansion**
+   - Replace outdated tests with meaningful unit tests for every plugin and CLI command.
+   - Add integration tests exercising a basic end-to-end tagging scenario (using mocked network responses).
+6. **Packaging & Release Prep**
+   - Add `[tool.poetry.scripts]` entry for the `flaccid` CLI.
+   - Provide complete LICENSE text and update pyproject/README accordingly.
+   - Finalize GitHub Actions release job and verify `cloudbuild.yaml` uses Poetry consistently.
+7. **Documentation Cleanup**
+   - Consolidate docs, remove obsolete files, and ensure the README/USAGE describe only implemented featu

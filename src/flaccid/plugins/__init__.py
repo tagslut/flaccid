@@ -1,5 +1,5 @@
 """Plugin registry."""
-
+# Plugins package
 from .apple import AppleMusicPlugin
 from .beatport import BeatportPlugin
 from .discogs import DiscogsPlugin

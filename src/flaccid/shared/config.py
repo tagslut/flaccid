@@ -5,7 +5,7 @@ Configuration management for FLACCID.
 import os
 
 
-class Config:
+class yesConfig:
     def __init__(self):
         self._loaded = True
 

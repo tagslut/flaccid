@@ -14,6 +14,7 @@ FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files w
 - **Metadata Tagging**: `meta apple` applies Apple Music metadata to FLAC files.
 - **Library Management**: Scan and watch directories to keep an SQLite index up to date.
 - **Credential Storage**: Store service tokens securely in your system keyring.
+- **Duplicate Detection**: Find and manage duplicate FLAC files in your library.
 
 ## CLI Overview
 
@@ -38,10 +39,29 @@ Each command exits with a non-zero status code on failure.
    cd flaccid
    ```
 
-2. Install dependencies using Poetry:
+2. Install dependencies:
 
    ```bash
-   poetry install
+   # Run the setup script
+   chmod +x setup.sh
+   ./setup.sh
+   ```
+
+   The setup script will automatically detect whether to use Poetry or pip.
+
+   **Manual installation with Poetry**
+   ```bash
+   # If you prefer to run the commands manually with Poetry
+   poetry install --sync
+   ```
+
+   **Manual installation with pip**
+   ```bash
+   # If you prefer to run the commands manually with pip
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   pip install -e .
    ```
 
 3. Configure credentials using environment variables or the `settings store` command, or set up credentials for APIs:
@@ -53,8 +73,7 @@ Each command exits with a non-zero status code on failure.
    fla set path --library ~/Music --cache ~/.cache/flaccid
    ```
 
-   The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the environment. If the token is invalid it will be refreshed automatically using the stored credentials.
-
+The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the environment. If the token is invalid it will be refreshed automatically using the stored credentials.
 ## Usage
 
 ### Library Scanning
@@ -82,6 +101,37 @@ The apply command writes tags using built-in helpers and will attempt to retriev
 ```bash
 fla lib index --rebuild  # experimental
 fla lib scan /path/to/music --db library.db
+```
+
+### Finding and Managing Duplicates
+
+```bash
+# Find duplicates by file hash (most accurate)
+fla duplicates find ~/Music --by hash
+
+# Find duplicates by title
+fla duplicates find ~/Music --by title
+
+# Find duplicates by filename
+fla duplicates find ~/Music --by filename --recursive
+
+# Find duplicates by artist and title combination
+fla duplicates find ~/Music --by artist+title
+
+# Only consider files larger than 5MB
+fla duplicates find ~/Music --min-size 5000
+
+# Export results to JSON file
+fla duplicates find ~/Music --export duplicates.json
+
+# Remove duplicates interactively
+fla duplicates remove ~/Music --by hash --strategy interactive --no-dry-run
+
+# Automatically keep the highest quality version of each duplicate
+fla duplicates remove ~/Music --by hash --strategy keep-highest-quality --no-dry-run
+
+# Keep the newest file of each duplicate set
+fla duplicates remove ~/Music --by hash --strategy keep-newest --no-dry-run
 ```
 
 ## Documentation

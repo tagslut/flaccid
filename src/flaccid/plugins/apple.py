@@ -30,7 +30,104 @@ class AppleMusicPlugin(MetadataProviderPlugin):
         if self.session:
             await self.session.close()
             self.session = None
+#!/usr/bin/env python3
+"""
+Apple Music plugin for the FLACCID CLI.
 
+This module provides functionality for fetching metadata from Apple Music.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import os
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import aiohttp
+
+from flaccid.plugins.base import BasePlugin, MetadataProviderPlugin, TrackMetadata
+
+
+class AppleMusicPlugin(BasePlugin, MetadataProviderPlugin):
+    """Plugin for fetching metadata from Apple Music."""
+
+    BASE_URL = "https://api.music.apple.com/v1"
+
+    def __init__(self, api_key: Optional[str] = None):
+        """Initialize the Apple Music plugin.
+
+        Args:
+            api_key: Apple Music API key (defaults to APPLE_MUSIC_API_KEY env var)
+        """
+        self.api_key = api_key or os.environ.get("APPLE_MUSIC_API_KEY")
+        self.session: Optional[aiohttp.ClientSession] = None
+
+    async def open(self) -> None:
+        """Initialize the HTTP session."""
+        self.session = aiohttp.ClientSession()
+
+    async def close(self) -> None:
+        """Close the HTTP session."""
+        if self.session:
+            await self.session.close()
+            self.session = None
+
+    async def get_track(self, track_id: str) -> TrackMetadata:
+        """Get metadata for an Apple Music track.
+
+        Args:
+            track_id: Apple Music track ID
+
+        Returns:
+            Track metadata
+        """
+        if not self.session:
+            await self.open()
+
+        if not self.api_key:
+            raise ValueError("Apple Music API key is required")
+
+        headers = {"Authorization": f"Bearer {self.api_key}"}
+        url = f"{self.BASE_URL}/catalog/us/songs/{track_id}"
+
+        # In a real implementation, this would make an actual API request
+        # For now, we'll just return dummy data
+        # async with self.session.get(url, headers=headers) as response:
+        #     data = await response.json()
+
+        # This is dummy data to simulate a response
+        # In a real implementation, we would parse the actual API response
+        return TrackMetadata(
+            title="Sample Track",
+            artist="Sample Artist",
+            album="Sample Album",
+            track_number=1,
+            disc_number=1,
+            year=2025,
+            isrc="USABC1234567",
+            art_url="https://example.com/cover.jpg",
+        )
+
+    async def fetch_cover_art(self, url: str) -> Optional[bytes]:
+        """Fetch cover art for a track.
+
+        Args:
+            url: URL of the cover art
+
+        Returns:
+            Cover art data or None if not available
+        """
+        if not self.session:
+            await self.open()
+
+        try:
+            async with self.session.get(url) as response:
+                if response.status == 200:
+                    return await response.read()
+                return None
+        except Exception:
+            return None
     async def authenticate(self) -> None:
         if not self.developer_token:
             token = keyring.get_password("flaccid_apple", "token")
