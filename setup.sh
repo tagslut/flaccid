@@ -43,12 +43,37 @@ function setup_with_pip() {
 echo "Setting up FLACCID CLI toolkit..."
 
 # Fix pyproject.toml if it has duplicate sections
-if grep -q "\[tool\.poetry\].*\[tool\.poetry\]" pyproject.toml 2>/dev/null; then
-    echo "⚠️ Detected duplicate [tool.poetry] sections in pyproject.toml, fixing..."
-    cp pyproject.toml pyproject.toml.bak
-    awk 'BEGIN{p=0} /\[tool\.poetry\]/{p++; if(p==1){print; next}} p==1{print} p>1 && /^\[/{p=0; print}' pyproject.toml.bak > pyproject.toml.fixed
-    mv pyproject.toml.fixed pyproject.toml
-    echo "✅ Fixed pyproject.toml file"
+if [ -f "pyproject.toml" ]; then
+    echo "🔍 Checking pyproject.toml for duplicate sections..."
+
+    # Check for duplicate [tool.poetry] sections
+    if grep -q "\[tool\.poetry\].*\[tool\.poetry\]" pyproject.toml 2>/dev/null; then
+        echo "⚠️ Detected duplicate [tool.poetry] sections in pyproject.toml, fixing..."
+        cp pyproject.toml pyproject.toml.bak
+        awk 'BEGIN{p=0} /\[tool\.poetry\]/{p++; if(p==1){print; next}} p==1{print} p>1 && /^\[/{p=0; print}' pyproject.toml.bak > pyproject.toml.fixed
+        mv pyproject.toml.fixed pyproject.toml
+        echo "✅ Fixed [tool.poetry] section"
+    fi
+
+    # Check for duplicate dependencies sections
+    if grep -q "\[tool\.poetry\.dependencies\].*\[tool\.poetry\.dependencies\]" pyproject.toml 2>/dev/null; then
+        echo "⚠️ Detected duplicate [tool.poetry.dependencies] sections, fixing..."
+        cp pyproject.toml pyproject.toml.bak
+        awk 'BEGIN{p=0} /\[tool\.poetry\.dependencies\]/{p++; if(p==1){print; next}} p==1{print} p>1 && /^\[/{p=0; print}' pyproject.toml.bak > pyproject.toml.fixed
+        mv pyproject.toml.fixed pyproject.toml
+        echo "✅ Fixed [tool.poetry.dependencies] section"
+    fi
+
+    # Check for other common duplicate sections
+    for section in "tool\.poetry\.group\.dev\.dependencies" "tool\.mypy" "tool\.pytest\.ini_options" "build-system"; do
+        if grep -q "\[$section\].*\[$section\]" pyproject.toml 2>/dev/null; then
+            echo "⚠️ Detected duplicate [$section] sections, fixing..."
+            cp pyproject.toml pyproject.toml.bak
+            awk -v sect="\\[$section\\]" 'BEGIN{p=0} $0 ~ sect {p++; if(p==1){print; next}} p==1{print} p>1 && /^\[/{p=0; print}' pyproject.toml.bak > pyproject.toml.fixed
+            mv pyproject.toml.fixed pyproject.toml
+            echo "✅ Fixed [$section] section"
+        fi
+    done
 fi
 
 # Determine whether to use Poetry or pip
@@ -92,6 +117,22 @@ PY
 PY_VERSION_CHECK=$(awk -v ver="$PY_VERSION" 'BEGIN { print (ver < 3.10) ? "1" : "0" }')
 if [[ "$PY_VERSION_CHECK" == "1" ]]; then
     echo "❌ Python 3.10 or higher is required, but $PY_VERSION was found."
+
+    # Check if mise is available and can provide a newer Python
+    if command -v mise &>/dev/null; then
+        echo "🔍 Checking if mise can provide a newer Python version..."
+        if mise ls python | grep -q "3\.1[0-9]\|3\.[2-9][0-9]"; then
+            echo "✅ mise has a suitable Python version available"
+            echo "⚙️ Setting up mise for this project..."
+            # Configure mise to use idiomatic version files
+            mise settings add idiomatic_version_file_enable_tools python
+            # Create a .python-version file if needed
+            echo "3.12" > .python-version
+            echo "🔄 Please restart the setup script to use the mise-managed Python version"
+            exit 0
+        fi
+    fi
+
     exit 1
 fi
 
@@ -161,6 +202,13 @@ if [[ ":$PATH:" == *":$HOME/.pyenv/shims:"* ]] || [[ ":$PATH:" == *":/root/.pyen
         NEW_PATH="${NEW_PATH:+$NEW_PATH:}$seg"
     done
     export PATH="$NEW_PATH"
+fi
+
+# Handle mise warnings about idiomatic version files
+if command -v mise &>/dev/null; then
+    echo "🔧 Configuring mise idiomatic version files for Python..."
+    mise settings add idiomatic_version_file_enable_tools python
+    echo "✅ Configured mise to use idiomatic version files for Python"
 fi
 
 if [ "$USE_POETRY" = true ]; then
