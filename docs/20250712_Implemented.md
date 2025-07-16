@@ -2,8 +2,8 @@
 
 1. **Plugin Framework**
    - Dataclasses and abstract plugin interfaces defining track/album metadata and service behavior
-   - Plugin registry importing Apple, Beatport, Discogs, Lyrics, Qobuz and Tidal implementations
-   - Individual plugins implement basic authentication, search and download methods using `aiohttp` (e.g. `QobuzPlugin`, `TidalPlugin`, `BeatportPlugin`, `DiscogsPlugin`, `AppleMusicPlugin`, `LyricsPlugin`).
+   - Plugin registry includes the functional Qobuz plugin and placeholder modules for Apple, Beatport, Discogs, Lyrics and Tidal.
+   - Only the `QobuzPlugin` currently handles authentication, search and downloads; other plugins are skeletal.
 2. **CLI Scaffolding**
    - Typer-based command groups `get`, `tag`, `lib`, and `set` with basic subcommands (e.g. `tag fetch`, `tag apply`, `get qobuz`, `get tidal`, `lib scan`, `set auth`, `set path`).
    - CLI helpers in `cli/placeholders.py` perform metadata fetch/apply and store credentials via keyring.

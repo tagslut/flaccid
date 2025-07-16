@@ -2,12 +2,12 @@
 
 ## Introduction
 
-**FLACCID** is a modular command-line toolkit designed for managing FLAC audio libraries and integrating with music streaming services. The name "FLACCID" reflects its focus on FLAC audio and a CLI-first design. This toolkit enables users to download high-quality music from services like Qobuz and Tidal, tag their local FLAC files with rich metadata (including album art and lyrics), and maintain a well-organized music library database. The rebuild of FLACCID focuses on a clean architecture with clear module separation, plugin support for multiple providers, and modern Python libraries for robust functionality.
+**FLACCID** is a modular command-line toolkit designed for managing FLAC audio libraries and integrating with music streaming services. The name "FLACCID" reflects its focus on FLAC audio and a CLI-first design. This toolkit enables users to download high-quality music from Qobuz, tag their local FLAC files with rich metadata (including album art and lyrics), and maintain a well-organized music library database. Support for additional services such as Tidal is planned. The rebuild of FLACCID focuses on a clean architecture with clear module separation, plugin support for multiple providers, and modern Python libraries for robust functionality.
 
 **Key Features:**
 
 - **Flexible CLI:** A single `fla` command with subcommands for different tasks (downloading, tagging, library management, configuration). Built with **Typer** for intuitive CLI syntax and help.
-- **Modular Plugins:** Support for multiple music services (Qobuz, Tidal, Apple Music, etc.) via a plugin system. Easy to add new providers for metadata, streaming, or lyrics.
+- **Modular Plugins:** Extensible plugin system. A fully working Qobuz plugin is included today, with Tidal, Apple Music and others planned.
 - **Rich Metadata Tagging:** Uses **Mutagen** to write comprehensive tags to FLAC files, including album art embedding and lyrics. Metadata can be aggregated from multiple sources in a cascade.
 - **Asynchronous Downloading:** Leverages **aiohttp** for efficient downloading of tracks (e.g., parallel downloads of an album) with progress display using **Rich**.
 - **Robust Configuration:** Configuration managed with **Dynaconf** (TOML-based settings) and validated with **Pydantic** models. Secure credentials are handled via **Keyring** and Dynaconf’s secrets support (no plain-text passwords in code or repo).
@@ -23,7 +23,7 @@ This handbook serves as a developer guide to the architecture and implementation
 
 The FLACCID toolkit is accessed via the `fla` command-line interface. The CLI is organized into subcommands that mirror the core functionalities:
 
-- **Download Commands**: `fla get qobuz [options]` and `fla get tidal [options]` – Download albums or tracks from Qobuz or Tidal (given appropriate credentials and subscription). Options allow specifying album/track identifiers, quality levels, output paths, etc.
+- **Download Commands**: `fla get qobuz [options]` – Download albums or tracks from Qobuz. A `fla get tidal` stub exists for future support.
 - **Tagging Commands**: `fla tag qobuz [options]` and `fla tag apple [options]` – Tag local FLAC files using metadata from Qobuz or Apple Music (iTunes). These commands fetch metadata (album details, track titles, artwork, lyrics) from the service and write tags to the files.
 - **Library Management**: `fla lib scan [options]` and `fla lib index [options]` – Manage the local music library database. Scanning detects new or changed files in the library path and updates the database (with optional continuous watch). Indexing performs a full rebuild or creation of search indices and verifies file integrity.
 - **Configuration**: `fla set auth [service]` and `fla set path [location]` – Configure credentials and paths. The `set auth` command securely stores user API credentials for a given service (Qobuz, Tidal, Apple, etc.), and `set path` defines the base path of the music library or downloads.
@@ -35,7 +35,7 @@ Each top-level command group (`get`, `tag`, `lib`, `set`) is implemented as a Ty
 **Example CLI Usage:**
 
 - Downloading a Qobuz album by ID: `fla get qobuz --album-id 123456 --quality FLAC --out ~/Music/Downloads`
-- Downloading a specific Tidal track: `fla get tidal --track-id 7890 --quality Lossless`
+- Downloading a specific Tidal track: *(planned feature)*
 - Tagging a local folder with Qobuz metadata: `fla tag qobuz --album-id 123456 "/path/to/AlbumFolder"`
 - Tagging using Apple Music (iTunes) search: `fla tag apple "Artist Name - Album Title" "/path/to/AlbumFolder"`
 - Scanning library for new music: `fla lib scan` (optionally `--watch` for continuous monitoring)
@@ -1738,16 +1738,7 @@ This section demonstrates typical uses of the FLACCID CLI, with example commands
 
   *(The command fetches album metadata, then downloads each track concurrently. After completion, the files are in `~/Music/FLAC/Artist/Album/01 - Song One.flac`, etc., properly tagged.)*
 
-- **Downloading a Tidal track:**
-
-  ```
-  $ fla get tidal --track-id 987654 --quality lossless -o /tmp
-  Downloading from Tidal to /tmp ...
-  Downloading track: My Song (FLAC 16-bit)...
-  Tidal download complete!
-  ```
-
-  *(Downloads a single track to `/tmp` directory. `-o` overrides the library path.)*
+ - **Downloading a Tidal track:** *(feature not yet implemented)*
 
 - **Tagging a local album with Qobuz metadata:**
 
@@ -2060,7 +2051,7 @@ This handbook serves as a developer guide to the architecture and implementation
 
 The FLACCID toolkit is accessed via the `fla` command-line interface. The CLI is organized into subcommands that mirror the core functionalities:
 
-- **Download Commands**: `fla get qobuz [options]` and `fla get tidal [options]` – Download albums or tracks from Qobuz or Tidal (given appropriate credentials and subscription). Options allow specifying album/track identifiers, quality levels, output paths, etc.
+- **Download Commands**: `fla get qobuz [options]` – Download albums or tracks from Qobuz. Support for Tidal is planned and a stub command exists.
 - **Tagging Commands**: `fla tag qobuz [options]` and `fla tag apple [options]` – Tag local FLAC files using metadata from Qobuz or Apple Music (iTunes). These commands fetch metadata (album details, track titles, artwork, lyrics) from the service and write tags to the files.
 - **Library Management**: `fla lib scan [options]` and `fla lib index [options]` – Manage the local music library database. Scanning detects new or changed files in the library path and updates the database (with optional continuous watch). Indexing performs a full rebuild or creation of search indices and verifies file integrity.
 - **Configuration**: `fla set auth [service]` and `fla set path [location]` – Configure credentials and paths. The `set auth` command securely stores user API credentials for a given service (Qobuz, Tidal, Apple, etc.), and `set path` defines the base path of the music library or downloads.
@@ -2072,7 +2063,7 @@ Each top-level command group (`get`, `tag`, `lib`, `set`) is implemented as a Ty
 **Example CLI Usage:**
 
 - Downloading a Qobuz album by ID: `fla get qobuz --album-id 123456 --quality FLAC --out ~/Music/Downloads`
-- Downloading a specific Tidal track: `fla get tidal --track-id 7890 --quality Lossless`
+- Downloading a specific Tidal track: *(planned feature)*
 - Tagging a local folder with Qobuz metadata: `fla tag qobuz --album-id 123456 "/path/to/AlbumFolder"`
 - Tagging using Apple Music (iTunes) search: `fla tag apple "Artist Name - Album Title" "/path/to/AlbumFolder"`
 - Scanning library for new music: `fla lib scan` (optionally `--watch` for continuous monitoring)
@@ -3775,16 +3766,7 @@ This section demonstrates typical uses of the FLACCID CLI, with example commands
 
   *(The command fetches album metadata, then downloads each track concurrently. After completion, the files are in `~/Music/FLAC/Artist/Album/01 - Song One.flac`, etc., properly tagged.)*
 
-- **Downloading a Tidal track:**
-
-  ```
-  $ fla get tidal --track-id 987654 --quality lossless -o /tmp
-  Downloading from Tidal to /tmp ...
-  Downloading track: My Song (FLAC 16-bit)...
-  Tidal download complete!
-  ```
-
-  *(Downloads a single track to `/tmp` directory. `-o` overrides the library path.)*
+ - **Downloading a Tidal track:** *(feature not yet implemented)*
 
 - **Tagging a local album with Qobuz metadata:**
 

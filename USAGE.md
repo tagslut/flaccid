@@ -27,8 +27,6 @@ Download tracks from supported services:
 
 ```bash
 poetry run python -m fla download qobuz 12345678 song.flac
-poetry run python -m fla download tidal 87654321 song.flac
-poetry run python -m fla download beatport 33445566 song.flac
 ```
 
 ### 4. Manage Your Library
@@ -46,7 +44,7 @@ Create a `.env` file and set values such as `QOBUZ_APP_ID`, `QOBUZ_TOKEN`, `APPL
 
 ## CLI Structure
 
-- **`download`** – Download music from Qobuz, Tidal or Beatport.
+- **`download`** – Download music from Qobuz. Support for Tidal and Beatport is planned.
 - **`meta`** – Apply metadata. Currently only Apple Music is implemented.
 - **`library`** – Scan folders and build an SQLite index. Includes a `watch` group to monitor changes.
 - **`settings`** – Store credentials securely in the keyring.

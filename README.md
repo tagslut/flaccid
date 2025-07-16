@@ -6,11 +6,11 @@
 
 ## Overview
 
-FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files with metadata. It currently supports Apple Music tagging and downloading tracks from Qobuz, Tidal and Beatport. Library indexing utilities help keep a small SQLite database in sync with your collection.
+FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files with metadata. It currently supports Apple Music tagging and downloading tracks from Qobuz. Library indexing utilities help keep a small SQLite database in sync with your collection.
 
 ## Key Features
 
-- **Track Downloads**: `download qobuz|tidal|beatport` saves tracks locally.
+- **Track Downloads**: `download qobuz` saves tracks locally.
 - **Metadata Tagging**: `meta apple` applies Apple Music metadata to FLAC files.
 - **Library Management**: Scan and watch directories to keep an SQLite index up to date.
 - **Credential Storage**: Store service tokens securely in your system keyring.
