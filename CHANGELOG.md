@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - Documentation updated to match current CLI.
 - Archived obsolete status files.
+- Code of conduct, contributing guide and security policy consolidated.
 
 ## [2025-07-10]
 - Project structure finalized with Poetry and src/ layout.
