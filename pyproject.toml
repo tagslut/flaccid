@@ -38,14 +38,15 @@ black = ">=25.1.0,<26.0"
 
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.4.1"
-pytest-asyncio = "^0.21"
-flake8 = "^7.3.0"
-pre-commit = "^3.7.0"
-pytest-cov = "^6.2.1"
-types-PyYAML = "^6.0.12.20250516"
-mypy = "^1.16.1"
-autoflake = "^2.3.1"
+black = ">=25.1.0,<26.0"
+pytest = ">=8.4.1"
+pytest-asyncio = ">=0.21"
+flake8 = ">=7.3.0"
+pre-commit = ">=3.7.0"
+pytest-cov = ">=6.2.1"
+types-PyYAML = ">=6.0.12"
+mypy = ">=1.16.1"
+autoflake = ">=2.3.1"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -66,17 +67,6 @@ warn_unused_configs = true
 explicit_package_bases = true
 
 # Dependencies are defined in the section above
-
-[tool.poetry.group.dev.dependencies]
-black = ">=25.1.0,<26.0"
-pytest = ">=8.4.1"
-pytest-asyncio = ">=0.21"
-flake8 = ">=7.3.0"
-pre-commit = ">=3.7.0"
-pytest-cov = ">=6.2.1"
-types-PyYAML = ">=6.0.12"
-mypy = ">=1.16.1"
-autoflake = ">=2.3.1"
 
 [tool.poetry.scripts]
 fla = "flaccid.cli:main"
