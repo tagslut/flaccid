@@ -59,8 +59,8 @@ def test_apply_invokes_helper(tmp_path, monkeypatch):
                 disc_number=1,
             )
 
-    def fake_apply_metadata(file, meta, yes):
-        called["args"] = (file, meta, yes)
+    def fake_apply_metadata(file, meta, yes, export_lrc):
+        called["args"] = (file, meta, yes, export_lrc)
 
     monkeypatch.setattr(tag_cli.utils, "apply_metadata", fake_apply_metadata)
     monkeypatch.setattr(tag_cli.utils, "get_provider", lambda name: FakePlugin)
@@ -88,6 +88,7 @@ def test_apply_invokes_helper(tmp_path, monkeypatch):
     assert called["args"][0] == flac
     assert isinstance(called["args"][1], TrackMetadata)
     assert called["args"][2] is True
+    assert called["args"][3] is False
     assert "Metadata applied successfully" in result.stdout
 
 
@@ -160,8 +161,8 @@ def test_apply_no_metadata_fetches(tmp_path, monkeypatch):
                 disc_number=1,
             )
 
-    def fake_apply_metadata(file, meta, yes):
-        called["apply"] = (file, meta, yes)
+    def fake_apply_metadata(file, meta, yes, export_lrc):
+        called["apply"] = (file, meta, yes, export_lrc)
 
     monkeypatch.setattr(tag_cli, "get_provider", lambda name: FakePlugin)
     monkeypatch.setattr(tag_cli.utils, "get_provider", lambda name: FakePlugin)
@@ -182,6 +183,7 @@ def test_apply_no_metadata_fetches(tmp_path, monkeypatch):
     assert called["apply"][0] == flac
     assert isinstance(called["apply"][1], TrackMetadata)
     assert called["apply"][2] is True
+    assert called["apply"][3] is False
 
 
 def test_apple_template_option(tmp_path, monkeypatch):

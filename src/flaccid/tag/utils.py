@@ -18,11 +18,6 @@ from flaccid.plugins.registry import get_provider
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
 
 
-async def write_tags(path: Path, meta: TrackMetadata) -> Path:
-    """Wrapper around :func:`flaccid.core.metadata.write_tags`."""
-    return await metadata.write_tags(str(path), meta)
-
-
 def fallback_fetch(path: Path) -> TrackMetadata:
     """Fetch metadata for ``path`` using the default provider."""
 
@@ -49,7 +44,12 @@ def fallback_fetch(path: Path) -> TrackMetadata:
     return asyncio.run(_fetch())
 
 
-def apply_metadata(file: Path, meta: TrackMetadata, yes: bool) -> None:
+def apply_metadata(
+    file: Path,
+    meta: TrackMetadata,
+    yes: bool,
+    export_lrc: bool,
+) -> None:
     """Apply ``meta`` to ``file``."""
 
     if not yes and not confirm("Apply metadata?"):
@@ -60,11 +60,12 @@ def apply_metadata(file: Path, meta: TrackMetadata, yes: bool) -> None:
     async def _apply() -> None:
         if not track_meta.lyrics:
             async with LyricsPlugin() as lyr:
-                track_meta.lyrics = (
-                    await lyr.get_lyrics(track_meta.artist, track_meta.title) or None
-                )
+                track_meta.lyrics = await lyr.get_lyrics(
+                    track_meta.artist,
+                    track_meta.title,
+                ) or None
 
-        await metadata.write_tags(str(file), track_meta)
+        await metadata.write_tags(str(file), track_meta, export_lrc=export_lrc)
 
     asyncio.run(_apply())
 
@@ -77,6 +78,7 @@ async def write_tags(
     plugin: MetadataProviderPlugin | None = None,
     lyrics_plugin: LyricsProviderPlugin | None = None,
     filename_template: str | None = None,
+    export_lrc: bool = False,
 ) -> Path:
     """Proxy to :func:`flaccid.core.metadata.write_tags`."""
 
@@ -87,4 +89,5 @@ async def write_tags(
         plugin=plugin,
         lyrics_plugin=lyrics_plugin,
         filename_template=filename_template,
+        export_lrc=export_lrc,
     )
