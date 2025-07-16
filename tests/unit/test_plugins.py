@@ -12,6 +12,7 @@ from flaccid.plugins.registry import get_provider
 from flaccid.plugins.loader import PluginLoader
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin, LyricsOvhProvider
+from flaccid.core import metadata
 from flaccid.plugins.qobuz import QobuzPlugin
 from flaccid.plugins.tidal import TidalPlugin
 from flaccid.plugins.discogs import DiscogsPlugin
@@ -229,6 +230,37 @@ async def test_lyrics_plugin_fallback_and_cache():
     assert lyr2 == "found"  # cached
     assert p1.calls == 1
     assert p2.calls == 1
+
+
+@pytest.mark.asyncio
+async def test_lyrics_plugin_persistent_cache(tmp_path, monkeypatch):
+    """Lyrics should be cached on disk between calls."""
+
+    class Dummy(LyricsProviderPlugin):
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def open(self) -> None:  # pragma: no cover - unused
+            pass
+
+        async def close(self) -> None:  # pragma: no cover - unused
+            pass
+
+        async def get_lyrics(self, artist: str, title: str) -> Optional[str]:
+            self.calls += 1
+            return "hit"
+
+    plugin = LyricsPlugin()
+    plugin.providers = [Dummy()]
+
+    monkeypatch.setattr(metadata, "lyrics_cache_dir", lambda: tmp_path)
+
+    first = await plugin.get_lyrics("a", "b", cache_key="key")
+    second = await plugin.get_lyrics("a", "b", cache_key="key")
+
+    assert first == "hit"
+    assert second == "hit"
+    assert plugin.providers[0].calls == 1
 
 
 @pytest.mark.asyncio

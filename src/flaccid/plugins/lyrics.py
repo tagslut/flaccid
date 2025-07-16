@@ -7,6 +7,8 @@ from __future__ import annotations
 from collections import OrderedDict
 from typing import Optional
 
+from flaccid.core import metadata
+
 import aiohttp
 
 from .base import LyricsProviderPlugin
@@ -104,19 +106,27 @@ class LyricsPlugin(LyricsProviderPlugin):
         for provider in self.providers:
             await provider.close()
 
-    async def get_lyrics(self, artist: str, title: str) -> Optional[str]:
+    async def get_lyrics(
+        self, artist: str, title: str, cache_key: str | None = None
+    ) -> Optional[str]:
         """Return lyrics for ``artist`` and ``title`` using available providers."""
 
-        key = f"{artist.lower()}::{title.lower()}"
+        key = cache_key or f"{artist.lower()}::{title.lower()}"
         cached = self.cache.get(key)
         if cached is not None:
             return cached
+        disk_cached = metadata.get_cached_lyrics(key)
+        if disk_cached is not None:
+            self.cache.set(key, disk_cached)
+            return disk_cached
 
         for provider in self.providers:
             lyrics = await provider.get_lyrics(artist, title)
             if lyrics:
                 self.cache.set(key, lyrics)
+                metadata.set_cached_lyrics(key, lyrics)
                 return lyrics
 
         self.cache.set(key, None)
+        metadata.set_cached_lyrics(key, "")
         return None
