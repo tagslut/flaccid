@@ -16,6 +16,7 @@ import keyring
 
 from flaccid.core import downloader
 from flaccid.core.config import load_settings
+from flaccid.core.errors import APIError, AuthenticationError
 from flaccid.plugins.base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
 
@@ -60,7 +61,7 @@ class QobuzPlugin(MetadataProviderPlugin):
         username = keyring.get_password("flaccid_qobuz", "username")
         password = keyring.get_password("flaccid_qobuz", "password")
         if not username or not password:
-            raise RuntimeError(
+            raise AuthenticationError(
                 "Qobuz credentials missing. Run 'fla set auth qobuz' first."
             )
 
@@ -70,7 +71,7 @@ class QobuzPlugin(MetadataProviderPlugin):
 
         token = data.get("user_auth_token")
         if not token:
-            raise RuntimeError("Failed to authenticate with Qobuz")
+            raise AuthenticationError("Failed to authenticate with Qobuz")
 
         self.token = token
         try:
@@ -89,7 +90,7 @@ class QobuzPlugin(MetadataProviderPlugin):
             data = await resp.json()
         token = data.get("user_auth_token")
         if not token:
-            raise RuntimeError("Failed to refresh Qobuz token")
+            raise APIError("Failed to refresh Qobuz token")
         self.token = token
         try:
             keyring.set_password("flaccid_qobuz", "token", token)
