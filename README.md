@@ -161,6 +161,7 @@ For quick reference, see the [documentation index](./docs/README.md).
 
 Contributions are welcome! Please see the [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
+
 ## Running CI Locally
 
 ```sh
@@ -169,6 +170,11 @@ poetry install --sync
 # Run linters, type checks, tests
 make ci
 ```
+
+## Versioning
+
+This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 
 ## License
 
