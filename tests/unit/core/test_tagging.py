@@ -245,3 +245,66 @@ def test_cascade_merges() -> None:
     merged = metadata.cascade(base, extra)
     assert merged.year == 2024
     assert merged.lyrics == "la"
+
+
+def test_cascade_append_strategy() -> None:
+    base = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+        lyrics="first",
+    )
+    extra = TrackMetadata(
+        title="",
+        artist="",
+        album="",
+        track_number=1,
+        disc_number=1,
+        lyrics="second",
+    )
+
+    merged = metadata.cascade(base, extra, strategies={"lyrics": "append"})
+    assert merged.lyrics == "firstsecond"
+
+
+def test_cascade_replace_strategy() -> None:
+    base = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+    )
+    extra = TrackMetadata(
+        title="T2",
+        artist="B",
+        album="C",
+        track_number=2,
+        disc_number=1,
+    )
+
+    merged = metadata.cascade(base, extra, strategies={"artist": "replace"})
+    assert merged.artist == "B"
+    assert merged.title == "T"
+
+
+def test_cascade_prefer_strategy() -> None:
+    base = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+    )
+    extra = TrackMetadata(
+        title="T2",
+        artist="B",
+        album="C",
+        track_number=2,
+        disc_number=1,
+    )
+
+    merged = metadata.cascade(base, extra, strategies={"title": "prefer"})
+    assert merged.title == "T"

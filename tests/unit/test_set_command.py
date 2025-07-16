@@ -20,3 +20,13 @@ def test_root_set_auth(monkeypatch):
 
     assert result.exit_code == 0
     assert called["args"] == ("flaccid", "qobuz", "secret")
+
+
+def test_set_precedence(tmp_path, monkeypatch):
+    cfg = tmp_path / "settings.toml"
+    result = runner.invoke(
+        app,
+        ["settings", "precedence", "a,b", "--file", str(cfg)],
+    )
+    assert result.exit_code == 0
+    assert "PLUGIN_PRECEDENCE = 'a,b'" in cfg.read_text()

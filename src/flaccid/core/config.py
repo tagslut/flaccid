@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from dynaconf import Dynaconf
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class QobuzSettings(BaseModel):
@@ -31,6 +31,10 @@ class Settings(BaseModel):
     discogs_token: str = ""
     beatport_token: str = ""
     tidal_token: str = ""
+    plugin_precedence: list[str] = Field(
+        default_factory=list,
+        description="Ordered list of metadata provider plugin names.",
+    )
 
 
 def _load_dynaconf(settings_file: Optional[Path] = None) -> Dynaconf:
@@ -68,5 +72,10 @@ def load_settings(settings_file: Optional[Path] = None) -> Settings:
         "discogs_token": raw.get("DISCOGS_TOKEN", ""),
         "beatport_token": raw.get("BEATPORT_TOKEN", ""),
         "tidal_token": raw.get("TIDAL_TOKEN", ""),
+        "plugin_precedence": [
+            p.strip()
+            for p in str(raw.get("PLUGIN_PRECEDENCE", "")).split(",")
+            if p.strip()
+        ],
     }
     return Settings.model_validate(data)

@@ -101,19 +101,40 @@ def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> Path:
         audio["lyrics"] = meta.lyrics
 
 
-def cascade(*sources: TrackMetadata) -> TrackMetadata:
-    """Merge ``TrackMetadata`` objects, filling missing fields left-to-right."""
+def cascade(
+    *sources: TrackMetadata,
+    strategies: dict[str, str] | None = None,
+) -> TrackMetadata:
+    """Merge metadata objects using optional per-field strategies.
+
+    ``strategies`` maps field names to one of ``"append"``, ``"prefer"``, or
+    ``"replace"``. ``prefer`` is the default behaviour.
+    """
 
     if not sources:
         raise ValueError("at least one metadata object is required")
 
     merged = TrackMetadata(**asdict(sources[0]))
+    strategies = strategies or {}
     for src in sources[1:]:
         for field in fields(TrackMetadata):
             val = getattr(merged, field.name)
             other = getattr(src, field.name)
-            if (val is None or val == "") and other not in (None, ""):
+            if other in (None, ""):
+                continue
+
+            strategy = strategies.get(field.name, "prefer")
+
+            if strategy == "replace":
                 setattr(merged, field.name, other)
+            elif strategy == "append":
+                if val in (None, ""):
+                    setattr(merged, field.name, other)
+                elif isinstance(val, str) and isinstance(other, str):
+                    setattr(merged, field.name, val + other)
+            else:  # prefer
+                if val in (None, ""):
+                    setattr(merged, field.name, other)
     return merged
 
 

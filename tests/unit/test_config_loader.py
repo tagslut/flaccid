@@ -30,3 +30,15 @@ QOBUZ_TOKEN = 'file_tok'
     settings = load_settings(cfg)
     assert settings.qobuz.app_id == "file_id"
     assert settings.qobuz.token == "file_tok"
+
+
+def test_load_plugin_precedence(tmp_path: Path) -> None:
+    cfg = tmp_path / "settings.toml"
+    cfg.write_text(
+        """\
+[default]
+PLUGIN_PRECEDENCE = 'a,b'
+"""
+    )
+    settings = load_settings(cfg)
+    assert settings.plugin_precedence == ["a", "b"]
