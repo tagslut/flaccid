@@ -3,6 +3,7 @@
 import json
 
 from typer.testing import CliRunner
+from flaccid.plugins.base import TrackMetadata
 
 import flaccid.tag.cli as tag_cli
 from flaccid.tag.cli import app as tag_app
@@ -25,6 +26,7 @@ def test_fetch_invokes_provider(tmp_path, monkeypatch):
             return {"ok": True}
 
     monkeypatch.setattr(tag_cli, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(tag_cli.utils, "get_provider", lambda name: FakePlugin)
     monkeypatch.setattr(tag_cli, "get_existing_metadata", lambda path: {})
     monkeypatch.setattr(tag_cli, "build_search_query", lambda meta: "A B")
 
@@ -41,10 +43,37 @@ def test_fetch_invokes_provider(tmp_path, monkeypatch):
 def test_apply_invokes_helper(tmp_path, monkeypatch):
     called = {}
 
-    def fake_apply_metadata(file, metadata_file, yes):
-        called["args"] = (file, metadata_file, yes)
+    class FakePlugin:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def search_track(self, query: str):  # pragma: no cover - not used
+            return TrackMetadata(
+                title="T",
+                artist="A",
+                album="B",
+                track_number=1,
+                disc_number=1,
+            )
+
+    def fake_apply_metadata(file, meta, yes):
+        called["args"] = (file, meta, yes)
 
     monkeypatch.setattr(tag_cli.utils, "apply_metadata", fake_apply_metadata)
+    monkeypatch.setattr(tag_cli.utils, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(
+        tag_cli.utils,
+        "get_existing_metadata",
+        lambda p: {"artist": "Artist", "title": "Song"},
+    )
+    monkeypatch.setattr(
+        tag_cli.utils,
+        "build_search_query",
+        lambda m: "Artist Song",
+    )
 
     flac = tmp_path / "song.flac"
     flac.write_text("data")
@@ -56,7 +85,9 @@ def test_apply_invokes_helper(tmp_path, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert called["args"] == (flac, metadata, True)
+    assert called["args"][0] == flac
+    assert isinstance(called["args"][1], TrackMetadata)
+    assert called["args"][2] is True
     assert "Metadata applied successfully" in result.stdout
 
 
@@ -101,12 +132,56 @@ def test_apply_real_logic(tmp_path, monkeypatch):
     monkeypatch.setattr(tag_utils, "write_tags", fake_write_tags)
     monkeypatch.setattr(tag_utils, "LyricsPlugin", lambda: FakeLyrics())
     monkeypatch.setattr(tag_utils, "confirm", lambda m: True)
-    monkeypatch.setattr("flaccid.tag.write_tags", mock_write_tags)
+    monkeypatch.setattr("flaccid.core.metadata.write_tags", mock_write_tags)
 
     result = runner.invoke(tag_app, ["apply", str(flac), "--metadata-file", str(meta)])
 
     assert result.exit_code == 0
     assert called["write"] == [flac]
+
+
+def test_apply_no_metadata_fetches(tmp_path, monkeypatch):
+    called: dict[str, object] = {}
+
+    class FakePlugin:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def search_track(self, query: str):
+            called["query"] = query
+            return TrackMetadata(
+                title="Song",
+                artist="Artist",
+                album="A",
+                track_number=1,
+                disc_number=1,
+            )
+
+    def fake_apply_metadata(file, meta, yes):
+        called["apply"] = (file, meta, yes)
+
+    monkeypatch.setattr(tag_cli, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(tag_cli.utils, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(
+        tag_cli,
+        "get_existing_metadata",
+        lambda path: {"artist": "Artist", "title": "Song"},
+    )
+    monkeypatch.setattr(tag_cli, "build_search_query", lambda meta: "Artist Song")
+    monkeypatch.setattr(tag_cli.utils, "apply_metadata", fake_apply_metadata)
+
+    flac = tmp_path / "song.flac"
+    flac.write_text("data")
+
+    result = runner.invoke(tag_app, ["apply", str(flac), "--yes"])
+
+    assert result.exit_code == 0
+    assert called["apply"][0] == flac
+    assert isinstance(called["apply"][1], TrackMetadata)
+    assert called["apply"][2] is True
 
 
 def test_apple_template_option(tmp_path, monkeypatch):

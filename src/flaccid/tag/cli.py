@@ -10,6 +10,8 @@ import typer
 
 from flaccid.plugins.registry import get_provider
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
+from flaccid.core.metadata import load_metadata
+from flaccid.plugins.base import TrackMetadata
 from . import utils
 
 app = typer.Typer(help="Metadata-tagging operations")
@@ -51,6 +53,24 @@ def apply(
 ) -> None:
     """Apply metadata to *file*, optionally using *metadata_file*."""
 
-    utils.apply_metadata(file, metadata_file, yes)
-    typer.echo("Metadata applied successfully")
+    meta_obj = (
+        load_metadata(metadata_file)
+        if metadata_file
+        else utils.fallback_fetch(file)
+    )
+    if isinstance(meta_obj, dict):
+        meta = TrackMetadata(
+            title=meta_obj.get("title", ""),
+            artist=meta_obj.get("artist", ""),
+            album=meta_obj.get("album", ""),
+            track_number=int(meta_obj.get("track_number", 0)),
+            disc_number=int(meta_obj.get("disc_number", 0)),
+            year=meta_obj.get("year"),
+            isrc=meta_obj.get("isrc"),
+            lyrics=meta_obj.get("lyrics"),
+        )
+    else:
+        meta = meta_obj
 
+    utils.apply_metadata(file, meta, yes)
+    typer.echo("Metadata applied successfully")
