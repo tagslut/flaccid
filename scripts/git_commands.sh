@@ -6,6 +6,9 @@
 #
 set -euo pipefail
 
+# Get the repository root directory
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 # Verify Git installation
 git --version
 
@@ -17,12 +20,12 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 # Create a small change to commit
 echo "Creating a small change to commit..."
-if grep -q "# Last updated:" README.md; then
-  # Replace existing timestamp line
-  sed -i '' 's/# Last updated:.*$/# Last updated: '"$(date)"'/' README.md
+if grep -q "Last updated:" "$REPO_ROOT/docs/README.md"; then
+  # Replace existing timestamp line - works for both formats
+  sed -i '' 's/[*#] Last updated:.*$/\*Last updated: '"$(date)"'\*/' "$REPO_ROOT/docs/README.md"
 else
   # Add timestamp as the last line
-  echo "# Last updated: $(date)" >> README.md
+  echo "*Last updated: $(date)*" >> "$REPO_ROOT/docs/README.md"
 fi
 
 # Add all changes to staging
