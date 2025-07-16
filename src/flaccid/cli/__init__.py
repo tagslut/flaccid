@@ -77,20 +77,3 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-def main() -> int:
-    """Main entry point for the CLI."""
-    try:
-        app()
-        return 0
-    except Exception as e:
-        from rich.console import Console
-
-        console = Console()
-        console.print(f"[bold red]Error:[/bold red] {e}")
-        return 1
-
-
-if __name__ == "__main__":
-    import sys
-
-    sys.exit(main())
