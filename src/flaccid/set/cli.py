@@ -19,7 +19,8 @@ def auth(
     """Store credentials for the given music service."""
 
     api_key = typer.prompt("API key", hide_input=True)
-    store_credentials(provider, api_key)
+    api_secret = typer.prompt("API secret", hide_input=True)
+    store_credentials(provider, api_key, api_secret)
     typer.echo("Credentials saved.")
 
 
