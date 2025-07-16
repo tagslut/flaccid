@@ -9,7 +9,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Dict, Type
 
-from .base import MetadataProviderPlugin
+from .base import MetadataProviderPlugin, LyricsProviderPlugin
 
 
 class PluginLoader:
@@ -44,10 +44,14 @@ class PluginLoader:
                 if not module:
                     continue
                 for attr in vars(module).values():
+                    if not isinstance(attr, type):
+                        continue
                     if (
-                        isinstance(attr, type)
-                        and issubclass(attr, MetadataProviderPlugin)
+                        issubclass(attr, MetadataProviderPlugin)
                         and attr is not MetadataProviderPlugin
+                    ) or (
+                        issubclass(attr, LyricsProviderPlugin)
+                        and attr is not LyricsProviderPlugin
                     ):
                         name = getattr(attr, "NAME", file.stem).lower()
                         found[name] = attr
