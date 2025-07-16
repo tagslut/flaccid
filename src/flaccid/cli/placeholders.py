@@ -10,11 +10,10 @@ import keyring
 from typer import confirm
 
 from flaccid.core.metadata import write_tags
-from flaccid.plugins import BeatportPlugin, DiscogsPlugin, LyricsPlugin
+from flaccid.plugins import LyricsPlugin
 from flaccid.plugins.base import TrackMetadata
-from flaccid.shared.apple_api import AppleAPI
+from flaccid.plugins.registry import get_provider
 from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
-from flaccid.shared.qobuz_api import QobuzAPI
 
 
 def fetch_metadata(file: Path, provider: str) -> dict:
@@ -31,19 +30,9 @@ def fetch_metadata(file: Path, provider: str) -> dict:
     query = build_search_query(existing)
 
     async def _search() -> dict:
-        if provider.lower() == "qobuz":
-            async with QobuzAPI() as api:
-                return await api.search(query)
-        if provider.lower() == "apple":
-            async with AppleAPI() as api:
-                return await api._itunes_search(query)
-        if provider.lower() == "discogs":
-            async with DiscogsPlugin() as api:
-                return await api.search_track(query)
-        if provider.lower() == "beatport":
-            async with BeatportPlugin() as api:
-                return await api.search_track(query)
-        raise ValueError(f"Unsupported provider: {provider}")
+        plugin_cls = get_provider(provider)
+        async with plugin_cls() as api:
+            return await api.search_track(query)
 
     return asyncio.run(_search())
 
