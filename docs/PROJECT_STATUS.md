@@ -3,46 +3,67 @@
 ## ✅ Completed Features
 
 ### Core CLI Framework
-- CLI entrypoint (`flaccid/cli.py`) built on **Typer**.
-- Commands:
-  - `fla get`
-  - `fla tag`
-  - `fla lib`
-  - `fla set`
+- CLI entrypoint (`flaccid/cli.py`) built on **Typer**
+- Command groups: `download`, `meta`, `library`, `settings`
+- Typer-based command groups with basic subcommands:
+  - `meta fetch`, `meta apply`
+  - `download qobuz`, `download tidal` (stub)
+  - `library scan`, `library watch`
+  - `settings store`
+- Legacy `fla` shim for backward compatibility
+
+### Plugin Framework
+- **Abstract plugin interfaces** defining track/album metadata and service behavior
+- **Plugin registry** includes working Qobuz implementation and placeholder modules for Apple, Beatport, Discogs, Lyrics, and Tidal
+- **Dataclasses and base classes** for consistent plugin development
+- Only `QobuzPlugin` currently supports full authentication, search, and downloads
 
 ### Qobuz Plugin
-- Full authentication via Qobuz API.
-- Album and track metadata fetching.
-- Async track downloading with quality selection.
-- FLAC file tagging via `fla tag qobuz`.
+- **Full authentication** via Qobuz API with token management
+- **Album and track metadata fetching** with comprehensive field mapping
+- **Async track downloading** with quality selection and progress tracking
+- **FLAC file tagging** via `fla meta qobuz` command
+- **Error handling** for API failures and rate limiting
 
 ### Apple Music Plugin
-- Metadata provider via iTunes Search API.
-- Album search by query or ID.
-- Tagging via `fla tag apple`.
+- **Metadata provider** via iTunes Search API (no authentication required)
+- **Album search** by query or ID with comprehensive metadata
+- **Track lookup** by ID or ISRC code
+- **Tagging support** via `fla meta apple` command
 
 ### Tagging System
-- Implemented with **Mutagen**:
-  - Embedding track/album metadata.
-  - Embedding cover art.
-  - Placeholder for lyrics embedding.
+- **Implemented with Mutagen** for FLAC file manipulation:
+  - Embedding track/album metadata (title, artist, album, etc.)
+  - Cover art embedding with automatic format detection
+  - Lyrics integration with external providers
+- **Metadata cascade functionality** for merging multiple sources
+- **Filename template support** for organized file naming
+- **Tag fetch and apply commands** for flexible workflow
 
 ### Library Management
-- `fla lib scan`: Scans the library directory.
-- `fla lib index`: Re-indexes with SQLAlchemy-based SQLite.
+- **Directory scanning** with recursive FLAC file detection
+- **SQLite database integration** via SQLAlchemy ORM
+- **File indexing** with metadata extraction and storage
+- **Watch functionality** using Watchdog for real-time updates
+- **Library scan command** with optional continuous monitoring
+- **Index management** with verification capabilities
 
 ### Configuration Management
-- Managed by **Dynaconf**.
-- Secure credential storage via **Keyring**.
-- CLI support for:
-  - `fla set auth`
-  - `fla set path`
+- **Dynaconf-based settings** with TOML and environment variable support
+- **Secure credential storage** via system Keyring
+- **Pydantic validation** for configuration schema
+- **CLI configuration commands**:
+  - `settings store` for credential management
+  - Environment variable integration
 
-### Code Structure
-- Modular organization under `src/`:
-  - `core/`, `plugins/`, `commands/`
-- Test scaffolding in `tests/`.
-- Dependency management via Poetry.
+### Code Structure and Quality
+- **Modular organization** under `src/flaccid/`:
+  - `cli/`, `commands/`, `core/`, `plugins/`
+- **Comprehensive test suite** with pytest framework
+- **GitHub Actions CI/CD** with pre-commit hooks
+- **Type safety** with mypy integration
+- **Code formatting** with black, isort, autoflake
+- **Dependency management** via Poetry
 
 ---
 

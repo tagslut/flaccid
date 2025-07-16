@@ -5,15 +5,18 @@
   - [ ] CODE_OF_CONDUCT.md
   - [ ] SECURITY.md
   - [ ] CHANGELOG.md
-- [ ] Archive or remove redundant/legacy documentation files from `docs/`:
-  - [ ] DEVELOPMENT_LOG.md (if not needed)
-  - [ ] STATUS_AND_IMPROVEMENTS.md (if not needed)
-  - [ ] USAGE.md (if content is merged into README or docs/)
-  - [ ] IMPLEMENTATION_STATUS.md (if content is merged or outdated)
-  - [ ] FLACCID CLI Toolkit Developer Handbook.md (if content is merged or outdated)
-  - [ ] FLACCID CLI Toolkit Scaffold and Code Generation.md (if content is merged or outdated)
-  - [ ] Any other outdated or duplicate docs
-- [ ] Ensure all documentation is up to date and consistent
+- [x] **Documentation centralization completed (2025-07-16)**:
+  - [x] Created centralized docs/README.md as main documentation index
+  - [x] Created comprehensive docs/user-guide.md consolidating USAGE.md content
+  - [x] Created docs/development-log.md from DEVELOPMENT_LOG.md content
+  - [x] Created docs/architecture/README.md with comprehensive architecture documentation
+  - [x] Merged docs/IMPLEMENTATION_STATUS.md content into docs/PROJECT_STATUS.md
+  - [x] Updated root README.md to reference centralized documentation structure
+- [x] Archive redundant/legacy documentation files:
+  - [x] STATUS_AND_IMPROVEMENTS.md (already archived, stub file)
+  - [x] USAGE.md (content merged into docs/user-guide.md)
+  - [x] DEVELOPMENT_LOG.md (content moved to docs/development-log.md)
+  - [x] docs/IMPLEMENTATION_STATUS.md (content merged into PROJECT_STATUS.md)
+  - [x] FLACCID CLI Toolkit Scaffold and Code Generation.md (archived as historical reference)
 - [ ] Lint markdown files for style and formatting
-- [ ] Update README.md and docs/README.md with links to new documentation
 - [ ] Communicate documentation changes to contributors

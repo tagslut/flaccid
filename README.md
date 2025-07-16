@@ -143,7 +143,14 @@ fla duplicates remove ~/Music --by hash --strategy keep-newest --no-dry-run
 
 ## Documentation
 
-See [FLACCID CLI Toolkit Developer Handbook](docs/FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md) for architecture details. Additional guides live in the [docs folder](./docs).
+Comprehensive documentation is available in the [docs/](./docs) directory:
+
+- **[User Guide](./docs/user-guide.md)** - Complete usage guide with examples and troubleshooting
+- **[Developer Handbook](./docs/FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md)** - Technical architecture and implementation details
+- **[Project Status](./docs/PROJECT_STATUS.md)** - Current implementation status and roadmap
+- **[Development Log](./docs/development-log.md)** - Historical development notes and decisions
+
+For quick reference, see the [documentation index](./docs/README.md).
 
 ## Contributing
 
@@ -170,3 +177,4 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 # Last updated: Wed Jul 16 12:54:53 EEST 2025
 # Last updated: Wed Jul 16 13:02:51 EEST 2025
 # Last updated: Wed Jul 16 13:52:09 EEST 2025
+# Last updated: Wed Jul 16 15:51:05 EEST 2025

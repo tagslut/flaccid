@@ -1,210 +1,75 @@
-# FLACCID Implementation Status
+### Implemented
 
-## ✅ Completed Implementation
+1. **Plugin Framework**
+   - Dataclasses and abstract plugin interfaces defining track/album metadata and service behavior
+   - Plugin registry includes a working Qobuz implementation and placeholder modules for Apple, Beatport, Discogs, Lyrics and Tidal.
+   - Only `QobuzPlugin` currently supports authentication, search and downloads. Other plugins remain stubs.
+2. **CLI Scaffolding**
+   - Typer-based command groups `get`, `tag`, `lib`, and `set` with basic subcommands (e.g. `tag fetch`, `tag apply`, `get qobuz`, `get tidal`, `lib scan`, `set auth`, `set path`).
+   - CLI helpers in `cli/placeholders.py` perform metadata fetch/apply and store credentials via keyring.
+   - Legacy `fla` shim for backward compatibility (`src/fla/__main__.py`).
+3. **Core Functionality**
+   - Simple asynchronous file downloader.
+   - Metadata writer with cover-art embedding and optional lyrics fetching.
+   - Library management utilities for scanning directories, indexing FLAC files, and watching for changes via watchdog.
+4. **Testing and CI**
+   - Test suite covering placeholders, plugins, library functions and CLI commands (e.g. `tests/unit/test_library.py` includes watch library testing).
+   - GitHub Actions workflow runs pre‑commit hooks and pytest across Python 3.10‑3.12.
+   - Pre‑commit configuration enabling black, flake8, isort, autoflake, mypy and pytest.
+5. **Documentation & Scripts**
+   - Extensive documentation in `docs/`, developer handbook, usage examples, and a Cloud Shell setup guide.
+   - `setup_script.sh` bootstraps a local development environment and runs tests.
+   - Cloud Build YAML for optional deployment.
 
-### Shared API Modules
+------
 
-- **`shared/qobuz_api.py`** - Full Qobuz API client with async support
-  - ✅ Token management and authentication
-  - ✅ Search functionality
-  - ✅ Track metadata retrieval
-  - ✅ Album metadata retrieval
-  - ✅ Streaming URL generation
-  - ✅ Async context manager support
-  - ✅ Automatic token refresh
+### Missing or Incomplete Features
 
-- **`shared/apple_api.py`** - Apple Music API client with iTunes fallback
-  - ✅ Developer token authentication
-  - ✅ iTunes Search API fallback (no auth required)
-  - ✅ ISRC-based lookups
-  - ✅ Track and album metadata retrieval
-  - ✅ User token support
-  - ✅ Async context manager support
+1. **Full Plugin Capabilities**
+   - Many service-specific modules under `src/flaccid/tag/` are empty (e.g. `apple.py`, `qobuz.py`, `beatport.py`).
+   - Download/authentication flows for Qobuz are simplified and may not handle real API tokens or parallel downloads. Other providers, including Tidal, are not yet implemented.
+2. **Metadata Cascade & Tagging Logic**
+   - The `cascade` helper in `src/flaccid/core/metadata.py` merges multiple
+     `TrackMetadata` objects, filling missing fields left-to-right.
+   - `tag fetch` and `tag apply` use this function to combine provider metadata
+     and lyrics when writing tags.
+3. **Configuration Management**
+   - Current `Config` class only wraps environment variables; Dynaconf + Pydantic validation is not used.
+   - Storing credentials via `set auth` works but the config path settings do not integrate with the rest of the app.
+4. **Database & Library Features**
+   - SQLite schema only includes a simple `tracks` table; no album table or advanced search/indexing.
+   - File watcher exists but lacks robust handlers and incremental update logic.
+5. **Unit and Integration Tests**
+   - Several CLI tests reference legacy modules (`fla.__main__`) and serve mainly as stubs.
+   - Overall coverage likely below the targeted 85%, and some features remain untested (e.g. cascading metadata, real downloads).
+6. **Packaging & Release**
+   - `pyproject.toml` lacks console-script entry points and is missing sections for mypy exclusions and release job configuration.
+   - `LICENSE` file is empty, despite GPL references in documentation.
+7. **Documentation & Examples**
+   - Numerous documents (e.g. `IMPLEMENTATION_STATUS.md`) are empty or outdated.
+   - README and USAGE files describe commands and capabilities that are not fully implemented in the code.
 
-- **`shared/metadata_utils.py`** - Common FLAC metadata operations
-  - ✅ FLAC file validation
-  - ✅ Metadata extraction from existing files
-  - ✅ Search query building from metadata
-  - ✅ ISRC extraction from FLAC tags
-  - ✅ Generic metadata application
+------
 
-- **`shared/config.py`** - Configuration management
-  - ✅ Environment variable loading
-  - ✅ .env file support with python-dotenv
-  - ✅ Service-specific configuration properties
-  - ✅ Path configuration for cache/config directories
+### Prioritized Next Steps
 
-- **`shared/beatport_api.py`** - Beatport API client
-  - ✅ Token management and authentication
-  - ✅ Track metadata retrieval
-  - ✅ Release metadata retrieval
-  - ✅ Search functionality
-
-- **`shared/discogs_api.py`** - Discogs API client
-  - ✅ Token management and authentication
-  - ✅ Track metadata retrieval
-  - ✅ Release metadata retrieval
-  - ✅ Search functionality
-
-### Tag Modules
-
-- **`tag/qobuz.py`** - Qobuz tagging implementation
-  - ✅ Tag by track ID
-  - ✅ Interactive search and tag
-  - ✅ Batch tagging support
-  - ✅ Uses shared QobuzAPI
-  - ✅ Rich progress indicators
-
-- **`tag/apple.py`** - Apple Music tagging implementation
-  - ✅ Tag by ISRC
-  - ✅ Interactive search and tag
-  - ✅ Batch tagging by ISRC
-  - ✅ Tag by track ID
-  - ✅ Uses shared AppleAPI
-  - ✅ iTunes fallback support
-
-- **`tag/beatport.py`** - Beatport tagging implementation
-  - ✅ Tag by track ID
-  - ✅ Interactive search and tag
-  - ✅ Batch tagging support
-  - ✅ Uses shared BeatportAPI
-
-- **`tag/discogs.py`** - Discogs tagging implementation
-  - ✅ Tag by track ID
-  - ✅ Interactive search and tag
-  - ✅ Batch tagging support
-  - ✅ Uses shared DiscogsAPI
-
-### Authentication Module
-
-- **`set/auth.py`** - Credential management
-  - ✅ Qobuz username/password storage
-  - ✅ Apple Music developer/user token storage
-  - ✅ Discogs token storage
-  - ✅ Tidal credentials (placeholder)
-  - ✅ Spotify credentials (placeholder)
-  - ✅ Keyring integration for secure storage
-  - ✅ List stored credentials
-
-### Library Management
-
-- **`lib/scan.py`** - Directory scanning
-  - ✅ Recursive directory scanning
-  - ✅ FLAC file validation
-  - ✅ Metadata extraction
-  - ✅ Quality analysis
-
-- **`lib/index.py`** - Database indexing
-  - ✅ SQLite database integration
-  - ✅ Full-text search
-  - ✅ Incremental updates
-  - ✅ Missing file cleanup
-
-### Configuration
-
-- **`set/path.py`** - Path configuration management
-  - ✅ Set directory paths
-  - ✅ List configured paths
-  - ✅ Create default directories
-
-### Testing
-
-- **`tests/test_simple.py`** - Basic unit tests
-  - ✅ Configuration management tests
-  - ✅ Metadata utility tests
-  - ✅ Qobuz API basic tests
-  - ✅ Apple API basic tests
-  - ✅ Beatport API basic tests
-  - ✅ Discogs API basic tests
-  - ✅ All tests passing
-
-### CLI Structure
-
-- ✅ Modular typer-based CLI
-- ✅ Subcommands for each module
-- ✅ Working command execution
-- ⚠️ Help system has formatting issues (non-critical)
-
-### Project Structure
-
-- ✅ Dual structure (root + src/flaccid) for compatibility
-- ✅ Poetry dependency management
-- ✅ Python-dotenv integration
-- ✅ Proper imports and module organization
-
-## 🔧 Technical Features
-
-### API Integration
-
-- **Real Qobuz API Integration**: Uses actual Qobuz API endpoints with authentication
-- **Real Apple Music Integration**: Uses iTunes Search API with Apple Music API support
-- **Real Beatport API Integration**: Uses Beatport API endpoints with authentication
-- **Real Discogs API Integration**: Uses Discogs API endpoints with authentication
-- **Async/Await Pattern**: All API calls are async for better performance
-- **Context Managers**: Proper session management with async context managers
-- **Error Handling**: Comprehensive error handling with graceful degradation
-
-### Authentication
-
-- **Keyring Integration**: Secure credential storage using system keyring
-- **Environment Variables**: Support for .env files and environment configuration
-- **Token Management**: Automatic token refresh and fallback handling
-
-### FLAC Integration
-
-- **Mutagen Integration**: Direct FLAC file manipulation using mutagen
-- **Metadata Mapping**: Proper mapping between service metadata and FLAC tags
-- **ISRC Support**: ISRC extraction and lookup for precise matching
-- **Validation**: File validation before processing
-
-### User Experience
-
-- **Rich Console Output**: Beautiful terminal output with progress indicators
-- **Interactive Workflows**: User-friendly interactive search and selection
-- **Batch Processing**: Support for processing multiple files
-- **Configuration Management**: Easy setup and credential management
-
-## 🎯 Next Steps for Full Production
-
-1. **Enhanced Error Handling**
-   - Add retry mechanisms for API failures
-   - Better error messages and recovery suggestions
-   - Logging infrastructure
-
-2. **Advanced Features**
-   - MusicBrainz integration for fallback metadata
-   - AcoustID integration for audio fingerprinting
-   - Custom tagging rules and profiles
-   - Metadata comparison and conflict resolution
-
-3. **Performance Optimization**
-   - Response caching for API calls
-   - Concurrent processing for batch operations
-   - Rate limiting to respect API limits
-   - Database integration for local library management
-
-4. **User Interface Improvements**
-   - Fix typer help formatting issues
-   - Add configuration wizard
-   - Better progress reporting for large operations
-   - Export/import settings
-
-5. **Testing and Quality**
-   - Comprehensive integration tests
-   - Mock API responses for reliable testing
-   - Performance benchmarks
-   - Documentation generation
-
-## 🏁 Current State
-
-The FLACCID CLI toolkit is now functionally complete with:
-
-- ✅ Working Qobuz, Apple Music, Beatport, and Discogs integration
-- ✅ Real API calls and metadata retrieval
-- ✅ Proper FLAC file tagging
-- ✅ Secure credential management
-- ✅ Modular, extensible architecture
-- ✅ Unit tests passing
-- ✅ CLI commands working
-
-The foundation is solid for a production-ready music tagging tool.
+1. **Finish Core CLI Functionality**
+   - Replace placeholder helpers with real metadata fetch and apply logic, linking the CLI directly to plugin operations.
+   - Expand use of `cascade` across plugins and CLI commands.
+2. **Complete Plugin Implementations**
+   - Flesh out Qobuz, Tidal, and Apple Music plugins for full authentication and download flows.
+   - Implement missing modules (Discogs, Beatport, AcoustID, MusicBrainz) or remove until ready.
+3. **Configuration Overhaul**
+   - Introduce Dynaconf-based settings with Pydantic validation and seamless keyring integration.
+4. **Library Indexing Enhancements**
+   - Expand the database schema (albums table, relationships).
+   - Improve `index_changed_files` to detect modifications reliably and integrate with watch functionality.
+5. **Testing Expansion**
+   - Replace outdated tests with meaningful unit tests for every plugin and CLI command.
+   - Add integration tests exercising a basic end-to-end tagging scenario (using mocked network responses).
+6. **Packaging & Release Prep**
+   - Add `[tool.poetry.scripts]` entry for the `flaccid` CLI.
+   - Provide complete LICENSE text and update pyproject/README accordingly.
+   - Finalize GitHub Actions release job and verify `cloudbuild.yaml` uses Poetry consistently.
+7. **Documentation Cleanup**
+   - Consolidate docs, remove obsolete files, and ensure the README/USAGE describe only implemented featu
