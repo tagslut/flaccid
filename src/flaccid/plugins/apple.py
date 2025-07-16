@@ -21,6 +21,10 @@ class AppleMusicPlugin(MetadataProviderPlugin):
         self.api_key = api_key or os.environ.get("APPLE_MUSIC_API_KEY")
         self.session: aiohttp.ClientSession | None = None
 
+    async def authenticate(self) -> None:
+        """Apple Music public API does not require authentication."""
+        return None
+
     async def __aenter__(self) -> "AppleMusicPlugin":
         await self.open()
         return self
