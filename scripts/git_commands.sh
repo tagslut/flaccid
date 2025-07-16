@@ -35,14 +35,8 @@ git add .
 # Check if there are changes to commit
 if git diff --cached --quiet; then
   echo "No changes to commit. Working tree clean."
-  echo "Do you want to force push the current branch? (y/n)"
-  read -r force_push
-  if [[ "$force_push" =~ ^[Yy]$ ]]; then
-    echo "Force pushing to remote repository..."
-    git push --force origin "$CURRENT_BRANCH"
-  else
-    echo "Push canceled."
-  fi
+  echo "No action needed. Exiting."
+  exit 0
 else
   # Commit the changes with --no-verify to bypass pre-commit hooks
   echo "Committing changes..."
