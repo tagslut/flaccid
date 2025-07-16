@@ -80,6 +80,10 @@ Each command exits with a non-zero status code on failure.
    ```
 
 The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the environment. If the token is invalid it will be refreshed automatically using the stored credentials.
+
+### Plugin Loading
+
+Additional provider plugins can be placed in directories referenced by the `FLACCID_PLUGIN_PATH` environment variable (colon separated). The built-in `PluginLoader` will automatically discover any modules defining subclasses of `MetadataProviderPlugin` and register them for use with the CLI.
 ## Usage
 
 ### Library Scanning

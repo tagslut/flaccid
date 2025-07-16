@@ -8,6 +8,7 @@ import pytest
 
 from flaccid.plugins import PLUGINS
 from flaccid.plugins.registry import get_provider
+from flaccid.plugins.loader import PluginLoader
 from flaccid.plugins.base import TrackMetadata
 from flaccid.plugins.lyrics import LyricsPlugin, LyricsOvhProvider
 from flaccid.plugins.qobuz import QobuzPlugin
@@ -81,6 +82,39 @@ def test_plugin_registry_contains_new_plugins():
     assert "discogs" in PLUGINS
     assert "beatport" in PLUGINS
     assert "lyrics" in PLUGINS
+
+
+def test_plugin_loader_discovers_plugins(tmp_path):
+    module = tmp_path / "dummy.py"
+    module.write_text(
+        """
+from flaccid.plugins.base import MetadataProviderPlugin, TrackMetadata, AlbumMetadata
+
+class DummyPlugin(MetadataProviderPlugin):
+    async def open(self) -> None:
+        pass
+
+    async def close(self) -> None:
+        pass
+
+    async def authenticate(self) -> None:
+        pass
+
+    async def search_track(self, query: str):
+        return {}
+
+    async def get_track(self, track_id: str) -> TrackMetadata:
+        return TrackMetadata(title="t", artist="a", album="b", track_number=1, disc_number=1)
+
+    async def get_album(self, album_id: str) -> AlbumMetadata:
+        return AlbumMetadata(title="t", artist="a")
+"""
+    )
+
+    loader = PluginLoader(tmp_path)
+    plugins = loader.discover()
+    assert "dummy" in plugins
+    assert plugins["dummy"].__name__ == "DummyPlugin"
 
 
 def test_get_provider_returns_plugin():
