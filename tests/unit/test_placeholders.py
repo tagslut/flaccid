@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import asyncio
 
 from mutagen.flac import FLAC
 
@@ -47,7 +48,11 @@ def test_fetch_metadata_qobuz(monkeypatch, tmp_path):
             called["query"] = query
             return self.result
 
-    monkeypatch.setattr(placeholders, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(
+        placeholders,
+        "get_provider",
+        lambda name: (lambda: FakePlugin({"ok": True})),
+    )
 
     result = placeholders.fetch_metadata(flac, "qobuz")
     assert result == {"ok": True}
@@ -56,8 +61,7 @@ def test_fetch_metadata_qobuz(monkeypatch, tmp_path):
 
 def test_apply_metadata(monkeypatch, tmp_path):
     flac = tmp_path / "t.flac"
-    # Create a minimal, valid FLAC file so mutagen doesn't fail
-    FLAC().save(flac)
+    flac.write_text("data")
     meta_file = tmp_path / "meta.json"
     meta_file.write_text(
         json.dumps(
@@ -71,16 +75,18 @@ def test_apply_metadata(monkeypatch, tmp_path):
         )
     )
 
-    called = {"write": []}  # Initialize the dictionary with the 'write' key
+    called = {"write": []}
 
-    # write_tags is async, so our mock must be too.
-    async def mock_write_tags(file, metadata, **kwargs):
+    async def _dummy_write_tags(file, metadata, **kwargs):
         called["write"].append(file)
-        return str(file)  # It should return a path string
+        return str(file)
 
-    # Mock `write_tags` where it is used: in the `placeholders` module.
-    # The original test was mocking the wrong target, causing the real function to run.
-    monkeypatch.setattr(placeholders, "write_tags", mock_write_tags)
+    def wrapper(*args, **kwargs):
+        coro = _dummy_write_tags(*args, **kwargs)
+        called["is_coro"] = asyncio.iscoroutine(coro)
+        return coro
+
+    monkeypatch.setattr(placeholders, "write_tags", wrapper)
 
     class FakeLyrics:
         async def __aenter__(self):
@@ -100,6 +106,7 @@ def test_apply_metadata(monkeypatch, tmp_path):
 
     assert called["write"][0] == flac
     assert called["lyrics"] == ("Artist", "Song")
+    assert called["is_coro"] is True
 
 
 def test_store_credentials(monkeypatch):
