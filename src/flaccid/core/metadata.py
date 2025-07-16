@@ -35,7 +35,7 @@ def load_metadata(file_path: Path) -> Dict[str, Any]:
         raise ValueError(f"Failed to load metadata: {e}") from e
 
 
-def save_metadata(metadata: Dict[str, Any], file_path: Path) -> None:
+def save_metadata(metadata: Dict[str, Any], file_path: Path) -> Path:
     """Save metadata to a JSON file.
 
     Args:
@@ -85,7 +85,7 @@ def generate_filename(metadata: Dict[str, Any]) -> Optional[str]:
     return sanitize_filename(f"{artist} - {title}.flac")
 
 
-def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> None:
+def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> Path:
     """Apply basic tags from *meta* to *audio*."""
 
     audio["title"] = meta.title

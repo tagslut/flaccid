@@ -86,9 +86,7 @@ class AppleMusicPlugin(MetadataProviderPlugin):
 
     async def search_track(self, query: str) -> Any:
         """Search tracks by *query*."""
-        return await self._request(
-            self.BASE_URL, term=query, entity="song", country="us"
-        )
+        return await self._request(self.BASE_URL, term=query, entity="song", country="us")
 
     async def fetch_cover_art(self, url: str) -> bytes | None:
         """Fetch cover art from a URL."""
@@ -102,6 +100,4 @@ class AppleMusicPlugin(MetadataProviderPlugin):
 
     async def search_album(self, query: str) -> Any:
         """Search albums by *query*."""
-        return await self._request(
-            self.BASE_URL, term=query, entity="album", country="us"
-        )
+        return await self._request(self.BASE_URL, term=query, entity="album", country="us")
