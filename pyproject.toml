@@ -1,13 +1,14 @@
 [tool.poetry]
 name = "flaccid"
 version = "0.1.0"
-description = "Modular FLAC CLI Toolkit"
-authors = ["georges <geoooorges@icloud.com>"]
+description = "A CLI toolkit for downloading and tagging FLAC files"
+authors = ["FLACCID Team <info@flaccid.example.com>"]
 readme = "README.md"
 license = "GPL-3.0-only"
 packages = [
   { include = "flaccid", from = "src" },
 ]
+package-mode = false
 
 
 
@@ -63,13 +64,6 @@ addopts = "-v --tb=short"
 python_version = "3.11"
 warn_unused_configs = true
 explicit_package_bases = true
-[tool.poetry]
-name = "flaccid"
-version = "0.1.0"
-description = "A CLI toolkit for downloading and tagging FLAC files"
-authors = ["FLACCID Team <info@flaccid.example.com>"]
-readme = "README.md"
-package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"

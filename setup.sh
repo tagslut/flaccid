@@ -1,8 +1,5 @@
 #!/bin/bash
 set -euo pipefail
-#!/bin/bash
-
-set -e
 
 function check_poetry() {
     if command -v poetry &> /dev/null; then
@@ -45,6 +42,16 @@ function setup_with_pip() {
 
 echo "Setting up FLACCID CLI toolkit..."
 
+# Fix pyproject.toml if it has duplicate sections
+if grep -q "\[tool\.poetry\].*\[tool\.poetry\]" pyproject.toml 2>/dev/null; then
+    echo "⚠️ Detected duplicate [tool.poetry] sections in pyproject.toml, fixing..."
+    cp pyproject.toml pyproject.toml.bak
+    awk 'BEGIN{p=0} /\[tool\.poetry\]/{p++; if(p==1){print; next}} p==1{print} p>1 && /^\[/{p=0; print}' pyproject.toml.bak > pyproject.toml.fixed
+    mv pyproject.toml.fixed pyproject.toml
+    echo "✅ Fixed pyproject.toml file"
+fi
+
+# Determine whether to use Poetry or pip
 if check_poetry; then
     setup_with_poetry
 else
@@ -81,7 +88,9 @@ print(f"{sys.version_info.major}.{sys.version_info.minor}")
 PY
 )
 
-if [[ $(echo "$PY_VERSION < 3.10" | bc -l) -eq 1 ]]; then
+# Use awk for version comparison instead of bc which might not be available
+PY_VERSION_CHECK=$(awk -v ver="$PY_VERSION" 'BEGIN { print (ver < 3.10) ? "1" : "0" }')
+if [[ "$PY_VERSION_CHECK" == "1" ]]; then
     echo "❌ Python 3.10 or higher is required, but $PY_VERSION was found."
     exit 1
 fi
@@ -96,7 +105,9 @@ import sys
 print(f"{sys.version_info.major}.{sys.version_info.minor}")
 PY
 )
-        if [[ $(echo "$SYS_PY_VERSION >= 3.10" | bc -l) -eq 1 ]]; then
+        # Use awk for version comparison
+        SYS_VERSION_CHECK=$(awk -v ver="$SYS_PY_VERSION" 'BEGIN { print (ver >= 3.10) ? "1" : "0" }')
+        if [[ "$SYS_VERSION_CHECK" == "1" ]]; then
             ACTUAL_PY_BIN="/usr/bin/python3"
             echo "✅ Using system Python $SYS_PY_VERSION at $ACTUAL_PY_BIN"
         else
