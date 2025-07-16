@@ -1,4 +1,3 @@
-
 """Unit tests for plugin discovery and registration."""
 
 import os
@@ -10,11 +9,13 @@ import pytest
 from flaccid.plugins import PLUGINS
 from flaccid.plugins.registry import get_provider
 from flaccid.plugins.base import TrackMetadata
-from flaccid.plugins.lyrics import LyricsPlugin
+from flaccid.plugins.lyrics import LyricsPlugin, LyricsOvhProvider
 from flaccid.plugins.qobuz import QobuzPlugin
 from flaccid.plugins.tidal import TidalPlugin
 from flaccid.plugins.discogs import DiscogsPlugin
 from flaccid.plugins.beatport import BeatportPlugin
+from flaccid.plugins.base import LyricsProviderPlugin
+from typing import Optional
 import keyring
 from flaccid.core import downloader
 
@@ -92,7 +93,7 @@ def test_get_provider_returns_plugin():
 async def test_lyrics_plugin(tmp_path, monkeypatch):
     """Ensure LyricsPlugin returns lyrics on success."""
 
-    def fake_get(url, **kwargs):
+    def fake_get(url, **_kwargs):
         class Resp:
             status = 200
 
@@ -109,7 +110,9 @@ async def test_lyrics_plugin(tmp_path, monkeypatch):
 
     plugin = LyricsPlugin()
     async with plugin:
-        monkeypatch.setattr(plugin.session, "get", fake_get)
+        provider = plugin.providers[0]
+        assert isinstance(provider, LyricsOvhProvider)
+        monkeypatch.setattr(provider.session, "get", fake_get)
         lyrics = await plugin.get_lyrics("artist", "song")
         assert lyrics == "la la"
 
@@ -135,9 +138,44 @@ async def test_lyrics_plugin_handles_errors(monkeypatch):
 
     plugin = LyricsPlugin()
     async with plugin:
-        monkeypatch.setattr(plugin.session, "get", fake_get)
+        provider = plugin.providers[0]
+        assert isinstance(provider, LyricsOvhProvider)
+        monkeypatch.setattr(provider.session, "get", fake_get)
         lyrics = await plugin.get_lyrics("artist", "song")
         assert lyrics is None
+
+
+@pytest.mark.asyncio
+async def test_lyrics_plugin_fallback_and_cache():
+    """LyricsPlugin should try providers in order and cache results."""
+
+    class Dummy(LyricsProviderPlugin):
+        def __init__(self, result: Optional[str]) -> None:
+            self.result = result
+            self.calls = 0
+
+        async def open(self) -> None:
+            pass
+
+        async def close(self) -> None:
+            pass
+
+        async def get_lyrics(self, artist: str, title: str) -> Optional[str]:
+            self.calls += 1
+            return self.result
+
+    p1 = Dummy(None)
+    p2 = Dummy("found")
+    plugin = LyricsPlugin()
+    plugin.providers = [p1, p2]
+
+    lyr1 = await plugin.get_lyrics("a", "b")
+    lyr2 = await plugin.get_lyrics("a", "b")
+
+    assert lyr1 == "found"
+    assert lyr2 == "found"  # cached
+    assert p1.calls == 1
+    assert p2.calls == 1
 
 
 @pytest.mark.asyncio
@@ -304,7 +342,16 @@ async def test_tidal_request_retry(monkeypatch):
 @pytest.mark.asyncio
 async def test_tidal_browse_album(monkeypatch):
     plugin = TidalPlugin(token="tok")
-    tracks = [{"item": {"id": "1", "title": "Song", "artist": {"name": "Artist"}, "album": "A"}}]
+    tracks = [
+        {
+            "item": {
+                "id": "1",
+                "title": "Song",
+                "artist": {"name": "Artist"},
+                "album": "A",
+            }
+        }
+    ]
     monkeypatch.setattr(plugin, "_request", AsyncMock(return_value={"items": tracks}))
     result = await plugin.browse_album("1")
     assert result[0].title == "Song"
@@ -317,7 +364,9 @@ async def test_tidal_download_playlist(tmp_path, monkeypatch):
     monkeypatch.setattr(
         plugin,
         "_request",
-        AsyncMock(return_value={"items": [{"item": {"id": "1"}}, {"item": {"id": "2"}}]}),
+        AsyncMock(
+            return_value={"items": [{"item": {"id": "1"}}, {"item": {"id": "2"}}]}
+        ),
     )
     dests = await plugin.download_playlist("p", tmp_path)
     assert len(dests) == 2
