@@ -115,6 +115,12 @@ Example:
 export FLACCID_PLUGIN_PATH=~/my-flaccid-plugins
 fla download custom-provider 1234 song.flac
 ```
+You can control which metadata plugin is preferred when merging fields using the
+`PLUGIN_PRECEDENCE` environment variable or via the CLI:
+
+```bash
+fla settings precedence qobuz,apple --file settings.toml
+```
 ## Usage
 
 ### Library Scanning
