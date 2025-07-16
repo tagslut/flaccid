@@ -93,7 +93,7 @@ def test_watch_library(monkeypatch, tmp_path: Path):
 
     monkeypatch.setattr(library, "FLAC", FakeFLAC)
 
-    library.watch_library(tmp_path, db)
+    library.watch_library([tmp_path], db)
 
     handler = captured["handler"]
     new_file = tmp_path / "c.flac"
@@ -138,7 +138,7 @@ def test_start_stop_watching(monkeypatch, tmp_path: Path) -> None:
         lambda dbp, p: events.setdefault("removed", []).append(p),
     )
 
-    library.start_watching(tmp_path, db)
+    library.start_watching([tmp_path], db)
     assert events.get("started") is True
 
     handler = events["handler"]
@@ -148,6 +148,42 @@ def test_start_stop_watching(monkeypatch, tmp_path: Path) -> None:
     handler.on_created(ev)  # type: ignore[attr-defined]
     assert flac in events.get("indexed", [])
 
-    library.stop_watching(tmp_path)
+    library.stop_watching([tmp_path])
     assert events.get("stopped") is True
     assert events.get("joined") is True
+
+
+def test_incremental_indexer(monkeypatch, tmp_path: Path) -> None:
+    db = tmp_path / "lib.db"
+    f1 = tmp_path / "a.flac"
+    f2 = tmp_path / "b.flac"
+    f1.write_text("d1")
+    f2.write_text("d2")
+
+    calls: list[Path] = []
+
+    class FakeFLAC(dict):
+        def __init__(self, path: str) -> None:
+            super().__init__()
+            calls.append(Path(path))
+            self["title"] = [Path(path).stem]
+            self["artist"] = ["A"]
+            self["album"] = ["B"]
+
+    monkeypatch.setattr(library, "FLAC", FakeFLAC)
+
+    indexer = library.IncrementalIndexer(db)
+    indexer.index([f1, f2])
+
+    first_calls = calls.copy()
+    indexer.index([f1, f2])
+    assert calls == first_calls
+
+    f2.write_text("changed")
+    indexer.index([f1, f2])
+    assert calls[-1] == f2
+
+    engine, tracks = library._init_db(db)
+    with Session(engine) as session:
+        paths = {row.path for row in session.execute(select(tracks.c.path))}
+    assert paths == {str(f1), str(f2)}
