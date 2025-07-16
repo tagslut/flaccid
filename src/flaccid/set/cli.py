@@ -1,4 +1,4 @@
-"""`flaccid set` command-group (stub)."""
+"""\`flaccid set\` command-group (stub)."""
 
 from __future__ import annotations
 
