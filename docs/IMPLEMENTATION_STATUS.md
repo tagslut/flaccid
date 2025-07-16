@@ -29,8 +29,10 @@
    - Many service-specific modules under `src/flaccid/tag/` are empty (e.g. `apple.py`, `qobuz.py`, `beatport.py`).
    - Download/authentication flows for Qobuz, Tidal and other providers are simplified and may not handle real API tokens or parallel downloads.
 2. **Metadata Cascade & Tagging Logic**
-   - No implementation of the metadata cascade or advanced tagging engine described in Phase 2A.
-   - `tag fetch`/`apply` commands rely on placeholder helpers instead of real plugin data or file writing logic.
+   - The `cascade` helper in `src/flaccid/core/metadata.py` merges multiple
+     `TrackMetadata` objects, filling missing fields left-to-right.
+   - `tag fetch` and `tag apply` use this function to combine provider metadata
+     and lyrics when writing tags.
 3. **Configuration Management**
    - Current `Config` class only wraps environment variables; Dynaconf + Pydantic validation is not used.
    - Storing credentials via `set auth` works but the config path settings do not integrate with the rest of the app.
@@ -53,7 +55,7 @@
 
 1. **Finish Core CLI Functionality**
    - Replace placeholder helpers with real metadata fetch and apply logic, linking the CLI directly to plugin operations.
-   - Implement `cascade` metadata merging and integrate with tagging commands.
+   - Expand use of `cascade` across plugins and CLI commands.
 2. **Complete Plugin Implementations**
    - Flesh out Qobuz, Tidal, and Apple Music plugins for full authentication and download flows.
    - Implement missing modules (Discogs, Beatport, AcoustID, MusicBrainz) or remove until ready.
