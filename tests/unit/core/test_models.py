@@ -1,10 +1,32 @@
 from __future__ import annotations
 
+# ruff: noqa: E402
+
 """Unit tests for dataclasses and base plugin behavior."""
 
 import pytest
 
-from flaccid.plugins.base import AlbumMetadata, MusicServicePlugin, TrackMetadata
+import importlib.util
+import sys
+import types
+from pathlib import Path
+
+path = Path(__file__).resolve().parents[3] / "src" / "flaccid" / "plugins" / "base.py"
+sys.modules.setdefault("flaccid", types.ModuleType("flaccid"))
+sys.modules.setdefault("flaccid.plugins", types.ModuleType("flaccid.plugins"))
+spec = importlib.util.spec_from_file_location(
+    "flaccid.plugins.base", path, submodule_search_locations=[str(path.parent)]
+)
+base = importlib.util.module_from_spec(spec)
+sys.modules["flaccid.plugins.base"] = base
+assert spec.loader is not None
+spec.loader.exec_module(base)
+
+AlbumMetadata = base.AlbumMetadata
+LyricsProviderPlugin = base.LyricsProviderPlugin
+MetadataProviderPlugin = base.MetadataProviderPlugin
+MusicServicePlugin = base.MusicServicePlugin
+TrackMetadata = base.TrackMetadata
 
 
 def test_track_metadata_defaults() -> None:
@@ -50,3 +72,13 @@ async def test_music_service_plugin_context_manager() -> None:
     async with plugin as ctx:
         assert ctx.opened is True
     assert plugin.closed is True
+
+
+def test_base_classes_are_abstract() -> None:
+    """Instantiate base plugin classes should raise :class:`TypeError`."""
+    with pytest.raises(TypeError):
+        MusicServicePlugin()
+    with pytest.raises(TypeError):
+        MetadataProviderPlugin()
+    with pytest.raises(TypeError):
+        LyricsProviderPlugin()
