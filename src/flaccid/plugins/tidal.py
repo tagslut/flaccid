@@ -80,22 +80,40 @@ class TidalPlugin(MetadataProviderPlugin):
             except Exception:
                 pass
 
-    async def _request(self, endpoint: str, **params: Any) -> Any:
-        """Perform a GET request with basic retry support."""
+    async def _get_with_retry(self, url: str, **kwargs: Any) -> aiohttp.ClientResponse:
+        """Return an HTTP response, retrying on rate limiting.
+
+        This helper centralises the logic for dealing with HTTP 429 responses.
+        When such a response is returned, the ``Retry-After`` header is
+        honoured if present. Otherwise we exponentially backoff for up to four
+        attempts.
+        """
+
         assert self.session is not None, "Session not initialized"
-        # mypy: after this assert self.token is str
+
+        for attempt in range(5):
+            resp = await self.session.get(url, **kwargs)
+            if resp.status != 429:
+                return resp
+
+            retry_after = resp.headers.get("Retry-After")
+            await resp.release()
+            delay = float(retry_after) if retry_after else 2**attempt
+            await asyncio.sleep(delay)
+
+        return resp
+
+    async def _request(self, endpoint: str, **params: Any) -> Any:
+        """Perform a GET request with retry support for rate limiting."""
+        assert self.session is not None, "Session not initialized"
         assert self.token is not None, "Not authenticated"
         headers = {"Authorization": f"Bearer {self.token}"}
 
-        for attempt in range(3):
-            async with self.session.get(
-                self.BASE_URL + endpoint, params=params, headers=headers
-            ) as resp:
-                if resp.status == 429 and attempt < 2:
-                    await asyncio.sleep(2**attempt)
-                    continue
-                resp.raise_for_status()
-                return await resp.json()
+        async with await self._get_with_retry(
+            self.BASE_URL + endpoint, params=params, headers=headers
+        ) as resp:
+            resp.raise_for_status()
+            return await resp.json()
 
     @staticmethod
     def _map_track(data: dict[str, Any]) -> TrackMetadata:
@@ -182,7 +200,7 @@ class TidalPlugin(MetadataProviderPlugin):
             return False
         assert self.session is not None
 
-        async with self.session.get(url) as resp:
+        async with await self._get_with_retry(url) as resp:
             if resp.status != 200:
                 return False
             playlist = await resp.text()
@@ -197,7 +215,7 @@ class TidalPlugin(MetadataProviderPlugin):
         dest.parent.mkdir(parents=True, exist_ok=True)
         with dest.open("wb") as fh:
             for seg_url in segment_urls:
-                async with self.session.get(seg_url) as seg_resp:
+                async with await self._get_with_retry(seg_url) as seg_resp:
                     if seg_resp.status != 200:
                         return False
                     async for chunk in seg_resp.content.iter_chunked(1024):
