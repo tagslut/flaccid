@@ -3,6 +3,7 @@
 import os
 from unittest.mock import AsyncMock, patch
 import aiohttp
+import asyncio
 
 import pytest
 
@@ -116,7 +117,13 @@ class DummyPlugin(MetadataProviderPlugin):
         return {}
 
     async def get_track(self, track_id: str) -> TrackMetadata:
-        return TrackMetadata(title="t", artist="a", album="b", track_number=1, disc_number=1)
+        return TrackMetadata(
+            title="t",
+            artist="a",
+            album="b",
+            track_number=1,
+            disc_number=1,
+        )
 
     async def get_album(self, album_id: str) -> AlbumMetadata:
         return AlbumMetadata(title="t", artist="a")
@@ -361,6 +368,76 @@ async def test_tidal_hls_download(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_tidal_hls_segment_retry(tmp_path, monkeypatch):
+    """Segments should be retried when a 429 status is received."""
+
+    playlist = "#EXTM3U\nseg1.ts\nseg2.ts"
+
+    class FakeContent:
+        def __init__(self, data: bytes) -> None:
+            self.data = data
+
+        async def iter_chunked(self, _size: int):
+            yield self.data
+
+    class Resp:
+        def __init__(self, url: str, status: int = 200) -> None:
+            self.url = url
+            self.status = status
+            self.content = FakeContent(b"a" if url.endswith("seg1.ts") else b"b")
+            self._headers: dict[str, str] = {}
+
+        async def text(self):
+            return playlist
+
+        def raise_for_status(self) -> None:
+            if self.status >= 400 and self.status != 429:
+                raise aiohttp.ClientResponseError(None, None, status=self.status)
+
+        @property
+        def headers(self) -> dict[str, str]:
+            return self._headers
+
+        async def release(self) -> None:  # pragma: no cover - trivial
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    calls: list[int] = []
+
+    class Session:
+        async def get(self, url: str):
+            if "playlist.m3u8" in url:
+                return Resp(url)
+            if url.endswith("seg1.ts") and not calls:
+                resp = Resp(url, 429)
+                resp._headers = {"Retry-After": "0"}
+                calls.append(429)
+                return resp
+            calls.append(200)
+            return Resp(url)
+
+    plugin = TidalPlugin(token="tok")
+    plugin.session = Session()
+    monkeypatch.setattr(asyncio, "sleep", AsyncMock())
+    monkeypatch.setattr(
+        plugin,
+        "_request",
+        AsyncMock(return_value={"url": "http://x/playlist.m3u8"}),
+    )
+
+    dest = tmp_path / "seg.flac"
+    result = await plugin.download_track("1", dest)
+    assert result is True
+    assert dest.read_bytes() == b"ab"
+    assert calls == [429, 200]
+
+
+@pytest.mark.asyncio
 async def test_tidal_request_retry(monkeypatch):
     """_request should retry on HTTP 429 responses."""
 
@@ -375,6 +452,13 @@ async def test_tidal_request_retry(monkeypatch):
             if self.status >= 400:
                 raise aiohttp.ClientResponseError(None, None, status=self.status)
 
+        @property
+        def headers(self) -> dict[str, str]:
+            return {"Retry-After": "0"} if self.status == 429 else {}
+
+        async def release(self) -> None:  # pragma: no cover - trivial
+            pass
+
         async def __aenter__(self):
             return self
 
@@ -384,13 +468,14 @@ async def test_tidal_request_retry(monkeypatch):
     calls = []
 
     class Session:
-        def get(self, *_args, **_kwargs):
+        async def get(self, *_args, **_kwargs):
             status = 429 if len(calls) == 0 else 200
             calls.append(status)
             return Resp(status)
 
     plugin = TidalPlugin(token="tok")
     plugin.session = Session()
+    monkeypatch.setattr(asyncio, "sleep", AsyncMock())
     result = await plugin._request("test")
     assert result == {"ok": True}
     assert calls == [429, 200]
