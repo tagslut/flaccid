@@ -11,6 +11,7 @@ import asyncio
 import aiohttp
 import keyring
 from flaccid.core.config import load_settings
+from flaccid.core.errors import AuthenticationError
 
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
@@ -55,7 +56,7 @@ class TidalPlugin(MetadataProviderPlugin):
             username = keyring.get_password("flaccid_tidal", "username")
             password = keyring.get_password("flaccid_tidal", "password")
             if not username or not password:
-                raise RuntimeError(
+                raise AuthenticationError(
                     "Tidal credentials missing. Run 'fla set auth tidal' first."
                 )
             payload = {
@@ -69,7 +70,7 @@ class TidalPlugin(MetadataProviderPlugin):
 
         access_token = data.get("access_token")
         if not access_token:
-            raise RuntimeError("Failed to authenticate with Tidal")
+            raise AuthenticationError("Failed to authenticate with Tidal")
 
         self.token = access_token
         new_refresh = data.get("refresh_token")

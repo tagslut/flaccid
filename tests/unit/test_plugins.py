@@ -16,6 +16,7 @@ from flaccid.plugins.tidal import TidalPlugin
 from flaccid.plugins.discogs import DiscogsPlugin
 from flaccid.plugins.beatport import BeatportPlugin
 from flaccid.plugins.base import LyricsProviderPlugin
+from flaccid.core.errors import AuthenticationError
 from typing import Optional
 import keyring
 from flaccid.core import downloader
@@ -46,6 +47,17 @@ async def test_qobuz_plugin_auth(monkeypatch):
             monkeypatch.setattr(plugin.session, "post", fake_post)
             await plugin.authenticate()
             assert plugin.token == "tok"
+
+
+@pytest.mark.asyncio
+async def test_qobuz_plugin_auth_missing(monkeypatch):
+    """Authentication should fail when credentials are absent."""
+    monkeypatch.setattr("keyring.get_password", lambda *a: None)
+    plugin = QobuzPlugin(app_id="id", token=None)
+    plugin.session = aiohttp.ClientSession()
+    with pytest.raises(AuthenticationError):
+        await plugin.authenticate()
+    await plugin.session.close()
 
 
 @pytest.mark.asyncio
@@ -292,6 +304,17 @@ async def test_tidal_auth_login(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_tidal_auth_missing(monkeypatch):
+    """Raise AuthenticationError when no credentials are stored."""
+    plugin = TidalPlugin(token=None)
+    plugin.session = aiohttp.ClientSession()
+    monkeypatch.setattr(keyring, "get_password", lambda *a: None)
+    with pytest.raises(AuthenticationError):
+        await plugin.authenticate()
+    await plugin.session.close()
+
+
+@pytest.mark.asyncio
 async def test_tidal_hls_download(tmp_path, monkeypatch):
     """Download an HLS playlist by concatenating segments."""
 
@@ -416,6 +439,14 @@ async def test_discogs_auth(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_discogs_auth_missing(monkeypatch):
+    monkeypatch.setattr(keyring, "get_password", lambda *a: None)
+    plugin = DiscogsPlugin(token=None)
+    with pytest.raises(AuthenticationError):
+        await plugin.authenticate()
+
+
+@pytest.mark.asyncio
 async def test_discogs_get_track(monkeypatch):
     async with DiscogsPlugin(token="tok") as plugin:
         monkeypatch.setattr(
@@ -442,6 +473,14 @@ async def test_beatport_auth(monkeypatch):
     plugin = BeatportPlugin(token="")
     await plugin.authenticate()
     assert plugin.token == "tok"
+
+
+@pytest.mark.asyncio
+async def test_beatport_auth_missing(monkeypatch):
+    monkeypatch.setattr(keyring, "get_password", lambda *a: None)
+    plugin = BeatportPlugin(token="")
+    with pytest.raises(AuthenticationError):
+        await plugin.authenticate()
 
 
 @pytest.mark.asyncio

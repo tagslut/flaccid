@@ -10,6 +10,7 @@ import keyring
 
 from flaccid.core import downloader
 from flaccid.core.config import load_settings
+from flaccid.core.errors import AuthenticationError
 
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
@@ -46,7 +47,7 @@ class BeatportPlugin(MetadataProviderPlugin):
                 self.token = keyring_token
 
         if not self.token:
-            raise RuntimeError(
+            raise AuthenticationError(
                 "Beatport token missing. Configure it via the 'fla set auth beatport' command."
             )
 

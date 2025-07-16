@@ -8,6 +8,7 @@ import aiohttp
 import keyring
 
 from flaccid.core.config import load_settings
+from flaccid.core.errors import AuthenticationError
 
 from .base import AlbumMetadata, MetadataProviderPlugin, TrackMetadata
 
@@ -43,7 +44,7 @@ class DiscogsPlugin(MetadataProviderPlugin):
                 self.token = token
 
         if not self.token:
-            raise RuntimeError(
+            raise AuthenticationError(
                 "Discogs token missing. Configure it via the 'fla set auth discogs' command."
             )
 
