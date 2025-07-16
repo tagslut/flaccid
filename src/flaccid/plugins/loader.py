@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from importlib import util as import_util
+from importlib.machinery import SourceFileLoader
+import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Dict, Iterable, Type
+from typing import Dict, Type
 
 from .base import MetadataProviderPlugin
 
@@ -17,12 +19,15 @@ class PluginLoader:
         self.paths = [Path(p) for p in paths]
 
     def _load_module(self, path: Path) -> ModuleType | None:
-        """Load a module from ``path``."""
-        spec = import_util.spec_from_file_location(path.stem, path)
-        if not spec or not spec.loader:
+        """Load a module from ``path`` using a package name."""
+        name = f"flaccid.plugins.{path.stem}"
+        loader = SourceFileLoader(name, str(path))
+        spec = import_util.spec_from_loader(name, loader)
+        if not spec:
             return None
         module = import_util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        sys.modules[name] = module
+        loader.exec_module(module)
         return module
 
     def discover(self) -> Dict[str, Type[MetadataProviderPlugin]]:
@@ -31,8 +36,9 @@ class PluginLoader:
         for base in self.paths:
             if not base.exists():
                 continue
+            skip = {"loader", "registry", "__init__", "base"}
             for file in base.glob("*.py"):
-                if file.name.startswith("_"):
+                if file.name.startswith("_") or file.stem in skip:
                     continue
                 module = self._load_module(file)
                 if not module:
