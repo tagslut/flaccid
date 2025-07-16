@@ -15,6 +15,9 @@ FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files w
 - **Library Management**: Scan and watch directories to keep an SQLite index up to date.
 - **Credential Storage**: Store service tokens securely in your system keyring.
 - **Duplicate Detection**: Find and manage duplicate FLAC files in your library.
+- **Metadata Cascade**: Merge metadata from multiple providers to fill in any
+  missing fields when tagging. The `cascade` helper lives in
+  `src/flaccid/core/metadata.py`.
 
 ## CLI Overview
 
@@ -80,7 +83,7 @@ The Qobuz plugin reads `QOBUZ_APP_ID` and `QOBUZ_TOKEN` from the environment. If
 ### Library Scanning
 
 ```bash
-fla library scan /path/to/music --db library.db [--watch]  # WIP
+fla library scan /path/to/music --db library.db --watch
 ```
 
 ### Metadata Tagging
@@ -96,11 +99,13 @@ fla tag fetch /path/to/track.flac --provider qobuz
 fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
 ```
 The apply command writes tags using built-in helpers and will attempt to retrieve lyrics automatically when they are missing.
+Metadata from different providers is merged using the `cascade` helper so that
+missing fields are filled in automatically.
 
 ### Database Indexing
 
 ```bash
-fla lib index --rebuild  # experimental
+fla lib index --rebuild
 fla lib scan /path/to/music --db library.db
 ```
 
@@ -155,21 +160,4 @@ make ci
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Wed Jul 16 07:10:30 EEST 2025
-# Last updated: Wed Jul 16 07:11:23 EEST 2025
-# Last updated: Wed Jul 16 09:50:57 EEST 2025
-# Last updated: Wed Jul 16 09:54:37 EEST 2025
-# Last updated: Wed Jul 16 09:59:08 EEST 2025
-# Last updated: Wed Jul 16 10:14:34 EEST 2025
-# Last updated: Wed Jul 16 10:16:18 EEST 2025
-# Last updated: Wed Jul 16 10:20:13 EEST 2025
-# Last updated: Wed Jul 16 10:23:57 EEST 2025
-# Last updated: Wed Jul 16 10:25:37 EEST 2025
-# Last updated: Wed Jul 16 10:29:55 EEST 2025
-# Last updated: Wed Jul 16 10:39:34 EEST 2025
-# Last updated: Wed Jul 16 10:42:57 EEST 2025
-# Last updated: Wed Jul 16 10:43:42 EEST 2025
-# Last updated: Wed Jul 16 10:44:34 EEST 2025
-# Last updated: Wed Jul 16 10:46:12 EEST 2025
-# Last updated: Wed Jul 16 10:49:18 EEST 2025
 # Last updated: Wed Jul 16 10:51:16 EEST 2025
