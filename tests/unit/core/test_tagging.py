@@ -39,8 +39,7 @@ class FakeFLAC:
         return self._tags.get(key, default)
 
     def add_picture(self, pic) -> None:
-        # print(f"FakeFLAC.add_picture called with pic data: {pic.data[:10]}...")  # Debug print
-        self.picture_data = pic.data
+        self.picture_data = pic.data  # simplified debug
         self._picture_added = True
 
     def save(self) -> None:
@@ -118,7 +117,6 @@ async def test_write_tags(monkeypatch, tmp_path: Path) -> None:
 
     class DummyLyrics(LyricsProviderPlugin):
         async def get_lyrics(self, artist: str, title: str) -> str:
-            # print(f"DummyLyrics.get_lyrics called for {artist} - {title}")  # Debug print
             return "la"
 
         async def open(self) -> None:  # pragma: no cover - unused
@@ -166,18 +164,13 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
         lyrics_plugin: LyricsProviderPlugin | None = None,
         filename_template: str | None = None,
     ) -> Path:
-        # print(f"fake_write_tags called with path: {path}, meta: {meta}, "
-        #       f"art: {art is not None}, filename_template: {filename_template}")  # Debug print
         if lyrics_plugin and not meta.lyrics:
-            # print("fake_write_tags: Fetching lyrics...")  # Debug print
             try:
                 meta.lyrics = await lyrics_plugin.get_lyrics(
                     meta.artist,
                     meta.title,
                 )
-                # print(f"fake_write_tags: Lyrics fetched: {meta.lyrics}")  # Debug print
             except Exception:
-                # print(f"fake_write_tags: Error fetching lyrics: {e}")  # Debug print
                 meta.lyrics = None
 
         captured["meta"] = meta
@@ -308,3 +301,10 @@ def test_cascade_prefer_strategy() -> None:
 
     merged = metadata.cascade(base, extra, strategies={"title": "prefer"})
     assert merged.title == "T"
+
+
+def test_generate_lrc() -> None:
+    lyrics = "line1\nline2"
+    text = metadata.generate_lrc(lyrics, step=10.0)
+    assert text.startswith("[00:00.00]line1")
+    assert "[00:10.00]line2" in text

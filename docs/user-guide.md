@@ -220,6 +220,17 @@ Available template variables:
 - `{track_number}` - Track number
 - `{disc_number}` - Disc number
 
+### Lyrics Cache and LRC Export
+
+Lyrics fetched during tagging are stored in `~/.cache/flaccid/lyrics`. The cache
+is keyed by track ID (if available) or the file hash. Use the ``--export-lrc``
+flag with ``fla tag apply`` to write a synchronized ``.lrc`` file next to your
+FLAC track:
+
+```bash
+fla tag apply song.flac --metadata-file meta.json --export-lrc
+```
+
 ### Duplicate Detection
 
 Find and manage duplicate FLAC files in your library:

@@ -6,10 +6,13 @@ Metadata handling utilities for audio files.
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+from flaccid.utils.audio import get_file_hash
 
 from mutagen.flac import FLAC, Picture
 from flaccid.plugins.base import (
@@ -85,6 +88,55 @@ def generate_filename(metadata: Dict[str, Any]) -> Optional[str]:
     return sanitize_filename(f"{artist} - {title}.flac")
 
 
+def lyrics_cache_dir() -> Path:
+    """Return the path to the persistent lyrics cache directory."""
+
+    root = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+    cache = root / "flaccid" / "lyrics"
+    cache.mkdir(parents=True, exist_ok=True)
+    return cache
+
+
+def get_cached_lyrics(key: str) -> Optional[str]:
+    """Retrieve lyrics from the persistent cache."""
+
+    path = lyrics_cache_dir() / f"{key}.txt"
+    if not path.exists():
+        return None
+    try:
+        return path.read_text(encoding="utf-8")
+    except Exception:
+        return None
+
+
+def set_cached_lyrics(key: str, lyrics: str) -> Path:
+    """Store ``lyrics`` in the persistent cache and return the path."""
+
+    path = lyrics_cache_dir() / f"{key}.txt"
+    path.write_text(lyrics, encoding="utf-8")
+    return path
+
+
+def generate_lrc(lyrics: str, step: float = 5.0) -> str:
+    """Return a basic LRC representation of ``lyrics``."""
+
+    lines = [ln.strip() for ln in lyrics.splitlines() if ln.strip()]
+    time = 0.0
+    output: list[str] = []
+    for line in lines:
+        minutes = int(time // 60)
+        seconds = time % 60
+        output.append(f"[{minutes:02d}:{seconds:05.2f}]{line}")
+        time += step
+    return "\n".join(output)
+
+
+def lyrics_cache_key(path: Path, meta: TrackMetadata) -> str:
+    """Return cache key based on ISRC or file hash."""
+
+    return meta.isrc or get_file_hash(path)
+
+
 def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> Path:
     """Apply basic tags from *meta* to *audio*."""
 
@@ -146,8 +198,13 @@ async def write_tags(
     plugin: MetadataProviderPlugin | None = None,
     lyrics_plugin: LyricsProviderPlugin | None = None,
     filename_template: str | None = None,
+    export_lrc: bool = False,
 ) -> Path:
-    """Write ``metadata`` and optional art to ``path``."""
+    """Write ``metadata`` and optional art to ``path``.
+
+    Lyrics are cached on success. If ``export_lrc`` is ``True`` and lyrics are
+    available, a simple ``.lrc`` file will be written next to the FLAC file.
+    """
 
     if not art and plugin and metadata.art_url:
         try:
@@ -163,6 +220,9 @@ async def write_tags(
             )
         except Exception:
             metadata.lyrics = None
+
+    if metadata.lyrics:
+        set_cached_lyrics(lyrics_cache_key(path, metadata), metadata.lyrics)
 
     if not path.exists():
         raise FileNotFoundError(f"write_tags: File does not exist at {path}")
@@ -195,6 +255,10 @@ async def write_tags(
         print(f"write_tags: Failed to save metadata for {path}: {e}")
         raise
 
+    if export_lrc and metadata.lyrics:
+        lrc_path = path.with_suffix(".lrc")
+        lrc_path.write_text(generate_lrc(metadata.lyrics), encoding="utf-8")
+
     if filename_template:
         try:
             new_name = filename_template.format(
@@ -224,6 +288,7 @@ async def fetch_and_tag(
     art_data: bytes | None = None,
     plugin: MetadataProviderPlugin | None = None,
     filename_template: str | None = None,
+    export_lrc: bool = False,
 ) -> Path:
     """Merge metadata via :func:`cascade` and apply tags."""
 
@@ -235,4 +300,5 @@ async def fetch_and_tag(
         plugin=plugin,
         lyrics_plugin=lyrics_plugin,
         filename_template=filename_template,
+        export_lrc=export_lrc,
     )

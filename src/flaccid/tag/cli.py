@@ -50,6 +50,11 @@ def apply(
         None, exists=True, readable=True, resolve_path=True
     ),
     yes: bool = typer.Option(False, "--yes", "-y", help="Apply without prompting"),
+    export_lrc: bool = typer.Option(
+        False,
+        "--export-lrc",
+        help="Write .lrc file with synchronized lyrics",
+    ),
 ) -> None:
     """Apply metadata to *file*, optionally using *metadata_file*."""
 
@@ -72,5 +77,5 @@ def apply(
     else:
         meta = meta_obj
 
-    utils.apply_metadata(file, meta, yes)
+    utils.apply_metadata(file, meta, yes, export_lrc)
     typer.echo("Metadata applied successfully")
