@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-from pathlib import Path
 from typing import Optional
 
 import aiohttp
@@ -17,7 +16,11 @@ from rich.progress import Progress, TaskID
 
 
 async def download_file(
-    session: aiohttp.ClientSession, url: str, dest_path: Path, progress: Optional[Progress] = None, task_id: Optional[TaskID] = None
+    session: aiohttp.ClientSession,
+    url: str,
+    dest_path: Path,
+    progress: Optional[Progress] = None,
+    task_id: Optional[TaskID] = None,
 ) -> bool:
     """Download a file from a URL to a local path.
 
@@ -83,7 +86,6 @@ async def download_files(
 
         results = await asyncio.gather(*tasks)
         return [path for (success, (_, path)) in zip(results, urls) if success]
-import aiohttp
 
 
 async def download_file(

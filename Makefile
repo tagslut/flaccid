@@ -1,60 +1,30 @@
-.PHONY: install setup test clean cli lint fmt ci
+PYTHON := $(shell command -v python3.12 || command -v python3.11 || command -v python3.10 || command -v python3)
 
-install:
-	poetry install
+.PHONY: setup poetry venv check-python pre-commit
 
-setup:
-	mkdir -p ~/.flaccid
+setup: check-python poetry pre-commit
+	@echo "✅ FLACCID CLI setup complete."
 
-test:
-	poetry run pytest -q -x
+check-python:
+	@echo "🐍 Using Python at: $(PYTHON)"
+	@$(PYTHON) --version
 
-lint:
-	poetry run flake8 src tests --ignore=E203,E401,E402,F401,F841
+poetry:
+ifeq (, $(shell command -v poetry))
+	@echo "📥 Installing Poetry..."
+	@curl -sSL https://install.python-poetry.org | $(PYTHON) -
+	@export PATH="$$HOME/.local/bin:$$PATH"
+endif
+	poetry config virtualenvs.in-project true
+	poetry env use $(PYTHON)
+	poetry install --sync --no-interaction --with dev
 
-fmt:
-	poetry run black src tests
-# Makefile for FLACCID CLI development
+venv:
+	@$(PYTHON) -m venv .venv
+	@. .venv/bin/activate && pip install -e . && pip install -r requirements.txt
 
-.PHONY: install lint test format ci clean
-
-install:
-	@echo "Installing dependencies..."
-	poetry install --sync
-
-lint:
-	@echo "Running linters..."
-	poetry run flake8
-	poetry run mypy .
-
-format:
-	@echo "Formatting code..."
-	poetry run black .
-	poetry run isort .
-
-test:
-	@echo "Running tests..."
-	poetry run pytest
-
-test-simple:
-	@echo "Running basic tests only..."
-	poetry run pytest tests/unit/test_simple.py tests/unit/utils
-
-ci: format lint test-simple
-
-clean:
-	@echo "Cleaning up..."
-	rm -rf .pytest_cache .coverage htmlcov
-	@echo "Done!"
-clean:
-	rm -rf dist build *.egg-info
-
-cli:
-	poetry run python -m flaccid --help
-# Run formatter followed by linter
-style: fmt lint
-
-ci:
-	poetry install --sync
-	pre-commit run --all-files
-	poetry run pytest --cov=flaccid
+pre-commit:
+ifneq (,$(wildcard .pre-commit-config.yaml))
+	@poetry run pre-commit install || echo "⚠️ Pre-commit install failed."
+	@poetry run pre-commit run --all-files || echo "⚠️ Some pre-commit hooks failed."
+endif

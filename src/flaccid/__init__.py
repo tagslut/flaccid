@@ -1,4 +1,5 @@
 """FLACCID command-line interface package."""
+
 # FLACCID CLI Toolkit
 from __future__ import annotations
 

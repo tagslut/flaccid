@@ -92,9 +92,9 @@ def _calculate_duplicate_metrics(
                 p,
                 {
                     "creation_time": _get_file_creation_time(p),
-                    "quality_score": get_audio_quality_score(meta)
-                    if "error" not in meta
-                    else 0,
+                    "quality_score": (
+                        get_audio_quality_score(meta) if "error" not in meta else 0
+                    ),
                     "size": meta.get("size", 0),
                     "metadata": meta,
                 },

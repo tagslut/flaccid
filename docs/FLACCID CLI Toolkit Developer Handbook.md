@@ -1491,9 +1491,9 @@ A comprehensive test suite ensures that each component of FLACCID works as expec
    ```
    from typer.testing import CliRunner
    from flaccid import cli
-   
+
    runner = CliRunner()
-   
+
    def test_set_path(tmp_path):
        result = runner.invoke(cli.app, ["set", "path", str(tmp_path)])
        assert result.exit_code == 0
@@ -1814,12 +1814,12 @@ This section demonstrates typical uses of the FLACCID CLI, with example commands
   ```
   $ fla --help
   Usage: fla [OPTIONS] COMMAND [ARGS]...
-  
+
     FLACCID CLI - A modular FLAC toolkit
-  
+
   Options:
     --help  Show this message and exit.
-  
+
   Commands:
     get     Download tracks or albums from streaming services
     tag     Tag local files using online metadata
@@ -1832,12 +1832,12 @@ This section demonstrates typical uses of the FLACCID CLI, with example commands
   ```
   $ fla get --help
   Usage: fla get [OPTIONS] COMMAND [ARGS]...
-  
+
     Download tracks or albums from streaming services
-  
+
   Options:
     --help  Show this message and exit.
-  
+
   Commands:
     qobuz  Download an album or track from Qobuz.
     tidal  Download an album or track from Tidal.
@@ -3528,9 +3528,9 @@ A comprehensive test suite ensures that each component of FLACCID works as expec
    ```
    from typer.testing import CliRunner
    from flaccid import cli
-   
+
    runner = CliRunner()
-   
+
    def test_set_path(tmp_path):
        result = runner.invoke(cli.app, ["set", "path", str(tmp_path)])
        assert result.exit_code == 0
@@ -3851,12 +3851,12 @@ This section demonstrates typical uses of the FLACCID CLI, with example commands
   ```
   $ fla --help
   Usage: fla [OPTIONS] COMMAND [ARGS]...
-  
+
     FLACCID CLI - A modular FLAC toolkit
-  
+
   Options:
     --help  Show this message and exit.
-  
+
   Commands:
     get     Download tracks or albums from streaming services
     tag     Tag local files using online metadata
@@ -3869,12 +3869,12 @@ This section demonstrates typical uses of the FLACCID CLI, with example commands
   ```
   $ fla get --help
   Usage: fla get [OPTIONS] COMMAND [ARGS]...
-  
+
     Download tracks or albums from streaming services
-  
+
   Options:
     --help  Show this message and exit.
-  
+
   Commands:
     qobuz  Download an album or track from Qobuz.
     tidal  Download an album or track from Tidal.

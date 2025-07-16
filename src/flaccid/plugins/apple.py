@@ -30,6 +30,8 @@ class AppleMusicPlugin(MetadataProviderPlugin):
         if self.session:
             await self.session.close()
             self.session = None
+
+
 #!/usr/bin/env python3
 """
 Apple Music plugin for the FLACCID CLI.
@@ -39,12 +41,8 @@ This module provides functionality for fetching metadata from Apple Music.
 
 from __future__ import annotations
 
-import asyncio
 import os
-from pathlib import Path
-from typing import Any, Dict, Optional
 
-import aiohttp
 
 from flaccid.plugins.base import BasePlugin, MetadataProviderPlugin, TrackMetadata
 
@@ -88,9 +86,6 @@ class AppleMusicPlugin(BasePlugin, MetadataProviderPlugin):
         if not self.api_key:
             raise ValueError("Apple Music API key is required")
 
-        headers = {"Authorization": f"Bearer {self.api_key}"}
-        url = f"{self.BASE_URL}/catalog/us/songs/{track_id}"
-
         # In a real implementation, this would make an actual API request
         # For now, we'll just return dummy data
         # async with self.session.get(url, headers=headers) as response:
@@ -128,6 +123,7 @@ class AppleMusicPlugin(BasePlugin, MetadataProviderPlugin):
                 return None
         except Exception:
             return None
+
     async def authenticate(self) -> None:
         if not self.developer_token:
             token = keyring.get_password("flaccid_apple", "token")

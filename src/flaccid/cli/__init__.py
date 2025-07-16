@@ -41,3 +41,56 @@ app.add_typer(duplicates_app, name="duplicates")
 __all__: list[str] = [
     "app",
 ]
+
+
+@app.command()
+def version() -> None:
+    """Show the version of the FLACCID CLI."""
+    try:
+        from importlib import metadata
+
+        from rich.console import Console
+
+        console = Console()
+        version = metadata.version("flaccid")
+        console.print(f"FLACCID CLI version: [bold]{version}[/bold]")
+    except Exception:
+        console.print("FLACCID CLI version: [bold]development[/bold]")
+
+
+def main() -> int:
+    """Entry point for the CLI."""
+    try:
+        app()
+        return 0
+    except Exception as e:
+        from rich.console import Console
+
+        console = Console()
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        return 1
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main())
+
+
+def main() -> int:
+    """Main entry point for the CLI."""
+    try:
+        app()
+        return 0
+    except Exception as e:
+        from rich.console import Console
+
+        console = Console()
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        return 1
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main())

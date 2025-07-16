@@ -12,7 +12,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Protocol, runtime_checkable
+from typing import Any, Optional, Protocol, runtime_checkable
 
 
 @dataclass
@@ -92,17 +92,17 @@ class BasePlugin(ABC):
     @abstractmethod
     async def open(self) -> None:
         """Initialize the plugin."""
-        pass
 
     @abstractmethod
     async def close(self) -> None:
         """Clean up plugin resources."""
-        pass
+
+
 """Base plugin classes and metadata models."""
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Optional, Self
+from typing import Self
 
 
 @dataclass

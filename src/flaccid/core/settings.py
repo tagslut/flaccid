@@ -8,9 +8,8 @@ This module provides functionality for loading and storing configuration setting
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import keyring
 import yaml
@@ -38,10 +37,7 @@ def get_settings_path() -> Path:
     Returns:
         Path to the settings file
     """
-    config_dir = os.environ.get(
-        "XDG_CONFIG_HOME",
-        str(Path.home() / ".config")
-    )
+    config_dir = os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))
     return Path(config_dir) / "flaccid" / "settings.yaml"
 
 
