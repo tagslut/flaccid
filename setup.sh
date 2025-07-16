@@ -1,82 +1,63 @@
-#!/bin/bash
+!/bin/bash
 set -euo pipefail
 
 # Constants
-LOCK_FILE="poetry.lock"
-VENV_PATH=".venv"
-PYPROJECT_FILE="pyproject.toml"
+POETRY_CMD="poetry"
+LOG_FILE="poetry_script.log"
 PYTHON_MIN_VERSION=3.10
 
-# Functions
+# Function: Check if Poetry is installed
 check_poetry_installed() {
-    if command -v poetry &>/dev/null; then
-        echo "✅ Poetry is installed."
-        return 0
-    fi
-    echo "⚠️ Poetry is not installed. Falling back to pip."
-    return 1
-}
-
-resolve_python_binary() {
-    echo "🔍 Resolving Python binary (>= $PYTHON_MIN_VERSION)..."
-    local PYTHON_BINARIES=("python3.12" "python3.11" "python3.10" "python3")
-    for binary in "${PYTHON_BINARIES[@]}"; do
-        if command -v "$binary" &>/dev/null; then
-            echo "✅ Python binary found: $binary"
-            echo "$binary"
-            return 0
-        fi
-    done
-    echo "❌ Python 3.10+ is required but not found."
+  if ! command -v $POETRY_CMD &>/dev/null; then
+    echo "❌ Poetry is not installed. Please install it." | tee -a "$LOG_FILE"
     exit 1
+  fi
+  echo "✅ Poetry is installed." | tee -a "$LOG_FILE"
 }
 
-verify_lock_file() {
-    echo "🔒 Verifying '$LOCK_FILE'..."
-    if [ ! -f "$LOCK_FILE" ]; then
-        echo "⚠️ Lock file not found. Creating it..."
-        poetry lock
-    elif ! poetry lock --check &>/dev/null; then
-        echo "⚠️ Lock file is out-of-date. Updating it..."
-        poetry lock
-    else
-        echo "✅ Lock file is up-to-date."
+# Function: Resolve Python binary >= 3.10
+resolve_python_binary() {
+  local versions=("python3.12" "python3.11" "python3.10" "python3")
+  for binary in "${versions[@]}"; do
+    if command -v "$binary" &>/dev/null; then
+      echo "$binary"
+      return
     fi
+  done
+  echo "❌ Python >= 3.10 not found." | tee -a "$LOG_FILE"
+  exit 1
 }
 
-setup_poetry() {
-    local PYTHON_BINARY="$1"
-    echo "📥 Configuring Poetry with Python: $PYTHON_BINARY"
-    poetry config virtualenvs.in-project true
-    poetry env use "$PYTHON_BINARY"
-    verify_lock_file
-    echo "📦 Installing dependencies with Poetry..."
-    poetry install --sync --no-ansi --with dev
+# Function: Configure poetry to use proper env
+configure_poetry_env() {
+  local binary="$1"
+  local resolved=$(command -v "$binary")
+  if [[ "$resolved" == "$PWD/.venv"* ]]; then
+    echo "⚠️  Skipping venv Python. Falling back to system python3." | tee -a "$LOG_FILE"
+    resolved=$(command -v python3)
+  fi
+  $POETRY_CMD config virtualenvs.in-project true
+  $POETRY_CMD env use "$resolved"
 }
 
-setup_pip() {
-    echo "📦 Setting up virtual environment with pip..."
-    "$PYTHON_BINARY" -m venv "$VENV_PATH"
-    local ACTIVATE_PATH
-    if [ -f "$VENV_PATH/bin/activate" ]; then
-        ACTIVATE_PATH="$VENV_PATH/bin/activate"  # Linux/macOS
-    else
-        ACTIVATE_PATH="$VENV_PATH/Scripts/activate"  # Windows
-    fi
-    source "$ACTIVATE_PATH"
-    echo "✅ Virtual environment activated."
-    pip install --upgrade pip
-    pip install -r requirements.txt
+# Function: Run a Poetry command with logging
+run_poetry_command() {
+  local command=$1
+  echo "▶️ Running: $POETRY_CMD $command" | tee -a "$LOG_FILE"
+  $POETRY_CMD $command >> "$LOG_FILE" 2>&1 || {
+    echo "❌ Command failed: $command" | tee -a "$LOG_FILE"
+    exit 1
+  }
 }
 
-# Main
-echo "🚀 Starting FLACCID setup..."
-PYTHON_BINARY=$(resolve_python_binary)
+# Main logic
+main() {
+  check_poetry_installed
+  local PYTHON_BIN=$(resolve_python_binary)
+  configure_poetry_env "$PYTHON_BIN"
+  run_poetry_command "lock --check || poetry lock"
+  run_poetry_command "install --sync --with dev"
+  echo "✅ FLACCID dependencies installed successfully." | tee -a "$LOG_FILE"
+}
 
-if check_poetry_installed; then
-    setup_poetry "$PYTHON_BINARY"
-else
-    setup_pip
-fi
-
-echo "✅ FLACCID setup complete!"
+main
