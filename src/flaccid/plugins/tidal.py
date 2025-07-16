@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urljoin
 import contextlib
+import asyncio
 
 import aiohttp
 import keyring
@@ -79,14 +80,21 @@ class TidalPlugin(MetadataProviderPlugin):
                 pass
 
     async def _request(self, endpoint: str, **params: Any) -> Any:
+        """Perform a GET request with basic retry support."""
         assert self.session is not None, "Session not initialized"
         # mypy: after this assert self.token is str
         assert self.token is not None, "Not authenticated"
         headers = {"Authorization": f"Bearer {self.token}"}
-        async with self.session.get(
-            self.BASE_URL + endpoint, params=params, headers=headers
-        ) as resp:
-            return await resp.json()
+
+        for attempt in range(3):
+            async with self.session.get(
+                self.BASE_URL + endpoint, params=params, headers=headers
+            ) as resp:
+                if resp.status == 429 and attempt < 2:
+                    await asyncio.sleep(2**attempt)
+                    continue
+                resp.raise_for_status()
+                return await resp.json()
 
     @staticmethod
     def _map_track(data: dict[str, Any]) -> TrackMetadata:
@@ -195,3 +203,34 @@ class TidalPlugin(MetadataProviderPlugin):
                         fh.write(chunk)
 
         return True
+
+    async def browse_album(self, album_id: str) -> list[TrackMetadata]:
+        """Return a list of tracks for the given album."""
+        await self.authenticate()
+        data = await self._request(f"albums/{album_id}/tracks")
+        items = data.get("items") if isinstance(data, dict) else data
+        tracks: list[TrackMetadata] = []
+        if isinstance(items, list):
+            for entry in items:
+                track = entry.get("item") if isinstance(entry, dict) else entry
+                if isinstance(track, dict):
+                    tracks.append(self._map_track(track))
+        return tracks
+
+    async def download_playlist(self, playlist_id: str, dest_dir: Path) -> list[Path]:
+        """Download all tracks in a playlist to ``dest_dir``."""
+        await self.authenticate()
+        data = await self._request(f"playlists/{playlist_id}/tracks")
+        items = data.get("items") if isinstance(data, dict) else data
+        paths: list[Path] = []
+        if not self.session:
+            await self.open()
+        if isinstance(items, list):
+            for entry in items:
+                track = entry.get("item") if isinstance(entry, dict) else entry
+                track_id = str(track.get("id")) if isinstance(track, dict) else None
+                if track_id:
+                    dest = dest_dir / f"{track_id}.flac"
+                    if await self.download_track(track_id, dest):
+                        paths.append(dest)
+        return paths

@@ -3,6 +3,7 @@
 
 import os
 from unittest.mock import AsyncMock, patch
+import aiohttp
 
 import pytest
 
@@ -262,6 +263,64 @@ async def test_tidal_hls_download(tmp_path, monkeypatch):
     result = await plugin.download_track("1", dest)
     assert result is True
     assert dest.read_bytes() == b"ab"
+
+
+@pytest.mark.asyncio
+async def test_tidal_request_retry(monkeypatch):
+    """_request should retry on HTTP 429 responses."""
+
+    class Resp:
+        def __init__(self, status: int) -> None:
+            self.status = status
+
+        async def json(self):
+            return {"ok": True}
+
+        def raise_for_status(self) -> None:
+            if self.status >= 400:
+                raise aiohttp.ClientResponseError(None, None, status=self.status)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+    calls = []
+
+    class Session:
+        def get(self, *_args, **_kwargs):
+            status = 429 if len(calls) == 0 else 200
+            calls.append(status)
+            return Resp(status)
+
+    plugin = TidalPlugin(token="tok")
+    plugin.session = Session()
+    result = await plugin._request("test")
+    assert result == {"ok": True}
+    assert calls == [429, 200]
+
+
+@pytest.mark.asyncio
+async def test_tidal_browse_album(monkeypatch):
+    plugin = TidalPlugin(token="tok")
+    tracks = [{"item": {"id": "1", "title": "Song", "artist": {"name": "Artist"}, "album": "A"}}]
+    monkeypatch.setattr(plugin, "_request", AsyncMock(return_value={"items": tracks}))
+    result = await plugin.browse_album("1")
+    assert result[0].title == "Song"
+
+
+@pytest.mark.asyncio
+async def test_tidal_download_playlist(tmp_path, monkeypatch):
+    plugin = TidalPlugin(token="tok")
+    monkeypatch.setattr(plugin, "download_track", AsyncMock(return_value=True))
+    monkeypatch.setattr(
+        plugin,
+        "_request",
+        AsyncMock(return_value={"items": [{"item": {"id": "1"}}, {"item": {"id": "2"}}]}),
+    )
+    dests = await plugin.download_playlist("p", tmp_path)
+    assert len(dests) == 2
 
 
 @pytest.mark.asyncio
