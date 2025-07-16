@@ -18,9 +18,13 @@ class LyricsPlugin(LyricsProviderPlugin):
         self.session: aiohttp.ClientSession | None = None
 
     async def open(self) -> None:
+        """Create the underlying :class:`aiohttp.ClientSession`."""
+
         self.session = aiohttp.ClientSession()
 
     async def close(self) -> None:
+        """Close the HTTP session."""
+
         if self.session:
             await self.session.close()
             self.session = None

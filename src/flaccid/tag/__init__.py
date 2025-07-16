@@ -6,7 +6,7 @@ from pathlib import Path
 
 import typer
 
-from .utils import write_tags
+from flaccid.core.metadata import write_tags
 
 __all__ = ["write_tags"]
 
