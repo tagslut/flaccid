@@ -31,11 +31,12 @@ resolve_python_binary() {
 # Function: Configure Poetry to use the correct environment
 configure_poetry_env() {
   local binary="$1"
-  resolved=$(command -v "$binary")
+  local resolved=$(command -v "$binary")
   if [[ "$resolved" == "$PWD/.venv"* ]]; then
     echo "⚠️  Skipping venv Python. Falling back to system python3." | tee -a "$LOG_FILE"
     resolved=$(command -v python3)
   fi
+  echo "Using virtualenv: $(dirname "$(dirname "$resolved")")" | tee -a "$LOG_FILE"
   $POETRY_CMD config virtualenvs.in-project true
   $POETRY_CMD env use "$resolved"
 }
@@ -59,7 +60,7 @@ main() {
   configure_poetry_env "$PYTHON_BIN"
 
   # Execute commands
-  execute_poetry_command "lock --check" "lock" "install --sync --with dev"
+  execute_poetry_command "lock" "install --sync --with dev"
 
   echo "✅ FLACCID dependencies installed successfully." | tee -a "$LOG_FILE"
 }
