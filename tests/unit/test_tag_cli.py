@@ -204,9 +204,16 @@ def test_apple_template_option(tmp_path, monkeypatch):
             captured["track_id"] = track_id
             return {"meta": True}
 
-    async def fake_fetch_and_tag(file, data, *, filename_template=None):
+    async def fake_fetch_and_tag(
+        file,
+        data,
+        *,
+        strategies=None,
+        filename_template=None,
+    ):
         captured["template"] = filename_template
         captured["file"] = file
+        captured["strategies"] = strategies
 
     monkeypatch.setattr(commands_tag, "AppleMusicPlugin", lambda: FakePlugin())
     monkeypatch.setattr(commands_tag, "fetch_and_tag", fake_fetch_and_tag)
@@ -224,8 +231,11 @@ def test_apple_template_option(tmp_path, monkeypatch):
             "123",
             "--template",
             "{artist}-{title}.flac",
+            "--strategy.title",
+            "replace",
         ],
     )
 
     assert result.exit_code == 0
     assert captured["template"] == "{artist}-{title}.flac"
+    assert captured["strategies"] == {"title": "replace"}

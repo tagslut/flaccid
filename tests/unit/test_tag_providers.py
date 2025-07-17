@@ -58,9 +58,14 @@ def test_tag_from_id_invokes_plugins(
             return "la"
 
     async def fake_fetch(
-        path: Path, data: TrackMetadata, lyrics_plugin=None, art_data=None
+        path: Path,
+        data: TrackMetadata,
+        *,
+        strategies=None,
+        lyrics_plugin=None,
+        art_data=None,
     ):
-        called["fetch"] = (path, data)
+        called["fetch"] = (path, data, strategies)
 
     monkeypatch.setattr(module, plugin_attr, lambda: FakePlugin())
     monkeypatch.setattr(module, "LyricsPlugin", lambda: FakeLyrics())
@@ -69,4 +74,4 @@ def test_tag_from_id_invokes_plugins(
     module.tag_from_id(file, "123")
 
     assert called["id"] == "123"
-    assert called["fetch"] == (file, meta)
+    assert called["fetch"] == (file, meta, None)

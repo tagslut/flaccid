@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import os
 from pathlib import Path
+import re
 
 import typer
 
@@ -13,6 +14,25 @@ from flaccid.core.metadata import fetch_and_tag
 from flaccid.plugins.apple import AppleMusicPlugin
 
 app = typer.Typer(help="Tag files with metadata")
+
+
+def _parse_strategy_options(args: list[str]) -> dict[str, str]:
+    """Return ``--strategy.FIELD`` options parsed from ``args``."""
+
+    pattern = re.compile(r"^--strategy\.(?P<field>[\w_]+)$")
+    strategies: dict[str, str] = {}
+    i = 0
+    while i < len(args):
+        match = pattern.match(args[i])
+        if match:
+            field = match.group("field")
+            if i + 1 >= len(args):
+                raise typer.BadParameter(f"Missing value for {args[i]}")
+            strategies[field] = args[i + 1]
+            i += 2
+        else:
+            i += 1
+    return strategies
 
 
 @app.command("authenticate")
@@ -53,10 +73,12 @@ def apply(
         typer.echo("Use --yes to skip confirmation")
 
 
-@app.command()
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True}
+)
 def apple(
     file: Path = typer.Argument(
-        ..., exists=True, resolve_path=True, help="Path to the audio file to tag."
+        ..., exists=True, resolve_path=True, help="Path to the audio file to tag." 
     ),
     track_id: str = typer.Option(
         ..., help="Apple Music track ID (from iTunes Store URL)."
@@ -72,8 +94,13 @@ def apple(
         "--template",
         help="Rename file using this filename template after tagging.",
     ),
+    ctx: typer.Context = typer.Option(None),
 ) -> None:
-    """Tag a file with metadata from Apple Music."""
+    """Tag a file with metadata from Apple Music.
+
+    ``--strategy.FIELD`` options may be provided to control field merge
+    behaviour when multiple metadata sources are used.
+    """
     if auth:
         # NOTE: The current plugin uses an API that doesn't need auth.
         # This is a placeholder for a future implementation.
@@ -88,11 +115,18 @@ def apple(
         typer.echo("Authentication status: OK (placeholder).")
         return
 
+    strategies = _parse_strategy_options(ctx.args)
+
     async def _run() -> None:
         async with AppleMusicPlugin() as plugin:
             try:
                 data = await plugin.get_track(track_id)
-                await fetch_and_tag(file, data, filename_template=template)
+                await fetch_and_tag(
+                    file,
+                    data,
+                    strategies=strategies,
+                    filename_template=template,
+                )
                 typer.echo(f"✅ Successfully tagged '{file.name}'")
             except ValueError as e:
                 typer.echo(f"❌ Error: {e}", err=True)

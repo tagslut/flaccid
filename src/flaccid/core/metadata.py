@@ -328,15 +328,42 @@ async def fetch_and_tag(
     path: Path,
     base: TrackMetadata,
     *extras: TrackMetadata,
+    strategies: dict[str, str] | None = None,
     lyrics_plugin: Optional[LyricsProviderPlugin] = None,
     art_data: bytes | None = None,
     plugin: MetadataProviderPlugin | None = None,
     filename_template: str | None = None,
     export_lrc: bool = False,
 ) -> Path:
-    """Merge metadata via :func:`cascade` and apply tags."""
+    """Merge metadata via :func:`cascade` and apply tags.
 
-    merged = cascade(base, *extras)
+    Parameters
+    ----------
+    path:
+        Location of the FLAC file to tag.
+    base:
+        Base metadata object.
+    *extras:
+        Additional metadata objects whose fields will cascade onto ``base``.
+    strategies:
+        Optional per-field cascade strategies. Keys correspond to
+        :class:`TrackMetadata` fields and values must be ``"append"``,
+        ``"prefer"``, or ``"replace"``.
+    lyrics_plugin:
+        Optional lyrics provider used if ``base`` and ``extras`` lack lyrics.
+    art_data:
+        Raw image bytes to embed as cover art.
+    plugin:
+        Provider plugin used to fetch cover art if ``art_data`` is not
+        supplied.
+    filename_template:
+        Template used to rename the file after tagging.
+    export_lrc:
+        If ``True``, write an accompanying ``.lrc`` file when lyrics are
+        available.
+    """
+
+    merged = cascade(base, *extras, strategies=strategies)
     validate_field_retention(merged, [base, *extras])
     return await write_tags(
         path,

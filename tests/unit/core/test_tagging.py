@@ -206,7 +206,13 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
         async def close(self) -> None:  # pragma: no cover - unused
             pass
 
-    await metadata.fetch_and_tag(path, meta, lyrics_plugin=Plugin(), art_data=b"a")
+    await metadata.fetch_and_tag(
+        path,
+        meta,
+        strategies=None,
+        lyrics_plugin=Plugin(),
+        art_data=b"a",
+    )
 
     assert captured["meta"].lyrics == "words"
     assert captured["write"] == (
