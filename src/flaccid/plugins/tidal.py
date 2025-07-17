@@ -145,6 +145,7 @@ class TidalPlugin(MetadataProviderPlugin):
             year=year,
             isrc=data.get("isrc"),
             art_url=art_url,
+            source="tidal",
         )
 
     @staticmethod

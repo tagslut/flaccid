@@ -78,6 +78,7 @@ class AppleMusicPlugin(MetadataProviderPlugin):
             ),
             isrc=track.get("isrc"),
             art_url=track.get("artworkUrl100"),
+            source="apple",
         )
 
     async def get_track_by_isrc(self, isrc: str) -> TrackMetadata:
@@ -102,6 +103,7 @@ class AppleMusicPlugin(MetadataProviderPlugin):
             ),
             isrc=track.get("isrc"),
             art_url=track.get("artworkUrl100"),
+            source="apple",
         )
 
     async def get_album(self, album_id: str) -> AlbumMetadata:

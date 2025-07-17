@@ -82,6 +82,7 @@ class BeatportPlugin(MetadataProviderPlugin):
             album=data.get("release", {}).get("name", ""),
             track_number=int(data.get("number", 0)),
             disc_number=1,
+            source="beatport",
         )
 
     async def get_album(self, album_id: str) -> AlbumMetadata:

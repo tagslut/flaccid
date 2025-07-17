@@ -197,6 +197,29 @@ def cascade(
     return merged
 
 
+def cascade_with_provenance(
+    *sources: TrackMetadata,
+    strategies: dict[str, str] | None = None,
+) -> tuple[TrackMetadata, dict[str, str]]:
+    """Merge ``sources`` and record the provider for each field."""
+
+    merged = cascade(*sources, strategies=strategies)
+    provenance: dict[str, str] = {}
+    strategies = strategies or {}
+    for field in fields(TrackMetadata):
+        for src in reversed(sources):
+            val = getattr(src, field.name)
+            if val in (None, ""):
+                continue
+            provenance[field.name] = src.source or "unknown"
+            strategy = strategies.get(field.name, "prefer")
+            if strategy == "append" and provenance.get(field.name) != src.source:
+                prev = provenance[field.name]
+                provenance[field.name] = f"{prev}+{src.source or 'unknown'}"
+            break
+    return merged, provenance
+
+
 def merge_by_precedence(
     results: dict[str, TrackMetadata],
     *,
@@ -363,9 +386,9 @@ async def fetch_and_tag(
         available.
     """
 
-    merged = cascade(base, *extras, strategies=strategies)
+    merged, provenance = cascade_with_provenance(base, *extras, strategies=strategies)
     validate_field_retention(merged, [base, *extras])
-    return await write_tags(
+    new_path = await write_tags(
         path,
         merged,
         art=art_data,
@@ -374,3 +397,10 @@ async def fetch_and_tag(
         filename_template=filename_template,
         export_lrc=export_lrc,
     )
+    try:
+        new_path.with_suffix(".sources.json").write_text(
+            json.dumps(provenance, indent=2), encoding="utf-8"
+        )
+    except Exception as e:  # pragma: no cover - best effort
+        logger.warning("Failed to write provenance for %s: %s", new_path, e)
+    return new_path

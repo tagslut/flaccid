@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 from pathlib import Path
 import re
@@ -11,6 +12,8 @@ import re
 import typer
 
 from flaccid.core.metadata import fetch_and_tag
+from rich.console import Console
+from rich.table import Table
 from flaccid.plugins.apple import AppleMusicPlugin
 
 app = typer.Typer(help="Tag files with metadata")
@@ -78,7 +81,7 @@ def apply(
 )
 def apple(
     file: Path = typer.Argument(
-        ..., exists=True, resolve_path=True, help="Path to the audio file to tag." 
+        ..., exists=True, resolve_path=True, help="Path to the audio file to tag."
     ),
     track_id: str = typer.Option(
         ..., help="Apple Music track ID (from iTunes Store URL)."
@@ -136,3 +139,26 @@ def apple(
                 raise typer.Exit(1) from e
 
     asyncio.run(_run())
+
+
+@app.command("audit")
+def audit(file: Path = typer.Argument(..., exists=True, resolve_path=True)) -> None:
+    """Show provenance information for tagged fields."""
+
+    sources_file = file.with_suffix(".sources.json")
+    if not sources_file.exists():
+        typer.echo("No provenance data found", err=True)
+        raise typer.Exit(1)
+
+    try:
+        data = json.loads(sources_file.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - unlikely
+        typer.echo(f"Failed to read provenance: {exc}", err=True)
+        raise typer.Exit(1)
+
+    table = Table(title=f"Provenance for {file.name}")
+    table.add_column("Field")
+    table.add_column("Provider")
+    for key, provider in data.items():
+        table.add_row(key, provider)
+    Console().print(table)

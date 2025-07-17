@@ -80,6 +80,7 @@ class DiscogsPlugin(MetadataProviderPlugin):
             album=data.get("album", ""),
             track_number=int(data.get("position", 0)),
             disc_number=1,
+            source="discogs",
         )
 
     async def get_album(self, album_id: str) -> AlbumMetadata:

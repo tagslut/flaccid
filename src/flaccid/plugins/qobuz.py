@@ -143,6 +143,7 @@ class QobuzPlugin(MetadataProviderPlugin):
             year=year,
             isrc=data.get("isrc"),
             art_url=art_url,
+            source="qobuz",
         )
 
     async def fetch_track(self, isrc: str) -> TrackMetadata:
@@ -173,6 +174,7 @@ class QobuzPlugin(MetadataProviderPlugin):
             year=year,
             isrc=data.get("isrc"),
             art_url=art_url,
+            source="qobuz",
         )
 
     async def get_album(self, album_id: str) -> AlbumMetadata:

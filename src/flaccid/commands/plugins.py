@@ -94,6 +94,7 @@ def validate(file: Path) -> None:
 
     typer.echo("All plugins valid!")
 
+
 @app.command("scaffold-tests")
 def scaffold_tests(plugin: Path) -> None:
     """Create basic pytest scaffolding for *plugin*.
