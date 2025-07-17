@@ -48,7 +48,8 @@ class BeatportPlugin(MetadataProviderPlugin):
 
         if not self.token:
             raise AuthenticationError(
-                "Beatport token missing. Configure it via the 'fla set auth beatport' command."
+                "Beatport token missing. Configure it via the 'fla set auth "
+                "beatport' command."
             )
 
     async def _request(self, endpoint: str, **params: Any) -> Any:

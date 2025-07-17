@@ -14,9 +14,6 @@ from typing import Any, Dict, Optional
 
 import logging
 
-logger = logging.getLogger(__name__)
-"""Module logger used for metadata operations."""
-
 from flaccid.utils.audio import get_file_hash
 
 from mutagen.flac import FLAC, Picture
@@ -25,6 +22,9 @@ from flaccid.plugins.base import (
     MetadataProviderPlugin,
     TrackMetadata,
 )
+
+logger = logging.getLogger(__name__)
+"""Module logger used for metadata operations."""
 
 
 def load_metadata(file_path: Path) -> Dict[str, Any]:

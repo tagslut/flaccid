@@ -45,7 +45,8 @@ class DiscogsPlugin(MetadataProviderPlugin):
 
         if not self.token:
             raise AuthenticationError(
-                "Discogs token missing. Configure it via the 'fla set auth discogs' command."
+                "Discogs token missing. Configure it via the 'fla set auth "
+                "discogs' command."
             )
 
     async def _request(self, endpoint: str, **params: Any) -> Any:

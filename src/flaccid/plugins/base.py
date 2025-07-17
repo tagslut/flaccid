@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 #!/usr/bin/env python3
+from __future__ import annotations
 """Base plugin classes and metadata models for the FLACCID CLI."""
 
 # ruff: noqa: E402

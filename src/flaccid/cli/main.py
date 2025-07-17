@@ -7,7 +7,8 @@ Main entry point for the flaccid CLI.
 
 import sys
 
-def run():
+
+def run() -> int:
     """
 Run the flaccid CLI application.
     """
@@ -21,6 +22,7 @@ Run the flaccid CLI application.
     except Exception as e:
         print(f"Error running flaccid: {e}")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(run())
