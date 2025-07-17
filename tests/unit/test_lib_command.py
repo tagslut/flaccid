@@ -98,3 +98,64 @@ def test_lib_missing_invokes_core(monkeypatch):
 
     assert result.exit_code == 0
     assert called["db"] == Path("library.db")
+
+
+def test_lib_view_invokes_search(monkeypatch):
+    called = {}
+
+    def fake_search(db, query, sort=None, limit=None, offset=0):
+        called["args"] = (db, query, sort, limit, offset)
+        return [{"path": "x.flac", "title": "t", "artist": "a", "album": "b"}]
+
+    class FakeFLAC(dict):
+        def __init__(self, path: str) -> None:  # noqa: D401 - simple stub
+            self.path = path
+
+        def get(self, key, default=None):
+            return []
+
+        @property
+        def pictures(self):  # pragma: no cover - not used
+            return []
+
+    monkeypatch.setattr(lib_cli.library, "search_library", fake_search)
+    monkeypatch.setattr(lib_cli, "FLAC", FakeFLAC)
+
+    result = runner.invoke(app, ["library", "view", "--filter", "x", "--limit", "2"])
+
+    assert result.exit_code == 0
+    assert called["args"] == (Path("library.db"), "x", None, 2, 0)
+
+
+def test_lib_view_filters(monkeypatch):
+    rows = [
+        {"path": "a.flac", "title": "A", "artist": "aa", "album": "z"},
+        {"path": "b.flac", "title": "B", "artist": "bb", "album": "z"},
+    ]
+
+    monkeypatch.setattr(lib_cli.library, "search_library", lambda *a, **k: rows)
+
+    class FakeFLAC:
+        def __init__(self, path: str) -> None:
+            self.path = path
+
+        def get(self, key, default=None):
+            if key == "lyrics":
+                return ["l"] if self.path == "a.flac" else []
+            return []
+
+        @property
+        def pictures(self):
+            return [b"img"] if self.path == "b.flac" else []
+
+    monkeypatch.setattr(lib_cli, "FLAC", FakeFLAC)
+
+    result = runner.invoke(app, ["library", "view", "--missing-lyrics"])
+    assert result.exit_code == 0
+    assert "b.flac" in result.output
+    assert "a.flac" not in result.output
+
+    result = runner.invoke(app, ["library", "view", "--has-artwork"])
+    assert result.exit_code == 0
+    assert "b.flac" in result.output
+    assert "a.flac" not in result.output

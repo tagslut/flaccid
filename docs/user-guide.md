@@ -187,6 +187,19 @@ fla library watch stop /path/to/music
 fla library search --filter "beatles" --sort title --limit 20
 ```
 
+#### Viewing
+
+```bash
+# Display the library database in a table
+fla library view --db library.db
+
+# Show only files without embedded lyrics
+fla library view --missing-lyrics
+
+# Show only files that contain artwork
+fla library view --has-artwork
+```
+
 ### Settings Commands (`fla settings`)
 
 Manage credentials and configuration.
