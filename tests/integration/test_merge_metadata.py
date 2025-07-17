@@ -71,3 +71,42 @@ async def test_fetch_and_tag_merges_partial_results(
     assert provenance["year"] == "prov_c"
     assert provenance["isrc"] == "prov_c"
     assert provenance["lyrics"] == "prov_b"
+
+
+@pytest.mark.asyncio
+async def test_fetch_and_tag_respects_precedence(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Providers listed first should take precedence when fields overlap."""
+
+    file_path = tmp_path / "song.flac"
+    file_path.write_text("audio")
+
+    captured: dict[str, TrackMetadata] = {}
+
+    async def fake_write_tags(path: Path, meta: TrackMetadata, **kwargs) -> Path:
+        captured["meta"] = meta
+        return path
+
+    monkeypatch.setattr(metadata, "write_tags", fake_write_tags)
+
+    provider_a = TrackMetadata(
+        title="A",
+        artist="",
+        album="",
+        track_number=1,
+        disc_number=1,
+        source="prov_a",
+    )
+    provider_b = TrackMetadata(
+        title="B",
+        artist="",
+        album="",
+        track_number=1,
+        disc_number=1,
+        source="prov_b",
+    )
+
+    monkeypatch.setenv("PLUGIN_PRECEDENCE", "prov_b,prov_a")
+    await metadata.fetch_and_tag(file_path, provider_a, provider_b)
+    assert captured["meta"].title == "B"
