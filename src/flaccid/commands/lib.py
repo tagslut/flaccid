@@ -5,6 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import List
 
+from mutagen.flac import FLAC
+from rich.console import Console
+from rich.table import Table
+
 import typer
 
 from flaccid.core import library
@@ -86,3 +90,43 @@ def report_missing(
     rows = library.report_missing_metadata(db)
     for row in rows:
         typer.echo(row["path"])
+
+
+@app.command("view")
+def view(
+    db: Path = typer.Option(Path("library.db"), help="SQLite database path"),
+    filter: str = typer.Option("", "--filter", "-f", help="Search query"),
+    missing_lyrics: bool = typer.Option(
+        False, "--missing-lyrics", help="Only show tracks without lyrics"
+    ),
+    has_artwork: bool = typer.Option(
+        False, "--has-artwork", help="Only show tracks that embed artwork"
+    ),
+    limit: int | None = typer.Option(None, "--limit", "-l", help="Max results"),
+    offset: int = typer.Option(0, "--offset", "-o", help="Offset results"),
+) -> None:
+    """Display library entries in a formatted table."""
+
+    rows = library.search_library(db, filter, limit=limit, offset=offset)
+
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Path", style="cyan")
+    table.add_column("Title")
+    table.add_column("Artist")
+    table.add_column("Album")
+
+    for row in rows:
+        audio = FLAC(row["path"])
+        if missing_lyrics and audio.get("lyrics"):
+            continue
+        if has_artwork and not getattr(audio, "pictures", []):
+            continue
+        table.add_row(
+            row.get("path", ""),
+            row.get("title", ""),
+            row.get("artist", ""),
+            row.get("album", ""),
+        )
+
+    console = Console()
+    console.print(table)

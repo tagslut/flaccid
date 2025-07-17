@@ -175,6 +175,14 @@ fla lib index --rebuild
 fla lib scan /path/to/music --db library.db
 ```
 
+### Viewing Library Entries
+
+```bash
+fla library view --db library.db
+fla library view --missing-lyrics
+fla library view --has-artwork
+```
+
 ### Finding and Managing Duplicates
 
 ```bash
@@ -248,4 +256,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Thu Jul 17 12:08:48 UTC 2025
+# Last updated: Thu Jul 17 12:45:58 UTC 2025
