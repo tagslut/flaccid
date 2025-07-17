@@ -15,6 +15,7 @@ from .audit import (
     set_cached_lyrics,
 )
 from .cascade import cascade, cascade_with_provenance, merge_by_precedence
+from flaccid.core.config import get_precedence_order
 from .templates import generate_filename, load_metadata, sanitize_filename, save_metadata
 from .validators import validate_field_retention
 from flaccid.plugins.base import (
@@ -159,10 +160,20 @@ async def fetch_and_tag(
     filename_template: str | None = None,
     export_lrc: bool = False,
 ) -> Path:
-    """Merge metadata via :func:`cascade` and apply tags."""
+    """Merge metadata via :func:`merge_by_precedence` and apply tags."""
 
-    merged, provenance = cascade_with_provenance(base, *extras, strategies=strategies)
-    validate_field_retention(merged, [base, *extras])
+    results: dict[str, TrackMetadata] = {}
+    for meta in (base, *extras):
+        key = meta.source or f"src{len(results)}"
+        results[key] = meta
+
+    merged = merge_by_precedence(results, strategies=strategies)
+
+    order = get_precedence_order(results.keys())
+    ordered = [results[name] for name in order]
+    _, provenance = cascade_with_provenance(*ordered, strategies=strategies)
+
+    validate_field_retention(merged, list(results.values()))
     new_path = await write_tags(
         path,
         merged,

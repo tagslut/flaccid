@@ -127,6 +127,11 @@ fla settings precedence qobuz,apple --file settings.toml
 ```
 Merged metadata respects this order when combining results from multiple providers.
 
+When calling the ``meta`` command or using ``fetch_and_tag`` directly, provider
+results are merged according to this precedence. If no order is specified the
+list is loaded from ``settings.toml`` or the ``PLUGIN_PRECEDENCE`` environment
+variable. Providers not listed are appended after the configured names.
+
 ### Plugin Validation
 
 Validate custom plugins before using them:
@@ -287,4 +292,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Thu Jul 17 14:44:04 UTC 2025
+# Last updated: Thu Jul 17 17:05:18 UTC 2025
