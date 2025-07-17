@@ -2,7 +2,8 @@
 """FLACCID command‑line interface package.
 
 This module defines the root Typer application (`app`) and wires up each
-sub‑command group (download, meta, apple, library, settings, duplicates).
+sub‑command group (download, meta, apple, library, settings, duplicates,
+plugins).
 It should not contain any test code ― tests live exclusively under the *tests/* tree.
 """
 
@@ -17,6 +18,7 @@ from flaccid.commands.get import app as get_app
 from flaccid.commands.lib import app as lib_app
 from flaccid.commands.settings import app as settings_app
 from flaccid.commands.tag import app as tag_app
+from flaccid.commands.plugins import app as plugins_app
 
 # --------------------------------------------------------------------------- #
 # Root application
@@ -25,7 +27,7 @@ from flaccid.commands.tag import app as tag_app
 app = typer.Typer(
     help=(
         "FLACCID CLI root application.  Provides 'download', 'meta', 'apple', "
-        "'library', 'duplicates', and 'settings' sub‑commands."
+        "'library', 'duplicates', 'settings', and 'plugins' sub‑commands."
     )
 )
 
@@ -36,6 +38,7 @@ app.add_typer(apple_app, name="apple")
 app.add_typer(lib_app, name="library")
 app.add_typer(settings_app, name="settings")
 app.add_typer(duplicates_app, name="duplicates")
+app.add_typer(plugins_app, name="plugins")
 
 # What we intend to export when someone does: `from flaccid.cli import *`
 __all__: list[str] = [

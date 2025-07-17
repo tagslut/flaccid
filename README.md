@@ -11,6 +11,7 @@
 - [CLI Overview](#cli-overview)
 - [Installation](#installation)
 - [Plugin Loading](#plugin-loading)
+- [Plugin Validation](#plugin-validation)
 - [Usage](#usage)
   - [Library Scanning](#library-scanning)
   - [Metadata Tagging](#metadata-tagging)
@@ -121,6 +122,16 @@ You can control which metadata plugin is preferred when merging fields using the
 ```bash
 fla settings precedence qobuz,apple --file settings.toml
 ```
+
+### Plugin Validation
+
+Validate custom plugins before using them:
+
+```bash
+fla plugins validate path/to/plugin.py
+```
+The command checks for subclasses of `MetadataProviderPlugin` or
+`LyricsProviderPlugin` and ensures all required methods are implemented.
 ## Usage
 
 ### Library Scanning
@@ -225,4 +236,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Wed Jul 16 21:11:30 UTC 2025
+# Last updated: Thu Jul 17 11:47:55 UTC 2025
