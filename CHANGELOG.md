@@ -2,10 +2,41 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
-- Documentation updated to match current CLI.
-- Archived obsolete status files.
-- Code of conduct, contributing guide and security policy consolidated.
+## [0.2.0] - 2025-07-16
+### Core Architecture and Plugin Loading
+- Rewrote `PluginLoader` to support proper package-relative imports using `SourceFileLoader`. This resolves failures caused by relative imports (`from .base import ...`) when loading plugins from source files.
+- Improved plugin registry to skip internal modules and support fallback discovery through the `FLACCID_PLUGIN_PATH` environment variable.
+
+### Metadata Cascade Engine
+- Extended `cascade()` logic to accept user-defined plugin precedence, allowing flexible control over metadata sourcing.
+- Added per-field merge strategy support: `prefer`, `replace`, and `append`. These strategies can now be specified in the config or CLI.
+- Implemented a validation mechanism to ensure no metadata fields are lost when combining results from multiple providers.
+
+### Lyrics System Enhancements
+- Integrated LRC (synchronized lyrics) export with `--export-lrc` CLI flag. When available, synced lyrics are saved in `.lrc` format beside the audio file.
+- Implemented a per-track LRU cache for lyrics to prevent repeated API calls for commonly queried tracks.
+- Improved fallback logic for lyrics providers. Now attempts Genius → Musixmatch → Lyrics.ovh, logging the failure reason for each provider.
+
+### Library Management & Search
+- Implemented full-text search across indexed title, artist, album fields using SQLite FTS5.
+- Added advanced CLI options for `fla library search`: `--filter`, `--sort`, `--limit`, and `--offset` to improve large collection browsing.
+- Added `fla library missing` command to identify tracks with incomplete metadata (missing title, artist, or album).
+
+### Testing and Reliability
+- Reached ≥85% test coverage for all major plugin and core modules. Pytest now fails if coverage falls below threshold.
+- Added integration tests covering complete CLI workflows: search → download → cascade → tag → validate output.
+- All external API calls to Tidal and lyrics providers are now mocked for unit and integration testing. This ensures reliability and reproducibility in CI environments.
+
+### Documentation and Developer Experience
+- Finalized and published the following documentation files:
+  - `CODE_OF_CONDUCT.md`
+  - `CONTRIBUTING.md`
+  - `SECURITY.md`
+  - `docs/plugin-development.md` (new)
+- Expanded `docs/user-guide.md` to include real-world CLI examples, plugin discovery setup, and cascade strategy configuration.
+- Updated `README.md` to reflect new commands and environment variables.
+
+---
 
 ## [0.1.0] - 2025-07-10
 - Project structure finalized with Poetry and src/ layout.
@@ -33,3 +64,6 @@ All notable changes to this project will be documented in this file.
 - Initial implementation of Qobuz and Apple Music APIs.
 - SQLite database integration for library indexing.
 - Modular CLI structure using Typer established.
+
+## [Unreleased]
+- ...

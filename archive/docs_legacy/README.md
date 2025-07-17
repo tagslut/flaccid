@@ -151,7 +151,7 @@ The metadata cascade system merges information from multiple sources:
 
 The `adr/` directory contains formal architectural decisions:
 
-- **[ADR-002: Adopt GPL License](adr/002-adopt-gpl-license.md)** - License selection rationale
+- **[ADR-002: Adopt GPL License](../../docs/architecture/adr/002-adopt-gpl-license.md)** - License selection rationale
 
 ## Extension Points
 
@@ -213,4 +213,4 @@ The `adr/` directory contains formal architectural decisions:
 
 ---
 
-*For detailed implementation information, see the [Developer Handbook](../FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md).*
+*For detailed implementation information, see the [Developer Handbook](../../docs/FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md).*

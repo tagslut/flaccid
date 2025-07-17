@@ -18,7 +18,7 @@ FLACCID (FLAC Library and Canonical Content Identification) is a modular command
 
 ### Developer Documentation
 - **[Developer Handbook](FLACCID%20CLI%20Toolkit%20Developer%20Handbook.md)** - Comprehensive technical documentation (4044 lines)
-- **[Architecture Overview](architecture/README.md)** - System architecture, design patterns, and technical specifications
+- **[Architecture Overview](../archive/docs_legacy/README.md)** - System architecture, design patterns, and technical specifications
 - **[Architecture Decision Records](architecture/adr/)** - Formal architectural decisions and rationale
 - **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute to the project
 - **[Plugin Development Guide](plugin-development.md)** - Writing custom provider plugins
@@ -27,7 +27,7 @@ FLACCID (FLAC Library and Canonical Content Identification) is a modular command
 - **[Project Status](PROJECT_STATUS.md)** - Current implementation status and roadmap
 - **[Phase 2 Plan](PHASE2_PLAN.md)** - Detailed implementation plan for Phase 2
 - **[Development Log](development-log.md)** - Historical development notes and decisions
-- **[Changelog](../CHANGELOG.md)** - Version history and changes
+- **[Changelog](../archive/docs_legacy/CHANGELOG.md)** - Version history and changes
 
 ### Reference
 - **[API Reference](api-reference.md)** - Complete API documentation
