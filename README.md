@@ -91,6 +91,7 @@ Each command exits with a non-zero status code on failure.
    python3 -m venv .venv
    source .venv/bin/activate
    pip install -r requirements.txt
+   pip install -r dev-requirements.txt
    pip install -e .
    ```
 
@@ -225,4 +226,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Wed Jul 16 21:11:30 UTC 2025
+# Last updated: Thu Jul 17 07:09:07 UTC 2025
