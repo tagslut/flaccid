@@ -239,3 +239,52 @@ def test_apple_template_option(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert captured["template"] == "{artist}-{title}.flac"
     assert captured["strategies"] == {"title": "replace"}
+
+
+def test_review_command(tmp_path, monkeypatch):
+    import flaccid.commands.tag as commands_tag
+
+    flac = tmp_path / "track.flac"
+    flac.write_text("data")
+
+    class FakePlugin:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def search_track(self, query: str):
+            return TrackMetadata(
+                title="T",
+                artist="A",
+                album="B",
+                track_number=1,
+                disc_number=1,
+            )
+
+    reviewed = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+    )
+
+    def fake_apply(file, meta, yes, export_lrc):
+        fake_apply.called = (file, meta, yes, export_lrc)
+
+    monkeypatch.setattr(commands_tag, "get_provider", lambda name: FakePlugin)
+    monkeypatch.setattr(commands_tag, "get_existing_metadata", lambda p: {})
+    monkeypatch.setattr(commands_tag, "build_search_query", lambda m: "Q")
+    monkeypatch.setattr(commands_tag.utils, "apply_metadata", fake_apply)
+    monkeypatch.setattr("flaccid.tui.review.review_metadata", lambda m: reviewed)
+    monkeypatch.setattr("keyring.get_password", lambda *a, **k: None)
+    monkeypatch.setattr("keyring.set_password", lambda *a, **k: None)
+
+    result = runner.invoke(commands_tag.app, ["review", str(flac)])
+
+    assert result.exit_code == 0
+    assert fake_apply.called[0] == flac
+    assert fake_apply.called[1] == reviewed
+    assert fake_apply.called[2] is True

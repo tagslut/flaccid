@@ -12,6 +12,11 @@ import re
 import typer
 
 from flaccid.core.metadata import fetch_and_tag
+from flaccid.shared.metadata_utils import build_search_query, get_existing_metadata
+from flaccid.plugins.registry import get_provider
+from flaccid.tui import review_metadata
+from flaccid.tag import utils
+from flaccid.plugins.base import TrackMetadata
 from rich.console import Console
 from rich.table import Table
 from flaccid.plugins.apple import AppleMusicPlugin
@@ -162,3 +167,40 @@ def audit(file: Path = typer.Argument(..., exists=True, resolve_path=True)) -> N
     for key, provider in data.items():
         table.add_row(key, provider)
     Console().print(table)
+
+
+@app.command("review")
+def review(
+    file: Path = typer.Argument(..., exists=True, resolve_path=True),
+    provider: str = typer.Option(
+        "qobuz", "--provider", help="Metadata source", show_choices=True
+    ),
+    export_lrc: bool = typer.Option(
+        False, "--export-lrc", help="Write .lrc file with synchronized lyrics"
+    ),
+) -> None:
+    """Interactively review fetched metadata before tagging."""
+
+    async def _fetch() -> TrackMetadata:
+        plugin_cls = get_provider(provider)
+        existing = get_existing_metadata(str(file))
+        query = build_search_query(existing)
+        async with plugin_cls() as api:
+            data = await api.search_track(query)
+            if isinstance(data, TrackMetadata):
+                return data
+            track_id = None
+            if isinstance(data, dict):
+                if "id" in data:
+                    track_id = str(data["id"])
+                elif data.get("results"):
+                    first = data["results"][0]
+                    track_id = str(first.get("id") or first.get("trackId"))
+            if not track_id:
+                raise ValueError("Unable to extract track id from provider response")
+            return await api.get_track(track_id)
+
+    meta = asyncio.run(_fetch())
+    reviewed = review_metadata(meta)
+    utils.apply_metadata(file, reviewed, yes=True, export_lrc=export_lrc)
+    typer.echo("Metadata applied successfully")
