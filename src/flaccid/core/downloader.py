@@ -1,8 +1,7 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 from pathlib import Path
-
-#!/usr/bin/env python3
 """
 File download utilities for the FLACCID CLI.
 """
@@ -86,5 +85,3 @@ async def download_files(
 
         results = await asyncio.gather(*tasks)
         return [path for (success, (_, path)) in zip(results, urls) if success]
-
-

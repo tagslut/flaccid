@@ -30,7 +30,11 @@ def precedence(
     names = [n.strip() for n in order.split(",") if n.strip()]
     if not file.exists():
         file.write_text("[default]\n")
-    lines = [ln for ln in file.read_text().splitlines() if not ln.startswith("PLUGIN_PRECEDENCE")]
+    lines = [
+        ln
+        for ln in file.read_text().splitlines()
+        if not ln.startswith("PLUGIN_PRECEDENCE")
+    ]
     lines.append(f"PLUGIN_PRECEDENCE = '{','.join(names)}'")
     file.write_text("\n".join(lines) + "\n")
     typer.echo("Plugin precedence updated")

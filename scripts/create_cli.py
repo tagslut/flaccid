@@ -10,7 +10,8 @@ import os
 import sys
 from pathlib import Path
 
-def create_entry_point():
+
+def create_entry_point() -> bool:
     # Get the virtualenv path
     venv_path = Path(".venv")
     if not venv_path.exists():
@@ -43,6 +44,7 @@ if __name__ == "__main__":
 
     print(f"✅ Created entry point at {fla_path}")
     return True
+
 
 if __name__ == "__main__":
     if create_entry_point():
