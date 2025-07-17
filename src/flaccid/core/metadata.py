@@ -22,6 +22,7 @@ from flaccid.plugins.base import (
     MetadataProviderPlugin,
     TrackMetadata,
 )
+from flaccid.core.config import Settings, get_precedence_order
 
 logger = logging.getLogger(__name__)
 """Module logger used for metadata operations."""
@@ -55,6 +56,7 @@ def save_metadata(metadata: Dict[str, Any], file_path: Path) -> Path:
             json.dump(metadata, f, indent=2, ensure_ascii=False)
     except Exception as e:
         raise ValueError(f"Failed to save metadata: {e}") from e
+    return file_path
 
 
 def sanitize_filename(filename: str) -> str:
@@ -142,7 +144,7 @@ def lyrics_cache_key(path: Path, meta: TrackMetadata) -> str:
     return meta.isrc or get_file_hash(path)
 
 
-def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> Path:
+def _set_common_tags(audio: FLAC, meta: TrackMetadata) -> None:
     """Apply basic tags from *meta* to *audio*."""
 
     audio["title"] = meta.title
@@ -195,6 +197,19 @@ def cascade(
     return merged
 
 
+def merge_by_precedence(
+    results: dict[str, TrackMetadata],
+    *,
+    strategies: dict[str, str] | None = None,
+    settings: Settings | None = None,
+) -> TrackMetadata:
+    """Merge ``results`` respecting configured plugin precedence."""
+
+    order = get_precedence_order(results.keys(), settings=settings)
+    ordered = [results[name] for name in order]
+    return cascade(*ordered, strategies=strategies)
+
+
 def validate_field_retention(
     merged: TrackMetadata, sources: Iterable[TrackMetadata]
 ) -> None:
@@ -212,9 +227,7 @@ def validate_field_retention(
     """
 
     for field in fields(TrackMetadata):
-        had_value = any(
-            getattr(src, field.name) not in (None, "") for src in sources
-        )
+        had_value = any(getattr(src, field.name) not in (None, "") for src in sources)
         if had_value and getattr(merged, field.name) in (None, ""):
             raise ValueError(f"Field {field.name} lost during merge")
 

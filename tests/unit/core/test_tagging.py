@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from flaccid.core import metadata
+from flaccid.core.config import Settings
 from flaccid.plugins.base import (
     LyricsProviderPlugin,
     MetadataProviderPlugin,
@@ -352,3 +353,32 @@ def test_validate_field_retention_error() -> None:
     merged.isrc = ""  # simulate bug where field was dropped
     with pytest.raises(ValueError):
         metadata.validate_field_retention(merged, [base, extra])
+
+
+def test_merge_by_precedence() -> None:
+    meta_a = TrackMetadata(
+        title="A",
+        artist="x",
+        album="x",
+        track_number=1,
+        disc_number=1,
+    )
+    meta_b = TrackMetadata(
+        title="B",
+        artist="y",
+        album="y",
+        track_number=1,
+        disc_number=1,
+    )
+
+    settings = Settings(plugin_precedence=["prov_b", "prov_a"])
+    merged = metadata.merge_by_precedence(
+        {"prov_a": meta_a, "prov_b": meta_b}, settings=settings
+    )
+    assert merged.title == "B"
+
+    settings = Settings(plugin_precedence=["prov_a", "prov_b"])
+    merged = metadata.merge_by_precedence(
+        {"prov_a": meta_a, "prov_b": meta_b}, settings=settings
+    )
+    assert merged.title == "A"

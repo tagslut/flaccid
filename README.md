@@ -122,6 +122,7 @@ You can control which metadata plugin is preferred when merging fields using the
 ```bash
 fla settings precedence qobuz,apple --file settings.toml
 ```
+Merged metadata respects this order when combining results from multiple providers.
 
 ### Plugin Validation
 
@@ -244,4 +245,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Thu Jul 17 11:58:09 UTC 2025
+# Last updated: Thu Jul 17 12:08:48 UTC 2025
