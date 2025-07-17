@@ -19,6 +19,7 @@ from flaccid.commands.lib import app as lib_app
 from flaccid.commands.settings import app as settings_app
 from flaccid.commands.tag import app as tag_app
 from flaccid.commands.plugins import app as plugins_app
+from flaccid.commands.check import app as check_app
 
 # --------------------------------------------------------------------------- #
 # Root application
@@ -27,7 +28,7 @@ from flaccid.commands.plugins import app as plugins_app
 app = typer.Typer(
     help=(
         "FLACCID CLI root application.  Provides 'download', 'meta', 'apple', "
-        "'library', 'duplicates', 'settings', and 'plugins' sub‑commands."
+        "'library', 'duplicates', 'settings', 'plugins', and 'check' commands."
     )
 )
 
@@ -39,6 +40,7 @@ app.add_typer(lib_app, name="library")
 app.add_typer(settings_app, name="settings")
 app.add_typer(duplicates_app, name="duplicates")
 app.add_typer(plugins_app, name="plugins")
+app.add_typer(check_app, name="check")
 
 # What we intend to export when someone does: `from flaccid.cli import *`
 __all__: list[str] = [

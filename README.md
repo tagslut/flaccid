@@ -12,6 +12,7 @@
 - [Installation](#installation)
 - [Plugin Loading](#plugin-loading)
 - [Plugin Validation](#plugin-validation)
+- [Environment Checks](#environment-checks)
 - [Usage](#usage)
   - [Library Scanning](#library-scanning)
   - [Metadata Tagging](#metadata-tagging)
@@ -143,6 +144,16 @@ fla plugins scaffold-tests path/to/plugin.py
 ```
 This generates a test file under `tests/plugins/` with mocks for the plugin's
 search and retrieval methods.
+
+### Environment Checks
+
+Verify your setup with a single command:
+
+```bash
+fla check
+```
+The command checks for plugin import errors, missing service tokens and
+unavailable paths, reporting any issues in a concise summary.
 ## Usage
 
 ### Library Scanning
