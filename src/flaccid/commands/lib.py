@@ -130,3 +130,15 @@ def view(
 
     console = Console()
     console.print(table)
+
+
+@app.command("diff")
+def diff(
+    first: Path = typer.Argument(..., exists=True, resolve_path=True),
+    second: Path = typer.Argument(..., exists=True, resolve_path=True),
+) -> None:
+    """Compare two library databases or directories."""
+
+    results = library.diff_libraries(first, second)
+    for line in results:
+        typer.echo(line)

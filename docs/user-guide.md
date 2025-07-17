@@ -200,6 +200,12 @@ fla library view --missing-lyrics
 fla library view --has-artwork
 ```
 
+#### Diffing
+
+```bash
+fla library diff first.db second.db
+```
+
 ### Settings Commands (`fla settings`)
 
 Manage credentials and configuration.
