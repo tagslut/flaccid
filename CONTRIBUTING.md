@@ -18,6 +18,8 @@ Please use GitHub Issues to report bugs or request features. Include the steps t
    poetry run pytest
    poetry run pre-commit run --all-files
    ```
+   The pre-commit suite now includes a Vulture hook which fails the build if
+   any dead code is detected.
 4. If you plan to add a new provider plugin, read the
    [Plugin Development Guide](docs/plugin-development.md) first.
 
