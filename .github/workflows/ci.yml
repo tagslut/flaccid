@@ -49,6 +49,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pre-commit-
 
+      - name: Run ruff checks
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run ruff check --exit-zero-on-warnings
+
       - name: Run CI tasks
         run: make ci
 
