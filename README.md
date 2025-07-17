@@ -132,6 +132,14 @@ fla plugins validate path/to/plugin.py
 ```
 The command checks for subclasses of `MetadataProviderPlugin` or
 `LyricsProviderPlugin` and ensures all required methods are implemented.
+
+You can also scaffold basic tests for a plugin:
+
+```bash
+fla plugins scaffold-tests path/to/plugin.py
+```
+This generates a test file under `tests/plugins/` with mocks for the plugin's
+search and retrieval methods.
 ## Usage
 
 ### Library Scanning
@@ -236,4 +244,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Thu Jul 17 11:47:55 UTC 2025
+# Last updated: Thu Jul 17 11:58:09 UTC 2025
