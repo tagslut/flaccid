@@ -5,13 +5,6 @@
 #
 set -euo pipefail
 
-COMMIT_MSG="${1-}"
-if [ -z "$COMMIT_MSG" ]; then
-  echo "Error: No commit message provided." >&2
-  echo "Usage: $0 \"Your commit message\"" >&2
-  exit 1
-fi
-
 # Get the repository root directory
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
@@ -40,7 +33,7 @@ if git diff --cached --quiet; then
 else
   # Commit the changes with --no-verify to bypass pre-commit hooks
   echo "Committing changes..."
-  git commit --no-verify -m "$COMMIT_MSG"
+  git commit --no-verify
 
   # Now, pull with rebase to integrate remote changes.
   # This will place your new commit on top of any new commits from the remote.
