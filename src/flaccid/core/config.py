@@ -3,7 +3,7 @@ from __future__ import annotations
 """Dynaconf-based configuration loader."""
 
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional
 
 from dynaconf import Dynaconf
 from pydantic import BaseModel, Field
@@ -79,3 +79,45 @@ def load_settings(settings_file: Optional[Path] = None) -> Settings:
         ],
     }
     return Settings.model_validate(data)
+
+
+def get_precedence_order(
+    names: Iterable[str] | None = None,
+    *,
+    settings: Settings | None = None,
+) -> list[str]:
+    """Return ``names`` ordered by plugin precedence.
+
+    Parameters
+    ----------
+    names:
+        Iterable of provider names to sort. If ``None`` the configured
+        precedence list is returned.
+    settings:
+        Optional :class:`Settings` instance. When omitted, settings are
+        loaded from the default locations via :func:`load_settings`.
+
+    Returns
+    -------
+    list[str]
+        Provider names ordered according to configured precedence. Any
+        names not present in the precedence list are appended in their
+        original order.
+    """
+
+    settings = settings or load_settings()
+    if names is None:
+        return list(settings.plugin_precedence)
+
+    ordered: list[str] = []
+    remaining = list(names)
+    lower_names = {n.lower(): n for n in names}
+
+    for pref in settings.plugin_precedence:
+        pref_lower = pref.lower()
+        if pref_lower in lower_names:
+            ordered.append(lower_names[pref_lower])
+            remaining.remove(lower_names[pref_lower])
+
+    ordered.extend(remaining)
+    return ordered

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-from flaccid.core.config import load_settings
+from flaccid.core.config import get_precedence_order, load_settings, Settings
 
 
 def test_load_from_environment() -> None:
@@ -42,3 +42,9 @@ PLUGIN_PRECEDENCE = 'a,b'
     )
     settings = load_settings(cfg)
     assert settings.plugin_precedence == ["a", "b"]
+
+
+def test_get_precedence_order_custom() -> None:
+    settings = Settings(plugin_precedence=["b", "a"])
+    order = get_precedence_order(["a", "b", "c"], settings=settings)
+    assert order == ["b", "a", "c"]
