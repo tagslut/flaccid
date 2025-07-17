@@ -12,6 +12,11 @@ from dataclasses import asdict, fields
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+import logging
+
+logger = logging.getLogger(__name__)
+"""Module logger used for metadata operations."""
+
 from flaccid.utils.audio import get_file_hash
 
 from mutagen.flac import FLAC, Picture
@@ -226,12 +231,12 @@ async def write_tags(
 
     if not path.exists():
         raise FileNotFoundError(f"write_tags: File does not exist at {path}")
-    print(f"write_tags: File exists at {path}")
+    logger.debug("write_tags: File exists at %s", path)
 
     audio = FLAC(path)
     if not audio:
         raise ValueError(f"write_tags: Failed to initialize FLAC object for {path}")
-    print(f"write_tags: Initialized FLAC object for {path}")
+    logger.debug("write_tags: Initialized FLAC object for %s", path)
 
     _set_common_tags(audio, metadata)
 
@@ -250,9 +255,9 @@ async def write_tags(
 
     try:
         audio.save()
-        print(f"write_tags: Saved metadata for {path}")
+        logger.info("write_tags: Saved metadata for %s", path)
     except Exception as e:
-        print(f"write_tags: Failed to save metadata for {path}: {e}")
+        logger.error("write_tags: Failed to save metadata for %s: %s", path, e)
         raise
 
     if export_lrc and metadata.lyrics:
@@ -270,13 +275,15 @@ async def write_tags(
             )
             new_path = path.with_name(new_name)
             path.rename(new_path)
-            print(f"write_tags: Renamed file to {new_path}")
+            logger.info("write_tags: Renamed file to %s", new_path)
             return new_path
         except Exception as e:
-            print(f"write_tags: Failed to rename file {path} to {new_name}: {e}")
+            logger.error(
+                "write_tags: Failed to rename file %s to %s: %s", path, new_name, e
+            )
             raise
 
-    print(f"write_tags: Returning original path {path}")
+    logger.debug("write_tags: Returning original path %s", path)
     return path
 
 
