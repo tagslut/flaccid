@@ -94,5 +94,73 @@ def validate(file: Path) -> None:
 
     typer.echo("All plugins valid!")
 
+@app.command("scaffold-tests")
+def scaffold_tests(plugin: Path) -> None:
+    """Create basic pytest scaffolding for *plugin*.
+
+    The command detects the plugin class within ``plugin`` and writes a test
+    file under ``tests/plugins`` with simple mocks for ``search_track`` and
+    ``get_track`` as well as error handling. The generated path is printed on
+    success.
+    """
+
+    source = plugin.read_text()
+    tree = ast.parse(source, filename=str(plugin))
+    aliases = _import_aliases(tree)
+
+    plugin_class = None
+    for node in tree.body:
+        if not isinstance(node, ast.ClassDef):
+            continue
+        bases = _base_names(node.bases, aliases)
+        if "MetadataProviderPlugin" in bases or "LyricsProviderPlugin" in bases:
+            plugin_class = node.name
+            break
+
+    if not plugin_class:
+        typer.echo("No plugin class found", err=True)
+        raise typer.Exit(1)
+
+    module = plugin.with_suffix("").as_posix().replace("/", ".")
+    if module.startswith("src."):
+        module = module[4:]
+
+    dest_dir = Path("tests/plugins")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"test_{plugin.stem}.py"
+
+    content = f"""import pytest
+from unittest.mock import AsyncMock
+
+from {module} import {plugin_class}
+
+
+@pytest.mark.asyncio
+async def test_search_track(monkeypatch):
+    plugin = {plugin_class}()
+    monkeypatch.setattr(plugin, "search_track", AsyncMock(return_value={{}}))
+    result = await plugin.search_track("query")
+    assert result == {{}}
+
+
+@pytest.mark.asyncio
+async def test_get_track(monkeypatch):
+    plugin = {plugin_class}()
+    monkeypatch.setattr(plugin, "get_track", AsyncMock(return_value=None))
+    result = await plugin.get_track("id")
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_get_track_error(monkeypatch):
+    plugin = {plugin_class}()
+    monkeypatch.setattr(plugin, "get_track", AsyncMock(side_effect=Exception))
+    with pytest.raises(Exception):
+        await plugin.get_track("id")
+"""
+
+    dest.write_text(content)
+    typer.echo(str(dest))
+
 
 __all__ = ["app"]

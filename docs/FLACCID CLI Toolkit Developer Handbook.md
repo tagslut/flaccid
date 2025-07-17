@@ -1952,6 +1952,7 @@ Welcome to the development side of FLACCID! This section provides guidance for n
 - Add any needed configuration (API keys, etc.) to `settings.toml` and `.secrets.toml` as appropriate. Document them in the README.
 - If the API requires OAuth (like Spotify), you might need to implement an OAuth flow. This could be complex (like opening a browser, etc.). Possibly out-of-scope for CLI; but maybe Spotify can use a user’s refresh token from somewhere. Each service will differ in complexity.
 - Write tests for the plugin using dummy data or actual API if keys are available (be mindful not to hardcode secrets in tests).
+- You can quickly create a test skeleton with `fla plugins scaffold-tests <file>`.
 - Integrate the plugin with the CLI:
   - If it’s a streaming service, add a subcommand in `get.py` (and in `tag.py` if you want to allow tagging from it).
   - If we had dynamic plugin loading, you’d register it. Currently, manually add similar to how Qobuz/Tidal are done.
