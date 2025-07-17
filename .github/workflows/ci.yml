@@ -49,8 +49,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pre-commit-
 
-      - name: Run pre-commit hooks
-        run: poetry run pre-commit run --all-files
+      - name: Run CI tasks
+        run: make ci
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -87,9 +87,9 @@ jobs:
           poetry install --sync --no-interaction --no-ansi --with dev
 
       - name: Build distributions
-        run: poetry build
+        run: make build
 
       - name: Publish to PyPI
         env:
           POETRY_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: poetry publish --no-interaction --username __token__ --password "$POETRY_PYPI_TOKEN"
+        run: make release

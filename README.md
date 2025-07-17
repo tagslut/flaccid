@@ -251,9 +251,21 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](./CONTRIBUTING.md) f
 ```sh
 # Install dependencies
 poetry install --sync
-# Run linters, type checks, tests
+# Run linters, type checks, and tests
 make ci
 ```
+
+### Makefile Targets
+
+The provided `Makefile` exposes common developer commands:
+
+- `make test` - run the unit tests.
+- `make lint` - run formatting, linting and type checks via pre-commit.
+- `make build` - build distribution packages with Poetry.
+- `make release` - publish the current version to PyPI.
+- `make docs` - generate project documentation (placeholder).
+- `make coverage` - run the test suite with coverage reporting.
+- `make ci` - execute `lint` and `coverage` together.
 
 ## Versioning
 
@@ -263,4 +275,4 @@ Release notes are maintained in [CHANGELOG.md](./CHANGELOG.md).
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](./LICENSE) file for details.
-# Last updated: Thu Jul 17 12:45:58 UTC 2025
+# Last updated: Thu Jul 17 14:44:04 UTC 2025
