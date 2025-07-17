@@ -145,6 +145,10 @@ async def test_write_tags(monkeypatch, tmp_path: Path) -> None:
     assert flac.saved is True
     assert new_path.name == "01-S.flac"
 
+    from tests.test_helpers.snapshot import assert_snapshot
+
+    assert_snapshot(flac._tags, "write_tags_basic")
+
 
 @pytest.mark.asyncio
 async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
@@ -164,6 +168,7 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
         plugin: MetadataProviderPlugin | None = None,
         lyrics_plugin: LyricsProviderPlugin | None = None,
         filename_template: str | None = None,
+        export_lrc: bool = False,
     ) -> Path:
         if lyrics_plugin and not meta.lyrics:
             try:
@@ -180,6 +185,7 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
             captured["meta"],
             b"a",
             None,
+            False,
         )
         return path
 
@@ -220,8 +226,14 @@ async def test_fetch_and_tag(monkeypatch, tmp_path: Path) -> None:
         captured["meta"],
         b"a",
         None,
+        False,
     )
     assert captured["lyrics"] == ("A", "T")
+
+    from dataclasses import asdict
+    from tests.test_helpers.snapshot import assert_snapshot
+
+    assert_snapshot(asdict(captured["meta"]), "fetch_and_tag_result")
 
 
 def test_cascade_merges() -> None:
