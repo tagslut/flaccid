@@ -209,3 +209,26 @@ def test_search_library(monkeypatch, tmp_path: Path) -> None:
     results = library.search_library(db, "a")
     assert len(results) == 1
     assert results[0]["path"] == str(f1)
+
+
+def test_report_missing_metadata(monkeypatch, tmp_path: Path) -> None:
+    db = tmp_path / "lib.db"
+    good = tmp_path / "good.flac"
+    bad = tmp_path / "bad.flac"
+    good.write_text("d1")
+    bad.write_text("d2")
+
+    class FakeFLAC(dict):
+        def __init__(self, path: str) -> None:
+            super().__init__()
+            name = Path(path).stem
+            self["title"] = [name if name != "bad" else ""]
+            self["artist"] = ["A"]
+            self["album"] = ["B"]
+
+    monkeypatch.setattr(library, "FLAC", FakeFLAC)
+    library.index_files(db, [good, bad])
+
+    rows = library.report_missing_metadata(db)
+    assert len(rows) == 1
+    assert rows[0]["path"] == str(bad)

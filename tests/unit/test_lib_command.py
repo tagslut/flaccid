@@ -83,3 +83,18 @@ def test_lib_search_invokes_core(monkeypatch):
         5,
         1,
     )
+
+
+def test_lib_missing_invokes_core(monkeypatch):
+    called = {}
+
+    def fake_report(db):
+        called["db"] = db
+        return []
+
+    monkeypatch.setattr(lib_cli.library, "report_missing_metadata", fake_report)
+
+    result = runner.invoke(app, ["library", "missing"])
+
+    assert result.exit_code == 0
+    assert called["db"] == Path("library.db")

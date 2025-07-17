@@ -10,7 +10,7 @@ import os
 import re
 from dataclasses import asdict, fields
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, Optional
 
 import logging
 
@@ -195,6 +195,30 @@ def cascade(
     return merged
 
 
+def validate_field_retention(
+    merged: TrackMetadata, sources: Iterable[TrackMetadata]
+) -> None:
+    """Ensure no populated field from ``sources`` was dropped during merging.
+
+    Parameters
+    ----------
+    merged:
+        The final merged metadata object.
+    sources:
+        The list of original metadata sources that were merged. If any of these
+        contain a non-empty value for a field, ``merged`` must also contain a
+        non-empty value for that field.  A :class:`ValueError` is raised if this
+        check fails.
+    """
+
+    for field in fields(TrackMetadata):
+        had_value = any(
+            getattr(src, field.name) not in (None, "") for src in sources
+        )
+        if had_value and getattr(merged, field.name) in (None, ""):
+            raise ValueError(f"Field {field.name} lost during merge")
+
+
 async def write_tags(
     path: Path,
     metadata: TrackMetadata,
@@ -300,6 +324,7 @@ async def fetch_and_tag(
     """Merge metadata via :func:`cascade` and apply tags."""
 
     merged = cascade(base, *extras)
+    validate_field_retention(merged, [base, *extras])
     return await write_tags(
         path,
         merged,

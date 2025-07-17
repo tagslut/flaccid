@@ -7,11 +7,13 @@ from __future__ import annotations
 from collections import OrderedDict
 from typing import Optional
 
-from flaccid.core import metadata
-
+import logging
 import aiohttp
 
+from flaccid.core import metadata
 from .base import LyricsProviderPlugin
+
+logger = logging.getLogger(__name__)
 
 
 class LyricsOvhProvider(LyricsProviderPlugin):
@@ -121,7 +123,15 @@ class LyricsPlugin(LyricsProviderPlugin):
             return disk_cached
 
         for provider in self.providers:
-            lyrics = await provider.get_lyrics(artist, title)
+            try:
+                lyrics = await provider.get_lyrics(artist, title)
+            except Exception as exc:  # noqa: BLE001 - log and continue
+                logger.warning(
+                    "lyrics provider %s failed: %s",
+                    provider.__class__.__name__,
+                    exc,
+                )
+                continue
             if lyrics:
                 self.cache.set(key, lyrics)
                 metadata.set_cached_lyrics(key, lyrics)

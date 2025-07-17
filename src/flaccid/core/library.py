@@ -313,3 +313,15 @@ def search_library(
 
         rows = session.execute(stmt).mappings().all()
         return [dict(row) for row in rows]
+
+
+def report_missing_metadata(db_path: Path) -> List[Dict[str, Any]]:
+    """Return tracks missing title, artist, or album metadata."""
+
+    engine, tracks = _init_db(db_path)
+    with Session(engine) as session:
+        stmt = select(tracks).where(
+            (tracks.c.title == "") | (tracks.c.artist == "") | (tracks.c.album == "")
+        )
+        rows = session.execute(stmt).mappings().all()
+        return [dict(row) for row in rows]

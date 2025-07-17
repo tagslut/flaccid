@@ -183,6 +183,14 @@ fla duplicates remove ~/Music --by hash --strategy keep-highest-quality --no-dry
 # Keep the newest file of each duplicate set
 fla duplicates remove ~/Music --by hash --strategy keep-newest --no-dry-run
 ```
+
+### Reporting Missing Metadata
+
+```bash
+fla library missing --db library.db
+```
+This command prints the paths of any indexed tracks that are missing a title,
+artist, or album tag so you can fix them easily.
 Sample output for an interactive removal:
 
 ```text

@@ -308,3 +308,47 @@ def test_generate_lrc() -> None:
     text = metadata.generate_lrc(lyrics, step=10.0)
     assert text.startswith("[00:00.00]line1")
     assert "[00:10.00]line2" in text
+
+
+def test_validate_field_retention_pass() -> None:
+    base = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+        isrc="123",
+    )
+    extra = TrackMetadata(
+        title="T2",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+        isrc="456",
+    )
+    merged = metadata.cascade(base, extra, strategies={"title": "prefer"})
+    metadata.validate_field_retention(merged, [base, extra])
+
+
+def test_validate_field_retention_error() -> None:
+    base = TrackMetadata(
+        title="T",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+        isrc="123",
+    )
+    extra = TrackMetadata(
+        title="",
+        artist="A",
+        album="B",
+        track_number=1,
+        disc_number=1,
+        isrc=None,
+    )
+    merged = metadata.cascade(base, extra, strategies={"isrc": "replace"})
+    merged.isrc = ""  # simulate bug where field was dropped
+    with pytest.raises(ValueError):
+        metadata.validate_field_retention(merged, [base, extra])
