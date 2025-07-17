@@ -37,6 +37,7 @@ Apply Apple Music metadata to a track:
 
 ```bash
 fla meta apple /path/to/song.flac --track-id 123456789
+  --strategy.title replace
 ```
 
 ### 4. Manage Your Library
@@ -142,6 +143,7 @@ fla meta apple /path/to/song.flac --track-id 123456789
 # Tag with custom filename template
 fla meta apple /path/to/song.flac --track-id 123456789 \
   --template "{artist} - {title}.flac"
+  --strategy.title replace
 ```
 
 #### Authentication and Status
@@ -211,6 +213,7 @@ When tagging files, you can specify custom filename templates:
 ```bash
 fla meta apple song.flac --track-id 123456789 \
   --template "{track_number:02d} - {artist} - {title}.flac"
+  --strategy.lyrics append
 ```
 
 Available template variables:
@@ -271,6 +274,7 @@ During development, run commands with `poetry run`:
 ```bash
 poetry run python -m fla download qobuz 12345678 song.flac
 poetry run python -m fla meta apple song.flac --track-id 12345678
+  --strategy.title replace
 poetry run python -m fla library scan ~/Music --db library.db
 ```
 

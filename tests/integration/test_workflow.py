@@ -36,8 +36,14 @@ def test_download_then_tag_success(monkeypatch, flac_path):
                 disc_number=1,
             )
 
-    async def fake_fetch_and_tag(file, data, *, filename_template=None):
-        calls['tag'] = file
+    async def fake_fetch_and_tag(
+        file,
+        data,
+        *,
+        strategies=None,
+        filename_template=None,
+    ):
+        calls['tag'] = (file, strategies)
 
     monkeypatch.setattr('flaccid.commands.get.qobuz_download', fake_download)
     monkeypatch.setattr('flaccid.commands.tag.AppleMusicPlugin', lambda: FakePlugin())
@@ -48,11 +54,22 @@ def test_download_then_tag_success(monkeypatch, flac_path):
     assert result_dl.exit_code == 0
     assert flac_path.exists()
 
-    result_tag = runner.invoke(app, ['meta', 'apple', str(flac_path), '--track-id', '999'])
+    result_tag = runner.invoke(
+        app,
+        [
+            'meta',
+            'apple',
+            str(flac_path),
+            '--track-id',
+            '999',
+            '--strategy.title',
+            'replace',
+        ],
+    )
     assert result_tag.exit_code == 0
     assert calls['download'] == '123'
     assert calls['track'] == '999'
-    assert calls['tag'] == flac_path
+    assert calls['tag'] == (flac_path, {'title': 'replace'})
 
 
 def test_download_then_tag_failure(monkeypatch, flac_path):

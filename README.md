@@ -37,7 +37,8 @@ FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files w
 - **Credential Storage**: Store service tokens securely in your system keyring.
 - **Duplicate Detection**: Find and manage duplicate FLAC files in your library.
 - **Metadata Cascade**: Merge metadata from multiple providers to fill in any
-  missing fields when tagging. The `cascade` helper lives in
+  missing fields when tagging. Use `--strategy.FIELD` options to control how
+  individual fields are merged. The `cascade` helper lives in
   `src/flaccid/core/metadata.py`.
 
 ## CLI Overview
@@ -48,6 +49,7 @@ Run commands via the `fla` module:
 poetry run python -m fla download qobuz 12345678 song.flac
 poetry run python -m fla meta apple song.flac --track-id 12345678 \
   --template "{artist} - {title}.flac"
+  --strategy.title replace
 poetry run python -m fla library scan ~/Music --db library.db
 poetry run python -m fla library watch start ~/Music ~/MoreMusic --db library.db
 poetry run python -m fla settings store qobuz --token YOUR_TOKEN
