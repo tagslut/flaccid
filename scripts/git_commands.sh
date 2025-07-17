@@ -32,8 +32,14 @@ if git diff --cached --quiet; then
   exit 0
 else
   # Commit the changes with --no-verify to bypass pre-commit hooks
+  if [ -z "${1-}" ]; then
+    echo "Error: A commit message is required." >&2
+    echo "Usage: ./scripts/git_commands.sh \"Your commit message\"" >&2
+    exit 1
+  fi
+
   echo "Committing changes..."
-  git commit --no-verify
+  git commit -m "$1" --no-verify
 
   # Now, pull with rebase to integrate remote changes.
   # This will place your new commit on top of any new commits from the remote.
