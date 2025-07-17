@@ -272,6 +272,7 @@ The provided `Makefile` exposes common developer commands:
 
 - `make test` - run the unit tests.
 - `make lint` - run formatting, linting and type checks via pre-commit.
+- `ruff check` is used to detect unused imports and unreachable code during CI.
 - `make build` - build distribution packages with Poetry.
 - `make release` - publish the current version to PyPI.
 - `make docs` - generate project documentation (placeholder).

@@ -65,6 +65,13 @@ show_error_codes = true
 line-length = 88
 target-version = ["py312"]
 
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["F", "B"]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]
