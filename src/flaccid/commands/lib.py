@@ -75,3 +75,14 @@ def search(
     rows = library.search_library(db, filter, sort=sort, limit=limit, offset=offset)
     for row in rows:
         typer.echo(row["path"])
+
+
+@app.command("missing")
+def report_missing(
+    db: Path = typer.Option(Path("library.db"), help="SQLite database path"),
+) -> None:
+    """List tracks missing basic metadata fields."""
+
+    rows = library.report_missing_metadata(db)
+    for row in rows:
+        typer.echo(row["path"])
