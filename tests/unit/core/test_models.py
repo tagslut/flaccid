@@ -27,6 +27,7 @@ def test_track_metadata_defaults() -> None:
     assert meta.year is None
     assert meta.isrc is None
     assert meta.lyrics is None
+    assert meta.source is None
 
 
 def test_album_metadata_fields() -> None:

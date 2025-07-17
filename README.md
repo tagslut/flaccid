@@ -162,6 +162,7 @@ Use the new `fetch` and `apply` commands to manage metadata:
 ```bash
 fla tag fetch /path/to/track.flac --provider qobuz
 fla tag apply /path/to/track.flac --metadata-file metadata.json --yes
+fla tag audit /path/to/track.flac
 ```
 The apply command writes tags using built-in helpers and will attempt to retrieve lyrics automatically when they are missing.
 Metadata from different providers is merged using the `cascade` helper so that

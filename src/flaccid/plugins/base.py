@@ -21,6 +21,7 @@ class TrackMetadata:
     isrc: Optional[str] = None
     art_url: Optional[str] = None
     lyrics: Optional[str] = None
+    source: Optional[str] = None
 
 
 @dataclass
