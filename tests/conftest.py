@@ -5,8 +5,15 @@ Test configuration for pytest.
 
 import os
 import shutil
+import sys
 import tempfile
 from pathlib import Path
+
+# Ensure the src/ package is importable for tests
+ROOT_DIR = Path(__file__).resolve().parents[1]
+SRC_PATH = ROOT_DIR / "src"
+sys.path.insert(0, str(SRC_PATH))
+os.environ.setdefault("PYTHONPATH", str(SRC_PATH))
 
 import pytest
 
