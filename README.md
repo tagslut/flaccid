@@ -183,6 +183,13 @@ fla library view --missing-lyrics
 fla library view --has-artwork
 ```
 
+### Comparing Libraries
+
+```bash
+fla library diff /path/to/lib1.db /path/to/lib2.db
+fla library diff /music/library1 /music/library2
+```
+
 ### Finding and Managing Duplicates
 
 ```bash

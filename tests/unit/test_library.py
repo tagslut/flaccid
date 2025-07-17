@@ -232,3 +232,18 @@ def test_report_missing_metadata(monkeypatch, tmp_path: Path) -> None:
     rows = library.report_missing_metadata(db)
     assert len(rows) == 1
     assert rows[0]["path"] == str(bad)
+
+
+def test_diff_libraries_detects_changes(monkeypatch, tmp_path: Path) -> None:
+    def collect_dir(path: Path) -> dict[str, dict[str, object]]:
+        if path.name == "a":
+            return {"x.flac": {"title": "A", "artist": "X", "album": "Z", "mtime": 1}}
+        return {"x.flac": {"title": "B", "artist": "X", "album": "Z", "mtime": 2}}
+
+    monkeypatch.setattr(library, "_collect_directory", collect_dir)
+    dir_a = tmp_path / "a"
+    dir_b = tmp_path / "b"
+    dir_a.mkdir()
+    dir_b.mkdir()
+    diffs = library.diff_libraries(dir_a, dir_b)
+    assert "* x.flac" in diffs[0]

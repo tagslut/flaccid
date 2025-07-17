@@ -325,3 +325,75 @@ def report_missing_metadata(db_path: Path) -> List[Dict[str, Any]]:
         )
         rows = session.execute(stmt).mappings().all()
         return [dict(row) for row in rows]
+
+
+def _collect_directory(directory: Path) -> Dict[str, Dict[str, Any]]:
+    """Return mapping of relative file paths to basic metadata."""
+
+    data: Dict[str, Dict[str, Any]] = {}
+    for file_path in scan_directory(directory):
+        audio = FLAC(str(file_path))
+        data[str(file_path.relative_to(directory))] = {
+            "title": "".join(audio.get("title", [])),
+            "artist": "".join(audio.get("artist", [])),
+            "album": "".join(audio.get("album", [])),
+            "mtime": file_path.stat().st_mtime,
+        }
+    return data
+
+
+def _collect_database(db_path: Path) -> Dict[str, Dict[str, Any]]:
+    """Return mapping of file paths to metadata stored in *db_path*."""
+
+    engine, tracks = _init_db(db_path)
+    with Session(engine) as session:
+        rows = session.execute(select(tracks)).mappings().all()
+    return {
+        row["path"]: {
+            "title": row.get("title", ""),
+            "artist": row.get("artist", ""),
+            "album": row.get("album", ""),
+        }
+        for row in rows
+    }
+
+
+def diff_libraries(path_a: Path, path_b: Path) -> List[str]:
+    """Return human-readable diffs between two libraries."""
+
+    if path_a.is_dir() and path_b.is_dir():
+        data_a = _collect_directory(path_a)
+        data_b = _collect_directory(path_b)
+    elif path_a.is_file() and path_b.is_file():
+        data_a = _collect_database(path_a)
+        data_b = _collect_database(path_b)
+    else:
+        raise ValueError("Both paths must be directories or database files")
+
+    diffs: List[str] = []
+    all_paths = sorted(set(data_a) | set(data_b))
+
+    for rel in all_paths:
+        if rel not in data_a:
+            diffs.append(f"+ {rel}")
+            continue
+        if rel not in data_b:
+            diffs.append(f"- {rel}")
+            continue
+
+        entry_a = data_a[rel]
+        entry_b = data_b[rel]
+        changes: List[str] = []
+
+        for key in ("title", "artist", "album"):
+            if entry_a.get(key) != entry_b.get(key):
+                changes.append(f"{key}: {entry_a.get(key)} -> {entry_b.get(key)}")
+
+        if "mtime" in entry_a and "mtime" in entry_b:
+            if entry_a["mtime"] != entry_b["mtime"]:
+                changes.append("timestamp changed")
+
+        if changes:
+            diffs.append(f"* {rel} | {'; '.join(changes)}")
+
+    return diffs

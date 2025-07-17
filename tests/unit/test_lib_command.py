@@ -159,3 +159,24 @@ def test_lib_view_filters(monkeypatch):
     assert result.exit_code == 0
     assert "b.flac" in result.output
     assert "a.flac" not in result.output
+
+
+def test_lib_diff_invokes_core(monkeypatch, tmp_path: Path):
+    called = {}
+
+    def fake_diff(a: Path, b: Path):
+        called["args"] = (a, b)
+        return ["+ foo"]
+
+    monkeypatch.setattr(lib_cli.library, "diff_libraries", fake_diff)
+
+    db1 = tmp_path / "lib1.db"
+    db2 = tmp_path / "lib2.db"
+    db1.touch()
+    db2.touch()
+
+    result = runner.invoke(app, ["library", "diff", str(db1), str(db2)])
+
+    assert result.exit_code == 0
+    assert called["args"] == (db1, db2)
+    assert "+ foo" in result.output
