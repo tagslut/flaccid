@@ -12,6 +12,7 @@
 - [Installation](#installation)
 - [Plugin Loading](#plugin-loading)
 - [Plugin Validation](#plugin-validation)
+- [Environment Checks](#environment-checks)
 - [Usage](#usage)
   - [Library Scanning](#library-scanning)
   - [Metadata Tagging](#metadata-tagging)
@@ -39,7 +40,7 @@ FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files w
 - **Metadata Cascade**: Merge metadata from multiple providers to fill in any
   missing fields when tagging. Use `--strategy.FIELD` options to control how
   individual fields are merged. The `cascade` helper lives in
-  `src/flaccid/core/metadata.py`.
+  `src/flaccid/core/metadata/cascade.py`.
 
 ## CLI Overview
 
@@ -143,6 +144,16 @@ fla plugins scaffold-tests path/to/plugin.py
 ```
 This generates a test file under `tests/plugins/` with mocks for the plugin's
 search and retrieval methods.
+
+### Environment Checks
+
+Verify your setup with a single command:
+
+```bash
+fla check
+```
+The command checks for plugin import errors, missing service tokens and
+unavailable paths, reporting any issues in a concise summary.
 ## Usage
 
 ### Library Scanning
@@ -261,6 +272,7 @@ The provided `Makefile` exposes common developer commands:
 
 - `make test` - run the unit tests.
 - `make lint` - run formatting, linting and type checks via pre-commit.
+- `ruff check` is used to detect unused imports and unreachable code during CI.
 - `make build` - build distribution packages with Poetry.
 - `make release` - publish the current version to PyPI.
 - `make docs` - generate project documentation (placeholder).
