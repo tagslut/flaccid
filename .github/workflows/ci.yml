@@ -86,8 +86,14 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           poetry install --sync --no-interaction --no-ansi --with dev
 
+      - name: Install Twine
+        run: pip install --no-cache-dir twine
+
       - name: Build distributions
         run: make build
+
+      - name: Check distributions
+        run: twine check dist/*
 
       - name: Publish to PyPI
         env:
