@@ -40,7 +40,7 @@ FLACCID is a simple CLI toolkit for downloading music and enriching FLAC files w
 - **Metadata Cascade**: Merge metadata from multiple providers to fill in any
   missing fields when tagging. Use `--strategy.FIELD` options to control how
   individual fields are merged. The `cascade` helper lives in
-  `src/flaccid/core/metadata.py`.
+  `src/flaccid/core/metadata/cascade.py`.
 
 ## CLI Overview
 
